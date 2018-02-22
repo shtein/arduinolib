@@ -1,4 +1,5 @@
 #include "AnalogInput.h"
+#include "DbgTool.h"
 
 ///////////////////
 //AnalogInput
