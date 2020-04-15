@@ -1,36 +1,36 @@
-#include "AnalogInput.h"
+//#define DBG_TO_SERIAL
 #include "DbgTool.h"
+#include "AnalogInput.h"
+
 
 ///////////////////
+//BaseInput
+
+BaseInput::BaseInput(){
+}
+
+BaseInput::~BaseInput(){
+}
+
+////////////////////
 //AnalogInput
-
-AnalogInput::AnalogInput(){
-}
-
-AnalogInput::~AnalogInput(){
-}
-
-///////////////////
-// Potentiometer
-
-Potentiometer::Potentiometer(uint8_t pin){
+AnalogInput::AnalogInput(uint8_t pin){
   _pin        = pin;
   _value      = analogRead(_pin);
 }
 
-Potentiometer::~Potentiometer(){
+AnalogInput::~AnalogInput(){
+  
 }
 
-#define alfa 0.5
-void Potentiometer::read(){ 
-  //Running average, sort of
-  _value = _value * alfa + (1 - alfa) * analogRead(_pin) + 0.5;
-
+void AnalogInput::read(){ 
+  _value      = analogRead(_pin);
 }
 
-int Potentiometer::value() const{
+int AnalogInput::value() const{
   return _value;
 }
+
 
 
 //////////////////
@@ -48,7 +48,8 @@ PushButton::PushButton(uint8_t pin){
   _pin            = pin;
    pinMode(_pin, INPUT);
    digitalWrite(_pin, HIGH);  
-  _value          = digitalRead(_pin);
+  _value          = digitalRead(_pin); 
+  _valueOff       = digitalRead(_pin); //Remember initial state
   _state          = BUTTON_STATE_OFF; 
   _millis         = 0;
   _millisDebounce = 0;
@@ -63,7 +64,7 @@ PushButton::~PushButton(){
 void PushButton::read(){  
 
   //Check last saved buttone value
-  if(_value == HIGH){
+  if(_value == _valueOff){
 
     if(_state != BUTTON_STATE_OFF){ 
       //Reset everything
@@ -78,7 +79,7 @@ void PushButton::read(){
     case BUTTON_STATE_OFF: //off      
     
       //Check if just pressed
-      if(_value == LOW){
+      if(_value == !_valueOff){
         //Be ready for short push
         _state = BUTTON_STATE_PUSHED_SHORT;
         //Set timer
@@ -142,13 +143,13 @@ bool PushButton::pushedLong() const{
 
 bool PushButton::clickedShort() const{
   //Was pushed for short period of time and than released
-  return _value == HIGH && _state == BUTTON_STATE_PUSHED_SHORT? true : false;
+  return _value == _valueOff && _state == BUTTON_STATE_PUSHED_SHORT? true : false;
 }
 
 
 bool PushButton::clickedLong() const{
   //Was pushed for long period of time and than released
-  return _value == HIGH && (_state == BUTTON_STATE_PUSHED_WAIT || _state == BUTTON_STATE_PUSHED_LONG) ? true : false;
+  return _value == _valueOff && (_state == BUTTON_STATE_PUSHED_WAIT || _state == BUTTON_STATE_PUSHED_LONG) ? true : false;
 }
 
 bool PushButton::value(uint8_t ctrl) const{

@@ -1,11 +1,10 @@
 #ifndef __DBGTOOL_H
 #define __DBGTOOL_H
 
-#include <wstring.h>
-
-
 
 #ifdef DBG_TO_SERIAL
+
+  #include <wstring.h>
 
   #define DBG_USE_FLASH
   void _dbgOut(const char *fmt, ...);

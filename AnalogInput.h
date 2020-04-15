@@ -4,35 +4,31 @@
 #include <IRremote.h>
 
 ////////////////////////////
-// Base AnalogInput
-class AnalogInput {
+// BaseInput
+class BaseInput {
   public:
-    AnalogInput();
-    ~AnalogInput();
+    BaseInput();
+    ~BaseInput();
 
     virtual void read() = 0;
 };
 
-////////////////////////////
-// Simple potentiometer
-// Define pin
-#define POT_MIN             0
-#define POT_MAX             1023
-#define POT_NOISE_THRESHOLD 4
-
-
-class Potentiometer: public AnalogInput {
+//////////////////////////
+// AnalogInput
+class AnalogInput: public BaseInput{
   public:
-    Potentiometer(uint8_t pin);
-    ~Potentiometer();
+    AnalogInput(uint8_t pin);
+    ~AnalogInput();
 
-    void read();
+    virtual void read();
     int value() const;
 
   protected:
     uint16_t  _pin:5;  
     uint16_t  _value:11;
+
 };
+
 
 
 ///////////////////////
@@ -44,7 +40,7 @@ class Potentiometer: public AnalogInput {
 #define PB_CONTROL_CLICK       0x03
 #define PB_CONTROL_PUSH_LONG   0x04
  
-class PushButton: public AnalogInput{
+class PushButton: public BaseInput{
   public:
     PushButton(uint8_t pin);
     ~PushButton();
@@ -61,7 +57,8 @@ class PushButton: public AnalogInput{
     void readValue();
     
   protected:
-    uint8_t        _pin:5;
+    uint8_t        _pin:4;
+    uint8_t        _valueOff:1;
     uint8_t        _value:1; 
     uint8_t        _state:2;
     unsigned long  _millis;  
@@ -92,7 +89,7 @@ class PushButton: public AnalogInput{
 #define RKEY_STAR   0xFF42BD
 #define RKEY_HASH   0xFF52AD
 
-class IRRemoteRecv: public AnalogInput {
+class IRRemoteRecv: public BaseInput {
   public:
     IRRemoteRecv(uint8_t pin);
     ~IRRemoteRecv();
@@ -112,7 +109,7 @@ class IRRemoteRecv: public AnalogInput {
 ////////////////////////////
 //RotaryEncoder
 
-class RotaryEncoder: public AnalogInput {
+class RotaryEncoder: public BaseInput {
   public:
     RotaryEncoder(uint8_t pinData, uint8_t pinClock);
     ~RotaryEncoder();
@@ -126,7 +123,6 @@ class RotaryEncoder: public AnalogInput {
     uint16_t  _value:5;
     uint16_t  _valClock:1;
 };
-
 
 
 #endif //__ANALOGINPUT_H
