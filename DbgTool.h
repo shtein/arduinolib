@@ -10,7 +10,9 @@
   void _dbgOut(const char *fmt, ...);
   void _dbgOut(const __FlashStringHelper *fmt, ...);
 
-  #define DBG_INIT()      Serial.begin(57600)  
+  #define DBG_INIT() \
+        Serial.begin(57600);\
+        while (!Serial);  //This is needed for Arduino Leonardo
 
   #ifdef DBG_USE_FLASH
     #define DBG_OUT(FORMAT, ...)  _dbgOut(F(FORMAT), ##  __VA_ARGS__);   
