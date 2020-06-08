@@ -4,6 +4,8 @@
 
 #ifdef DBG_TO_SERIAL
 
+  #pragma message "Warning debugging via serial is enabled"
+
   #include <wstring.h>
 
   #define DBG_USE_FLASH

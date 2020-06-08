@@ -1,4 +1,3 @@
-//#define DBG_TO_SERIAL
 #include "DbgTool.h"
 #include "AnalogInput.h"
 
@@ -70,7 +69,7 @@ void PushButton::read(){
       //Reset everything
        _millis = 0;
        _state  = BUTTON_STATE_OFF;  
-       DBG_OUTLN("off");
+       DBG_OUTLN("off - button D%d", (int)_pin);
     }
   }
 
@@ -84,7 +83,7 @@ void PushButton::read(){
         _state = BUTTON_STATE_PUSHED_SHORT;
         //Set timer
         _millis = millis() + PUSH_LONG_INTERVAL; 
-        DBG_OUTLN("pushed");
+        DBG_OUTLN("pushed - button D%d", (int)_pin);
       }
     break;
     case BUTTON_STATE_PUSHED_SHORT: //Short push
@@ -95,14 +94,14 @@ void PushButton::read(){
         _state = BUTTON_STATE_PUSHED_LONG;
         //Reset the timer so next long push event happens
         _millis = millis() + PUSH_LONG_INTERVAL;
-         DBG_OUTLN("long pushed");
+         DBG_OUTLN("long pushed - button D%d", (int)_pin);
       }
     break;
     case BUTTON_STATE_PUSHED_LONG:
         
       //Reset long push
       _state = BUTTON_STATE_PUSHED_WAIT;
-       DBG_OUTLN("wait");
+       DBG_OUTLN("wait - button D%d", (int)_pin);
     break;
   }
   
