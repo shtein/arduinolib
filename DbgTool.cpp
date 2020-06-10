@@ -1,7 +1,6 @@
-#include "dbgtool.h"
-#include <stdio.h>
-#include <stdarg.h>
 #include <arduino.h>
+#include "dbgtool.h"
+
 
 
 #define BUF_SIZE 64

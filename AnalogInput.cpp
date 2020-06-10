@@ -1,3 +1,5 @@
+#include <Arduino.h>
+
 #include "DbgTool.h"
 #include "AnalogInput.h"
 

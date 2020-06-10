@@ -3,6 +3,8 @@
 
 #include <IRremote.h>
 
+#include "ControlCtx.h"
+
 ////////////////////////////
 // BaseInput
 class BaseInput {
@@ -34,11 +36,6 @@ class AnalogInput: public BaseInput{
 ///////////////////////
 // Simple push button
 // Define pin
-
-#define PB_CONTROL_CLICK_SHORT 0x01
-#define PB_CONTROL_CLICK_LONG  0x02
-#define PB_CONTROL_CLICK       0x03
-#define PB_CONTROL_PUSH_LONG   0x04
  
 class PushButton: public BaseInput{
   public:
@@ -88,6 +85,7 @@ class PushButton: public BaseInput{
 #define RKEY_9      0xFF5AA5
 #define RKEY_STAR   0xFF42BD
 #define RKEY_HASH   0xFF52AD
+
 
 class IRRemoteRecv: public BaseInput {
   public:

@@ -1,7 +1,7 @@
 #ifndef __CONTROLS_H
 #define __CONTROLS_H
 
-#include "AnalogInput.h"
+#include "ControlCtx.h"
 
 //Change commands
 #define EEMC_NONE        0x00   //Nothing changed
@@ -69,6 +69,9 @@ struct CtrlQueueItem {
 
 //////////////////////////////////////////
 // ProcessControl - base class
+
+class BaseInput;
+
 class CtrlItem{
   public:
     CtrlItem(uint8_t cmd, BaseInput *input);
@@ -89,6 +92,8 @@ class CtrlItem{
 
 ////////////////////////////////
 // Push button control, reacts on either short click, long click or long push
+class PushButton;
+
 class CtrlItemPb: public CtrlItem{
   public:
     CtrlItemPb(uint8_t cmd, PushButton *input, uint8_t ctrl = PB_CONTROL_CLICK, uint8_t flag = CTF_VAL_NEXT, int8_t value = 0);
@@ -110,6 +115,8 @@ class CtrlItemPb: public CtrlItem{
 #define POT_MAX             1023
 
 #define POT_NOISE_THRESHOLD 3
+
+class AnalogInput;
 
 class CtrlItemPtmtr: public CtrlItem{
   public:
@@ -143,6 +150,8 @@ class CtrlMic: public CtrlItem{
 // Returns returns delta
 // dir - direction (true is positive, false is negative)
 // repeat - button repeat limit, 0 = single push, same as next or prev
+class IRRemoteRecv;
+
 
 class CtrlItemIRBtn: public CtrlItem{
   public:
@@ -164,6 +173,8 @@ class CtrlItemIRBtn: public CtrlItem{
 // Always returns incremental/decremental value
 
 #define ROTECT_DEFAULT_INC 10 //Default incremement value
+
+class RotaryEncoder;
 
 class CtrlItemRotEnc: public CtrlItem{
   public:

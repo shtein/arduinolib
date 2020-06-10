@@ -1,4 +1,6 @@
+#include <Arduino.h>
 #include "Controls.h"
+#include "AnalogInput.h"
 
 
 int powInt(int x, int y, int limit){
