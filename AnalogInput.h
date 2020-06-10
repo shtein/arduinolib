@@ -1,7 +1,6 @@
 #ifndef __ANALOGINPUT_H
 #define __ANALOGINPUT_H
 
-#include <IRremote.h>
 
 #include "ControlCtx.h"
 
@@ -65,6 +64,9 @@ class PushButton: public BaseInput{
 
 ///////////////////////////////////////
 // Simple IR Receiver for Keyes remote
+#ifdef USE_IR_REMOTE
+
+#include <IRremote.h>
 
 //Keys
 #define RKEY_REPEAT 0xFFFFFFFF
@@ -103,6 +105,7 @@ class IRRemoteRecv: public BaseInput {
     uint16_t       _pushed:1;
 };
 
+#endif //USE_IR_REMOTE
 
 ////////////////////////////
 //RotaryEncoder
@@ -121,6 +124,5 @@ class RotaryEncoder: public BaseInput {
     uint16_t  _value:5;
     uint16_t  _valClock:1;
 };
-
 
 #endif //__ANALOGINPUT_H

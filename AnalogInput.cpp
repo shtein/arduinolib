@@ -1,3 +1,4 @@
+#include "arduinolib.h"
 #include <Arduino.h>
 
 #include "DbgTool.h"
@@ -172,6 +173,7 @@ bool PushButton::value(uint8_t ctrl) const{
  return false;
 }
 
+#ifdef USE_IR_REMOTE
 
 //////////////////////////
 // IRRemoteRecv
@@ -240,9 +242,8 @@ void IRRemoteRecv::read(){
     }
     
   }
-
-  
 }
+
 
 int IRRemoteRecv::pushed(unsigned long key) const{
   if(_pushed == true && _value == key){
@@ -251,6 +252,9 @@ int IRRemoteRecv::pushed(unsigned long key) const{
 
   return 0;
 }
+
+#endif //USE_IR_REMOTE
+
 
 //////////////////////////////////////
 // RotaryEncodder

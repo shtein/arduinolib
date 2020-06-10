@@ -1,3 +1,5 @@
+#include "arduinolib.h"
+
 #include <Arduino.h>
 #include "Controls.h"
 #include "AnalogInput.h"
@@ -127,6 +129,7 @@ void CtrlMic::getData(CtrlQueueData &data){
   */
 }
 
+#ifdef USE_IR_REMOTE
 ////////////////////////////
 // CtrlItemIRBtn
 
@@ -167,6 +170,7 @@ void CtrlItemIRBtn::getData(CtrlQueueData &data){
   data.max   = 0;
 }
 
+#endif //USE_IR_REMOTE
 
 ////////////////////////////
 // CtrlItemRotEnc

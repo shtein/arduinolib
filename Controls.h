@@ -145,6 +145,8 @@ class CtrlMic: public CtrlItem{
     void getData(CtrlQueueData &data);
 };
 
+
+#ifdef USE_IR_REMOTE
 //////////////////////////////
 // CtrlItemIRBtn - analog input is one IR remote buttons
 // Returns returns delta
@@ -168,6 +170,8 @@ class CtrlItemIRBtn: public CtrlItem{
     uint8_t  _repeat:7;
 };
 
+#endif //USE_IR_REMOTE
+
 ////////////////////////////////////////
 // Rotary encoder control
 // Always returns incremental/decremental value
@@ -188,6 +192,8 @@ class CtrlItemRotEnc: public CtrlItem{
   protected: 
     uint8_t  _inc;
 };
+
+
 
 ////////////////////////////////////////
 // EffectControlPanel

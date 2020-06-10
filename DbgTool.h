@@ -4,7 +4,7 @@
 
 #ifdef DBG_TO_SERIAL
 
-  #pragma message "Warning debugging via serial is enabled"
+  #pragma message "Warning: debugging via serial is enabled"
 
   #include <wstring.h>
 
