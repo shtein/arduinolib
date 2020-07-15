@@ -5,9 +5,6 @@
 
 ////////////////////////////
 //SoundCapture
-
-SoundCapture *SoundCapture::_instance = NULL;
-
 SoundCapture::SoundCapture(){
 }
 
@@ -16,27 +13,18 @@ SoundCapture::~SoundCapture(){
 }
 
 
-void SoundCapture::initInstance(SoundCapture *instance){
-  //Remember instance
-  _instance = instance;
-
-  //Init instance
-  if(_instance){
-     _instance->init();
-  }
-}
-
-SoundCapture *SoundCapture::getInstance(){
-  return _instance;
-}
-
 
 ///////////////////////////////////////////
 // SoundCaptureMSGEQ7
+
+#define MSGEQ7_AUDI_MIN 8
+
 SoundCaptureMSGEQ7::SoundCaptureMSGEQ7(uint8_t pinAnalog, uint8_t pinStrobe, uint8_t pinReset){
   _pinAnalog = pinAnalog;
   _pinStrobe = pinStrobe;
   _pinReset  = pinReset;
+
+  //analogReference(EXTERNAL);
 }
 
 SoundCaptureMSGEQ7::~SoundCaptureMSGEQ7(){
@@ -58,28 +46,30 @@ void SoundCaptureMSGEQ7::reset(){
   digitalWrite(_pinStrobe, HIGH); 
 }
 
-void SoundCaptureMSGEQ7::idle(){
-  //Do nothing for now
-}
 
-void SoundCaptureMSGEQ7::getData(SoundCaptureData &data) const{
+void SoundCaptureMSGEQ7::getData(uint8_t *bands, 
+                                 uint16_t numBands) const{
   //Reset
   digitalWrite(_pinReset, HIGH); 
   digitalWrite(_pinReset, LOW);
- 
-  for(int i = 0; i < MAX_BANDS; i++){
+
+  numBands = min(numBands, MSGEQ7_BANDS);
+
+  for(uint8_t i = 0; i < numBands; i++){
     //Prepare
     digitalWrite(_pinStrobe, HIGH);
     digitalWrite(_pinStrobe, LOW);
 
     //Allow output to settle
     delayMicroseconds(36);
-    
-    data.bands[i] = (uint16_t)(analogRead(_pinAnalog) >> 2);
 
-    DBG_OUT("%u ", data.bands[i]);    
+    //Read data    
+    bands[i] = analogRead(_pinAnalog) >> 2;
+    //DBG_OUT("%u ", data.bands[i]);
   }
 
-  DBG_OUTLN("");
+  //DBG_OUTLN("");
 }
 
+void SoundCaptureMSGEQ7::idle(){
+}

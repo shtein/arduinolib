@@ -1,37 +1,31 @@
 #ifndef __SOUNDCAPTURE_H
 #define __SOUNDCAPTURE_H
 
+
 ////////////////////////////
 // Sound capture base interface
 
 #define MAX_BANDS 7
-
-typedef struct {
-  uint8_t bands[MAX_BANDS]; //8-bit data for each band
-} SoundCaptureData;
-
+  
 class SoundCapture{
   public:
     SoundCapture();
     ~SoundCapture();
 
-    //Single instance operations
-    static void initInstance(SoundCapture *instance); 
-    static SoundCapture* getInstance(); 
-
     //Interface functions
-    virtual void init()                                = 0;  //Initialization
-    virtual void reset()                               = 0;  //Reset
-    virtual void idle()                                = 0;  //Do something while there is no activity
-    virtual void getData(SoundCaptureData &data) const = 0;  //Retrieve the data
-
-  private:
-    static SoundCapture *_instance;
+    virtual void init()                              = 0;  //Initialization
+    virtual void reset()                             = 0;  //Reset
+    virtual void getData(uint8_t *bands, 
+                         uint16_t numBands) const    = 0;  //Retrieve the data
+    virtual void idle()                              = 0;  //Do something while there is no activity
 };
 
 
 ////////////////////////////
 // MSGEQ7 sound captupre
+
+#define MSGEQ7_BANDS 7
+
 class SoundCaptureMSGEQ7: public SoundCapture{
   public:
     SoundCaptureMSGEQ7(unsigned char pinAnalog, uint8_t pinStrobe, uint8_t pinReset);
@@ -39,9 +33,9 @@ class SoundCaptureMSGEQ7: public SoundCapture{
 
     void init();
     void reset();
+    void getData(uint8_t *bands, 
+                 uint16_t numBands) const;
     void idle();
-    void getData(SoundCaptureData &data) const;
-
 
   private:
     uint8_t _pinAnalog;

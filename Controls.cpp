@@ -3,6 +3,7 @@
 #include <Arduino.h>
 #include "Controls.h"
 #include "AnalogInput.h"
+#include "DbgTool.h"
 
 
 int powInt(int x, int y, int limit){
@@ -19,7 +20,7 @@ int powInt(int x, int y, int limit){
 }
 
 ////////////////////////////
-// EffectControl
+// CtrlItem
 CtrlItem::CtrlItem(uint8_t cmd, BaseInput *input) {
    _input = input;
    _cmd   = cmd;
@@ -85,7 +86,6 @@ CtrlItemPtmtr::~CtrlItemPtmtr(){
 bool CtrlItemPtmtr::triggered() const{ 
   uint16_t value = _value * alfa + (1 - alfa) * ((AnalogInput *)getInput())->value() + 0.5;
 
-  
   return (abs(value - _value) > min(_noiseThreshold, min(value - POT_MIN, POT_MAX - value))); 
 }
 
@@ -93,6 +93,8 @@ bool CtrlItemPtmtr::triggered() const{
 
 void CtrlItemPtmtr::getData(CtrlQueueData &data){
   _value  = _value * alfa + (1 - alfa) * ((AnalogInput *)getInput())->value() + 0.5;
+
+  //DBG_OUTLN("%d - %d", _value, ((AnalogInput *)getInput())->value());
   
   data.flag  = CTF_VAL_ABS;
   data.min   = POT_MIN + _noiseThreshold;
