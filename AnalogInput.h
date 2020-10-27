@@ -30,6 +30,19 @@ class AnalogInput: public BaseInput{
 
 };
 
+/////////////////////////
+// Simple on/off switch
+class Switch2Pos: public BaseInput{
+  public:
+    Switch2Pos(uint8_t pin);
+
+    virtual void read();
+    bool value() const;
+
+  protected:
+    uint8_t _pin:4;
+    uint8_t _value:4;
+};
 
 
 ///////////////////////

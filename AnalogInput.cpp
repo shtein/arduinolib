@@ -33,7 +33,24 @@ int AnalogInput::value() const{
   return _value;
 }
 
+/////////////////////////////////////
+// Switch2Pos
 
+Switch2Pos::Switch2Pos(uint8_t pin){
+  _pin = pin;
+  pinMode(_pin, INPUT);
+  digitalWrite(_pin, HIGH);  
+
+  _value = 0;
+}
+
+void Switch2Pos::read(){
+  _value = digitalRead(_pin);
+}
+
+bool Switch2Pos::value() const{
+  return _value;
+}
 
 //////////////////
 // PushButton

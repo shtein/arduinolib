@@ -10,9 +10,10 @@
 // Control flags
 #define CTF_NONE        0x00  //Nothing, value is absolute number
 #define CTF_VAL_ABS     0x00  //Absolute number
-#define CTF_VAL_DELTA   0x01  //Value is delta
-#define CTF_VAL_NEXT    0x02  //Go next - in cycles
-#define CTF_VAL_PREV    0x03  //Go previous - in cycles
+#define CTF_VAL_BOOL    0x01  //Value is bool
+#define CTF_VAL_DELTA   0x02  //Value is delta
+#define CTF_VAL_NEXT    0x03  //Go next - in cycles
+#define CTF_VAL_PREV    0x04  //Go previous - in cycles
 
 
 ////////////////////////////////////
@@ -113,6 +114,8 @@ class CtrlItemPb: public CtrlItem{
 // CtrlItemPtmtr - analog input is Potentiometer - AnalogInput
 #define POT_MIN             0
 #define POT_MAX             1023
+#define POT_LOWER_MARGIN    10
+#define POT_UPPER_MARGIN    10
 
 #define POT_NOISE_THRESHOLD 3
 
@@ -120,16 +123,40 @@ class AnalogInput;
 
 class CtrlItemPtmtr: public CtrlItem{
   public:
-    CtrlItemPtmtr(uint8_t cmd, AnalogInput *ptn, int noiseThreshold = POT_NOISE_THRESHOLD);
+    CtrlItemPtmtr(uint8_t cmd, AnalogInput *ptn, 
+                  uint16_t noiseThreshold = POT_NOISE_THRESHOLD,
+                  uint16_t lowerMargin = POT_LOWER_MARGIN,
+                  uint16_t upperMargin = POT_UPPER_MARGIN );
    ~CtrlItemPtmtr();
 
   protected:
     bool triggered() const;
     void getData(CtrlQueueData &data);
 
+    uint16_t getValue() const;
+
   protected:
-   uint16_t  _value:11;
-   uint16_t  _noiseThreshold:5;
+   uint16_t  _value:10;
+   uint16_t  _noiseThreshold:4;
+   uint16_t  _lowerMargin:9;
+   uint16_t  _upperMargin:9;
+};
+
+///////////////////////////////
+// CtrlSwicth2Pos - two position swicth - digital input
+class Switch2Pos;
+
+class CtrlSwicth2Pos: public CtrlItem{
+  public:
+    CtrlSwicth2Pos(uint8_t cmd, Switch2Pos *sw);
+    ~CtrlSwicth2Pos();
+
+  protected:
+    bool triggered() const;
+    void getData(CtrlQueueData &data);
+
+  protected:
+    bool _value; 
 };
 
 

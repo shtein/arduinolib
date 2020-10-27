@@ -4,8 +4,6 @@
 
 ////////////////////////////
 // Sound capture base interface
-
-#define MAX_BANDS 7
   
 class SoundCapture{
   public:

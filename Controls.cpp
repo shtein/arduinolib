@@ -68,14 +68,44 @@ void CtrlItemPb::getData(CtrlQueueData &data){
   data.max   = 0;
 }
 
+///////////////////////////////
+// CtrlSwicth2Pos
+CtrlSwicth2Pos::CtrlSwicth2Pos(uint8_t cmd, Switch2Pos *btn): CtrlItem(cmd, btn){
+  //Make sure first trigger works
+  _value = !((Switch2Pos *)getInput())->value();
+}
+
+
+bool CtrlSwicth2Pos::triggered() const{
+  return _value != ((Switch2Pos *)getInput())->value();
+}
+
+void CtrlSwicth2Pos::getData(CtrlQueueData &data){
+  _value = ((Switch2Pos *)getInput())->value();
+
+  data.flag  = CTF_VAL_ABS;
+  data.value = _value;
+  data.min   = 0;
+  data.max   = 0;
+}
+
 
 ////////////////////////////
 //CtrlItemPtmtr
 
-CtrlItemPtmtr::CtrlItemPtmtr(uint8_t cmd, AnalogInput *ptn, int noiseThreshold):
+#define POT_MARGIN_MAX          500
+#define POT_NOISE_THRESHOLD_MAX 16
+
+CtrlItemPtmtr::CtrlItemPtmtr(uint8_t cmd, AnalogInput *ptn, 
+                             uint16_t noiseThreshold,
+                             uint16_t lowerMargin, 
+                             uint16_t upperMargin):
   CtrlItem(cmd, ptn) {
+
   _value          = POT_MAX + 1;    //just to make sure it is different from what we read
-  _noiseThreshold = noiseThreshold; 
+  _noiseThreshold = noiseThreshold > POT_NOISE_THRESHOLD_MAX ? POT_NOISE_THRESHOLD_MAX : noiseThreshold; 
+  _lowerMargin    = lowerMargin > POT_MARGIN_MAX ? POT_MARGIN_MAX : lowerMargin;
+  _upperMargin    = upperMargin > POT_MARGIN_MAX ? POT_MARGIN_MAX : upperMargin;
 }
 
 CtrlItemPtmtr::~CtrlItemPtmtr(){
@@ -83,22 +113,32 @@ CtrlItemPtmtr::~CtrlItemPtmtr(){
 
 #define alfa 0.5
 
-bool CtrlItemPtmtr::triggered() const{ 
+uint16_t CtrlItemPtmtr::getValue() const{  
   uint16_t value = _value * alfa + (1 - alfa) * ((AnalogInput *)getInput())->value() + 0.5;
 
-  return (abs(value - _value) > min(_noiseThreshold, min(value - POT_MIN, POT_MAX - value))); 
+  if(value < _lowerMargin)
+    value = _lowerMargin;
+
+  if(value > POT_MAX - _upperMargin)
+    value = POT_MAX - _upperMargin;
+
+  return value;
 }
 
+bool CtrlItemPtmtr::triggered() const{ 
+  uint16_t value = getValue(); 
 
+  return (abs(value - _value) >  min(_noiseThreshold, min(value - POT_MIN + _lowerMargin, POT_MAX - _upperMargin - value))); 
+}
 
 void CtrlItemPtmtr::getData(CtrlQueueData &data){
-  _value  = _value * alfa + (1 - alfa) * ((AnalogInput *)getInput())->value() + 0.5;
+  _value  = getValue();
 
   //DBG_OUTLN("%d - %d", _value, ((AnalogInput *)getInput())->value());
   
   data.flag  = CTF_VAL_ABS;
-  data.min   = POT_MIN + _noiseThreshold;
-  data.max   = POT_MAX - _noiseThreshold;
+  data.min   = POT_MIN + _lowerMargin;
+  data.max   = POT_MAX - _upperMargin;
   data.value = _value;
 
   if(data.value < data.min)
