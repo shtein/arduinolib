@@ -102,7 +102,7 @@ CtrlItemPtmtr::CtrlItemPtmtr(uint8_t cmd, AnalogInput *ptn,
                              uint16_t upperMargin):
   CtrlItem(cmd, ptn) {
 
-  _value          = POT_MAX + 1;    //just to make sure it is different from what we read
+  _value          = POT_MAX; //just to make sure it is different from what we read
   _noiseThreshold = noiseThreshold > POT_NOISE_THRESHOLD_MAX ? POT_NOISE_THRESHOLD_MAX : noiseThreshold; 
   _lowerMargin    = lowerMargin > POT_MARGIN_MAX ? POT_MARGIN_MAX : lowerMargin;
   _upperMargin    = upperMargin > POT_MARGIN_MAX ? POT_MARGIN_MAX : upperMargin;
@@ -119,7 +119,7 @@ uint16_t CtrlItemPtmtr::getValue() const{
   if(value < _lowerMargin)
     value = _lowerMargin;
 
-  if(value > POT_MAX - _upperMargin)
+  if((int16_t) value > POT_MAX - _upperMargin)
     value = POT_MAX - _upperMargin;
 
   return value;
