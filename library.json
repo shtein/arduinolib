@@ -1,0 +1,21 @@
+{
+  "name": "arduinolib",
+  "description": "",
+  "keywords": "arduino",
+  "authors": [
+      {
+          "name": "Alex Shteyngolts",
+          "url": "https://github.com/shtein/arduinolib",
+          "maintainer": true
+      }
+  ],
+  "repository": {
+      "type": "git",
+      "url": "https://github.com/shtein/arduinolib.git"
+  },
+  "version": "1.0.0",
+  "license": "MIT",
+  "homepage": "",
+  "frameworks": "*",
+  "platforms": "*"
+}
