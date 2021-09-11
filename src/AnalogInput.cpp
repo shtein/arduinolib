@@ -192,6 +192,8 @@ bool PushButton::value(uint8_t ctrl) const{
 
 #ifdef USE_IR_REMOTE
 
+#include <IRremote.h>
+
 //////////////////////////
 // IRRemoteRecv
 #define REMOTE_TIMEOUT      10
