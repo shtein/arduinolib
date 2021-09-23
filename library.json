@@ -20,6 +20,6 @@
   "version": "1.0.1",
   "license": "MIT",
   "homepage": "",
-  "frameworks": "*",
+  "frameworks": "arduino",
   "platforms": "*"
 }
