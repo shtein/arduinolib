@@ -4,7 +4,6 @@
 #include "DbgTool.h"
 #include "AnalogInput.h"
 
-
 ///////////////////
 //BaseInput
 
@@ -313,6 +312,62 @@ void RotaryEncoder::read(){
 
 int RotaryEncoder::value() const{  
   return (int)1 - (int)_value;
+}
+
+///////////////////////////////////
+// Serial input
+SerialInput::SerialInput(){  
+  _bufRead[0] = SI_NULLCHAR;
+  _lenRead    = 0;
+}
+
+SerialInput::~SerialInput(){  
+}
+
+void SerialInput::read(){  
+}
+
+char *SerialInput::getCommandLine(){
+  while (Serial.available()){
+
+    int8_t c = Serial.read();
+  
+    switch (c){
+      case SI_CR:  
+      case SI_LF:
+        _bufRead[_lenRead] = SI_NULLCHAR;
+
+        if (_lenRead > 0){
+          _lenRead = 0;                           
+          return _bufRead[0] == SI_NULLCHAR ? NULL : _bufRead;
+        }
+      break;
+
+      case SI_BS:                                    
+        if (_lenRead > 0) {                        
+          _bufRead[--_lenRead] = SI_NULLCHAR;
+
+          Serial.print(SI_SPACE);
+          Serial.print(SI_BS);          
+        }
+      break;
+
+      default:
+        if (_lenRead < SI_BUFF_LEN) {
+          _bufRead[_lenRead++] = c;                   
+          _bufRead[_lenRead]   = SI_NULLCHAR;
+        }
+        else{
+          //Don't show input
+          Serial.print(SI_BS);          
+          Serial.print(SI_SPACE);
+          Serial.print(SI_BS);   
+        }                
+      break;
+    }
+  }
+
+  return NULL;
 }
 
 

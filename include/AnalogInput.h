@@ -138,4 +138,30 @@ class RotaryEncoder: public BaseInput {
     uint16_t  _valClock:1;
 };
 
+
+//////////////////////////////
+//Input from serial port
+#define SI_CR          '\r'
+#define SI_LF          '\n'
+#define SI_BS          '\b'
+#define SI_NULLCHAR    '\0'
+#define SI_SPACE       ' '
+#define SI_BUFF_LEN     32
+
+
+class SerialInput: public BaseInput{
+  public:
+    SerialInput();
+    ~SerialInput();
+
+    void read();
+
+    char *getCommandLine();
+
+  protected:   
+    char    _bufRead[SI_BUFF_LEN + 1]; 
+    uint8_t _lenRead; 
+};
+
+
 #endif //__ANALOGINPUT_H

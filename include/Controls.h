@@ -68,8 +68,9 @@ struct CtrlQueueItem {
   }
 };
 
+
 //////////////////////////////////////////
-// ProcessControl - base class
+// ProcessControl - base class'
 
 class BaseInput;
 
@@ -78,10 +79,9 @@ class CtrlItem{
     CtrlItem(uint8_t cmd, BaseInput *input);
    ~CtrlItem();
 
-    void loop(CtrlQueueItem &itm);
-    
+    void loop(CtrlQueueItem &itm);    
     BaseInput *getInput() const;
-    
+
   protected:
     virtual bool triggered() const = 0;
     virtual void getData(CtrlQueueData &data) = 0;
@@ -220,6 +220,25 @@ class CtrlItemRotEnc: public CtrlItem{
     uint8_t  _inc;
 };
 
+/////////////////////////////////////////
+// Control from serial buffer
+// Multi-command interface
+
+class SerialInput;
+typedef uint8_t (*FuncParseCmd_t) (char *cmdLine, CtrlQueueData &data);
+
+class CtrlItemSerial: public CtrlItem{
+  public:
+    CtrlItemSerial(SerialInput *input, FuncParseCmd_t funcParse);
+    ~CtrlItemSerial();
+
+  protected:
+    bool triggered() const;
+    void getData(CtrlQueueData &data);
+
+  protected:
+    FuncParseCmd_t _funcParse;
+};
 
 
 ////////////////////////////////////////

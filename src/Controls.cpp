@@ -36,10 +36,12 @@ BaseInput *CtrlItem::getInput() const{
 void CtrlItem::loop(CtrlQueueItem &itm){
   //Check if triggered
   if(triggered()){
-    //Prepare command
-    itm.cmd = _cmd;
-    //Retrieve data
+
+    //Retrieve data    
     getData(itm.data);
+
+    //Set command    
+    itm.cmd = _cmd;    
   }
 }
 
@@ -214,6 +216,9 @@ void CtrlItemIRBtn::getData(CtrlQueueData &data){
 
 #endif //USE_IR_REMOTE
 
+
+
+
 ////////////////////////////
 // CtrlItemRotEnc
 CtrlItemRotEnc::CtrlItemRotEnc(uint8_t cmd, RotaryEncoder *re, uint8_t inc): 
@@ -233,6 +238,30 @@ void CtrlItemRotEnc::getData(CtrlQueueData &data){
   data.value = ((RotaryEncoder *)getInput())->value() * _inc;  
   data.min   = 0;
   data.max   = 0;
+}
+
+//////////////////////////////
+// CtrlItemSerial
+CtrlItemSerial::CtrlItemSerial(SerialInput *input, FuncParseCmd_t funcParse): 
+  CtrlItem(EEMC_NONE, input){    
+    _funcParse = funcParse;
+}
+
+CtrlItemSerial::~CtrlItemSerial(){  
+}
+
+
+bool CtrlItemSerial::triggered() const{
+  return true;
+}
+
+void CtrlItemSerial::getData(CtrlQueueData &data){  
+
+  char *cmdLine = ((SerialInput *)_input)->getCommandLine();
+  if( cmdLine ){
+    //Buffer is ready
+    _cmd = _funcParse ? _funcParse(cmdLine, data) : EEMC_NONE; 
+  }
 }
 
 
