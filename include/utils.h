@@ -1,6 +1,31 @@
 #ifndef __UTILS_H
 #define __UTILS_H
 
+//Map function
 long mapEx( long x, long in_min, long in_max, long out_min, long out_max ); 
+
+
+//Macro for handndling variable number of arguments
+#define TOKEN_CONCAT(x, y) TOKEN_CONCAT_(x, y)
+#define TOKEN_CONCAT_(x, y) x ## y
+
+#define GET_NTH_ARG(P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, N,...) N
+#define NUM_ARGS(...) GET_NTH_ARG(, ##__VA_ARGS__ ,9, 8, 7, 6, 5, 4, 3, 2, 1, 0)
+
+
+#define ARG_NUM_1(P1, ...) P1
+#define ARG_NUM_2(P1, P2, ...) P2
+#define ARG_NUM_3(P1, P2, P3, ...) P3
+#define ARG_NUM_4(P1, P2, P3, P4, ...) P4
+#define ARG_NUM_5(P1, P2, P3, P4, P5, ...) P5
+#define ARG_NUM_6(P1, P2, P3, P4, P5, P6, ...) P6
+#define ARG_NUM_7(P1, P2, P3, P4, P5, P6, P7, ...) P7
+#define ARG_NUM_8(P1, P2, P3, P4, P5, P6, P7, P8, ...) P8
+#define ARG_NUM_9(P1, P2, P3, P4, P5, P6, P7, P8, P9, ...) P9
+#define ARG_NUM_10(P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, ...) P10
+
+#define ARG_NUM(N, ...) TOKEN_CONCAT(ARG_NUM_, N)(__VA_ARGS__)
+#define ARG_LAST(...) ARG_NUM( NUM_ARGS(__VA_ARGS__),  __VA_ARGS__)
+
 
 #endif //_UTILS_H

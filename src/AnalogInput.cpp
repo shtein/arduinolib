@@ -317,17 +317,13 @@ int RotaryEncoder::value() const{
 ///////////////////////////////////
 // Serial input
 SerialInput::SerialInput(){  
-  _bufRead[0] = SI_NULLCHAR;
-  _lenRead    = 0;
+  reset();
 }
 
 SerialInput::~SerialInput(){  
 }
 
 void SerialInput::read(){  
-}
-
-char *SerialInput::getCommandLine(){
   while (Serial.available()){
 
     int8_t c = Serial.read();
@@ -339,7 +335,6 @@ char *SerialInput::getCommandLine(){
 
         if (_lenRead > 0){
           _lenRead = 0;                           
-          return _bufRead[0] == SI_NULLCHAR ? NULL : _bufRead;
         }
       break;
 
@@ -366,10 +361,17 @@ char *SerialInput::getCommandLine(){
       break;
     }
   }
-
-  return NULL;
 }
 
+char *SerialInput::getCommandLine(){
+  return isReady() ? _bufRead : NULL;
+}
 
+bool SerialInput::isReady() const{
+  return _bufRead[0] == SI_NULLCHAR ? false : _lenRead == 0 ? true : false; 
+}
 
-
+void SerialInput::reset(){
+  _bufRead[0] = SI_NULLCHAR;
+  _lenRead    = 0;
+}

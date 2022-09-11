@@ -3,6 +3,7 @@
 
 #include "ControlCtx.h"
 
+
 //Change commands
 #define EEMC_NONE        0x00   //Nothing changed
 
@@ -220,25 +221,7 @@ class CtrlItemRotEnc: public CtrlItem{
     uint8_t  _inc;
 };
 
-/////////////////////////////////////////
-// Control from serial buffer
-// Multi-command interface
 
-class SerialInput;
-typedef uint8_t (*FuncParseCmd_t) (char *cmdLine, CtrlQueueData &data);
-
-class CtrlItemSerial: public CtrlItem{
-  public:
-    CtrlItemSerial(SerialInput *input, FuncParseCmd_t funcParse);
-    ~CtrlItemSerial();
-
-  protected:
-    bool triggered() const;
-    void getData(CtrlQueueData &data);
-
-  protected:
-    FuncParseCmd_t _funcParse;
-};
 
 
 ////////////////////////////////////////

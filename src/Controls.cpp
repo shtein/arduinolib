@@ -240,29 +240,6 @@ void CtrlItemRotEnc::getData(CtrlQueueData &data){
   data.max   = 0;
 }
 
-//////////////////////////////
-// CtrlItemSerial
-CtrlItemSerial::CtrlItemSerial(SerialInput *input, FuncParseCmd_t funcParse): 
-  CtrlItem(EEMC_NONE, input){    
-    _funcParse = funcParse;
-}
-
-CtrlItemSerial::~CtrlItemSerial(){  
-}
-
-
-bool CtrlItemSerial::triggered() const{
-  return true;
-}
-
-void CtrlItemSerial::getData(CtrlQueueData &data){  
-
-  char *cmdLine = ((SerialInput *)_input)->getCommandLine();
-  if( cmdLine ){
-    //Buffer is ready
-    _cmd = _funcParse ? _funcParse(cmdLine, data) : EEMC_NONE; 
-  }
-}
 
 
 ////////////////////////////

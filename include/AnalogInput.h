@@ -155,8 +155,9 @@ class SerialInput: public BaseInput{
     ~SerialInput();
 
     void read();
-
+    bool isReady() const;
     char *getCommandLine();
+    void reset();
 
   protected:   
     char    _bufRead[SI_BUFF_LEN + 1]; 
