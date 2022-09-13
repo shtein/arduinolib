@@ -87,12 +87,12 @@ uint8_t FunctionName(char *cmdLine, CtrlQueueData &data){ \
       } \
     _END_TOKEN()
 
-#define TOKEN_IS_NUMBER(cmd) \
+#define TOKEN_IS_NUMBER(cmd, ...) \
       index ++; \
       if(!tokens[index + 1]) { \
         int n; \
         if(strToInt(tokens[index], n)){ \
-          CQD_SET_DATA(data, cmd, n) \
+          CQD_SET_DATA(data, cmd, n, ##__VA_ARGS__) \
         } \
       } \
       index --;  
