@@ -1,7 +1,9 @@
 #ifndef __CTRL_SERIAL_H
+#define __CTRL_SERIAL_H
 
 #include "Utils.h"
 #include "Controls.h"
+#include "Notification.h"
 
 /////////////////////////////////////////
 // Control from serial buffer
@@ -10,14 +12,15 @@
 class SerialInput;
 typedef uint8_t (*FuncParseCmd_t) (char *cmdLine, CtrlQueueData &data);
 
-class CtrlItemSerial: public CtrlItem{
+class CtrlItemSerial: public CtrlItem {
   public:
     CtrlItemSerial(SerialInput *input, FuncParseCmd_t funcParse);
     ~CtrlItemSerial();
 
   protected:
+    // CtrlItem functions
     bool triggered() const;
-    void getData(CtrlQueueData &data);
+    void getData(CtrlQueueData &data);    
 
   protected:
     FuncParseCmd_t _funcParse;
