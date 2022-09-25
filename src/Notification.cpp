@@ -33,7 +33,7 @@ void SerialNtf::begin(const char *key){
     STR_PRN("%s: ", key);
   }
   else{
-    STR_PRN("");
+    //STR_PRN("");
   }
   
   _ident +=1;
@@ -42,7 +42,7 @@ void SerialNtf::begin(const char *key){
 void SerialNtf::end(const char *){  
   _ident -= 1;
 
-  STR_PRN("");
+  //STR_PRN("");
 }
 
 void SerialNtf::beginArray(const char *key ){
@@ -50,7 +50,7 @@ void SerialNtf::beginArray(const char *key ){
     STR_PRN("%s: ", key);
   }
   else{
-    STR_PRN("");
+    //STR_PRN("");
   }
   
   _ident +=1;
@@ -59,7 +59,7 @@ void SerialNtf::beginArray(const char *key ){
 void SerialNtf::endArray(const char *key){
   _ident -= 1;
 
-  STR_PRN("");
+  //STR_PRN("");
 }
 
 void SerialNtf::put(const char *key, uint8_t v){

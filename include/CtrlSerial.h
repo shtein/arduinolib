@@ -17,6 +17,8 @@ class CtrlItemSerial: public CtrlItem {
     CtrlItemSerial(SerialInput *input, FuncParseCmd_t funcParse);
     ~CtrlItemSerial();
 
+    NtfBase *getNtf(); 
+
   protected:
     // CtrlItem functions
     bool triggered() const;
@@ -24,6 +26,7 @@ class CtrlItemSerial: public CtrlItem {
 
   protected:
     FuncParseCmd_t _funcParse;
+    SerialNtf      _ntf;
 };
 
 //Helpers for creating parser function for SerialInput 

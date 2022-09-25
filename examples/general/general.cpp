@@ -7,8 +7,7 @@
 
 BEGIN_PARSE_ROUTINE(TestParse)
 
-  BEGIN_GROUP_TOKEN("mode|m")
-  
+  BEGIN_GROUP_TOKEN("mode|m")  
     //mode set next[default]|prev|number
     BEGIN_GROUP_TOKEN("set|s")
         TOKEN_IS_TEXT("next|n|", 26, 1)
@@ -20,8 +19,8 @@ BEGIN_PARSE_ROUTINE(TestParse)
   END_GROUP_TOKEN()
 
   BEGIN_GROUP_TOKEN("effect|e")
-    BEGIN_GROUP_TOKEN("set|s")
-        TOKEN_IS_TEXT("next|n", 16, 1)
+    BEGIN_GROUP_TOKEN("set|s|")
+        TOKEN_IS_TEXT("next|n|", 16, 1)
         TOKEN_IS_TEXT("prev|p", 17, 2)
         TOKEN_IS_NUMBER(15)
     END_GROUP_TOKEN()
@@ -45,17 +44,11 @@ void putNtfObject(NtfBase &resp, const CtrlQueueItem &data){
   
 
 
-const char key1[] PROGMEM = "people";
 
 void setup() {
   DBG_INIT();
 
   DBG_OUTLN("Started");
-
-
-  SerialNtf ntf;
-
-  NtfBase *p = &ntf;
 
 
 
@@ -73,9 +66,9 @@ void setup() {
     panel.loop(itm);    
 
     if(itm.cmd != EEMC_NONE){      
-      p->reset();
-      
-      p->put(NULL, itm);
+      ctrl.getNtf()->reset();
+      ctrl.getNtf()->put(NULL, itm);
+      ctrl.getNtf()->send();
       
     }  
   }
