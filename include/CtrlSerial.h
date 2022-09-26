@@ -12,7 +12,7 @@
 class SerialInput;
 typedef uint8_t (*FuncParseCmd_t) (char *cmdLine, CtrlQueueData &data);
 
-class CtrlItemSerial: public CtrlItem, public SerialNtf {
+class CtrlItemSerial: public CtrlItem, public NtfSerial {
   public:
     CtrlItemSerial(SerialInput *input, FuncParseCmd_t funcParse);
     ~CtrlItemSerial();

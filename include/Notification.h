@@ -168,7 +168,7 @@ void NtfBase::put(const char *key, const T *t, size_t size){
 
 
 ////////////////////////////////
-// SerialNtf - notificatoins via serial port
+// NtfSerial - notificatoins via serial port
 
 
 //Helpers for fast formantting
@@ -176,9 +176,9 @@ void NtfBase::put(const char *key, const T *t, size_t size){
 //#define STR_PRN(format, ...) //printf("%*s" format "\n", _ident, "", ##__VA_ARGS__)
 //#define STR_PRN_VAL(valformat, key, val) //STR_PRN("%s: " valformat, key, val)
 
-class SerialNtf: public NtfBase {
+class NtfSerial: public NtfBase {
 public:    
-  SerialNtf();
+  NtfSerial();
 
   void reset();
   void send();
@@ -201,15 +201,15 @@ private:
   uint8_t _ident;    
 };
 
-inline SerialNtf::SerialNtf(){
+inline NtfSerial::NtfSerial(){
   reset();
 }
 
-inline void SerialNtf::reset(){
+inline void NtfSerial::reset(){
   _ident = 0;
 }
 
-inline void SerialNtf::send(){
+inline void NtfSerial::send(){
 }
 
 
