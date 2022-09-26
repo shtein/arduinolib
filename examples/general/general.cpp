@@ -58,6 +58,7 @@ void setup() {
 
   CtrlPanel panel;
   panel.addControl(&ctrl);
+  NtfBase *p = &ctrl;
 
   CtrlQueueItem itm;
 
@@ -66,9 +67,9 @@ void setup() {
     panel.loop(itm);    
 
     if(itm.cmd != EEMC_NONE){      
-      ctrl.getNtf()->reset();
-      ctrl.getNtf()->put(NULL, itm);
-      ctrl.getNtf()->send();
+      p->reset();
+      p->put(NULL, itm);
+      p->send();
       
     }  
   }

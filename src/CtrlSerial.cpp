@@ -16,11 +16,6 @@ CtrlItemSerial::CtrlItemSerial(SerialInput *input, FuncParseCmd_t funcParse):
 CtrlItemSerial::~CtrlItemSerial(){  
 }
 
-NtfBase *CtrlItemSerial::getNtf(){
-  return &_ntf;
-}
-
-
 bool CtrlItemSerial::triggered() const{
   return ((SerialInput *)_input)->isReady();
 }
