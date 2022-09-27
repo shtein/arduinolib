@@ -45,20 +45,24 @@ void putNtfObject(NtfBase &resp, const CtrlQueueItem &data){
 
 
 
+#define MAX_NTF 3
+typedef NtfBaseSet<MAX_NTF> NtfSet;
+
+
 void setup() {
   DBG_INIT();
 
   DBG_OUTLN("Started");
-
-
-
   
   SerialInput   serial;
   CtrlItemSerial ctrl(&serial, TestParse);
 
   CtrlPanel panel;
   panel.addControl(&ctrl);
-  NtfBase *p = &ctrl;
+
+  NtfSet set;
+  set.addNtf(&ctrl);
+  set.addNtf(&ctrl);
 
   CtrlQueueItem itm;
 
@@ -67,9 +71,9 @@ void setup() {
     panel.loop(itm);    
 
     if(itm.cmd != EEMC_NONE){      
-      p->reset();
-      p->put(NULL, itm);
-      p->send();
+      
+      DBG_OUTLN("Cmd received");
+      set.put(&itm, 1);
       
     }  
   }

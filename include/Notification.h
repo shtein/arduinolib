@@ -161,20 +161,14 @@ void NtfBase::put(const char *key, const T *t, size_t size){
 // implementation of the following function is required
 
 // void putNtfObject(NtfBase &resp, const T &data){
-//   resp.put("key1", data.member1);
-//   resp.put("key2", data.member2);
+//   resp.put_F(F("key1"), data.member1);
+//   resp.put_F(F("key2"), data.member2);
 //   ...
 // }
 
 
 ////////////////////////////////
 // NtfSerial - notificatoins via serial port
-
-
-//Helpers for fast formantting
-//#define FMT_PRN(format) PSTR(format)
-//#define STR_PRN(format, ...) //printf("%*s" format "\n", _ident, "", ##__VA_ARGS__)
-//#define STR_PRN_VAL(valformat, key, val) //STR_PRN("%s: " valformat, key, val)
 
 class NtfSerial: public NtfBase {
 public:    
@@ -212,9 +206,63 @@ inline void NtfSerial::reset(){
 inline void NtfSerial::send(){
 }
 
+////////////////////////////////////////
+// Set of notifiers to call all at the same time
+template <size_t N>
+class NtfBaseSet{
+public:
+  NtfBaseSet();
 
+  void addNtf(NtfBase *p);
 
+  template <class T>
+  void put(const T& t);
 
+  template <class T>
+  void put(const T *t, size_t size);
+
+private:
+  NtfBase *_ntf[N]; 
+}; 
+
+template <size_t N>
+NtfBaseSet<N>::NtfBaseSet(){
+  memset(&_ntf, 0, sizeof(_ntf)); 
+}
+
+template <size_t N>
+void NtfBaseSet<N>::addNtf(NtfBase *p){
+
+  for(size_t i = 0; i < N; i++){
+    //Find first available slot
+    if(!_ntf[i]){
+      _ntf[i] = p;
+      return;
+    }      
+  }    
+}
+
+template<size_t N>
+template<class T>
+void NtfBaseSet<N>::put(const T& t){
+
+  for(size_t i = 0; i < N  && _ntf[i] != NULL; i++){
+    _ntf[i]->reset();
+    _ntf[i]->put(NULL, t);
+    _ntf[i]->send();
+  }  
+}
+
+template<size_t N>
+template<class T>
+void NtfBaseSet<N>::put(const T *t, size_t size){
+
+  for(size_t i = 0; i < N  && _ntf[i] != NULL; i++){
+    _ntf[i]->reset();
+    _ntf[i]->put(NULL, t, size);
+    _ntf[i]->send();
+  }  
+}
 
 
 #endif //__NOTIFICATION_H
