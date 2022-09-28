@@ -5,6 +5,19 @@
 
 ///////////////////
 // NtfSerial
+
+NtfSerial::NtfSerial(){
+  reset();
+}
+
+void NtfSerial::reset(){
+  _ident = 0;
+}
+
+void NtfSerial::send(){
+}
+
+
 #define BUFF_SIZE 32
 
 void NtfSerial::print(const __FlashStringHelper *fmt, ...){
@@ -73,6 +86,7 @@ void NtfSerial::put(const char *key, uint16_t v){
 void NtfSerial::put(const char *key, int8_t v){
   STR_PRN_VAL("%d", key, v);
 }
+
 void NtfSerial::put(const char *key, int16_t v){
   STR_PRN_VAL("%d", key, v);
 }

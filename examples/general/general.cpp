@@ -72,8 +72,8 @@ void setup() {
 
     if(itm.cmd != EEMC_NONE){      
       
-      DBG_OUTLN("Cmd received");
-      set.put(&itm, 1);
+      
+      set.put_F(F("cmd"), &itm, 1);
       
     }  
   }
