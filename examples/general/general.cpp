@@ -44,6 +44,12 @@ void putNtfObject(NtfBase &resp, const CtrlQueueItem &data){
   
 
 
+template <typename ... ARGS>
+void test(NtfBase *p, const ARGS&... args){
+  CtrlQueueData data;
+  p->put(NULL, args...);
+
+}
 
 #define MAX_NTF 3
 typedef NtfBaseSet<MAX_NTF> NtfSet;
@@ -66,6 +72,8 @@ void setup() {
 
   CtrlQueueItem itm;
 
+  test(&ctrl, &itm, 1);
+
   for(;;){
     
     panel.loop(itm);    
@@ -74,6 +82,7 @@ void setup() {
       
       
       set.put_F(F("cmd"), &itm, 1);
+      //set.put("", itm);
       
     }  
   }

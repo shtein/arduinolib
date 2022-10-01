@@ -25,7 +25,6 @@ void NtfSerial::print(const __FlashStringHelper *fmt, ...){
   va_list args;
   
   va_start (args, fmt);
-
   vsnprintf_P(buf, sizeof(buf), (const char *)fmt, args); 
   va_end(args);
   
@@ -38,7 +37,7 @@ void NtfSerial::print(const __FlashStringHelper *fmt, ...){
 
 //Print helper
 #define STR_FMT(format) F(format "\n")
-#define STR_PRN(format, ...) this->print( STR_FMT(format), ## __VA_ARGS__ )
+#define STR_PRN(format, ...) print( STR_FMT(format), ## __VA_ARGS__ )
 #define STR_PRN_VAL(valformat, key, val) STR_PRN("%s: " valformat, key, val)
 
 void NtfSerial::begin(const char *key){  

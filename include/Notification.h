@@ -127,11 +127,13 @@ public:
 
   template <class T>
   void put(const char *key, const T& t);
+
   template <class T>
   void put_F(const __FlashStringHelper *key, const T& t);
 
   template <class T>
   void put(const char * key, const T *t, size_t size);
+
   template <class T>
   void put_F(const __FlashStringHelper *key, const T* t, size_t size);
 
@@ -146,7 +148,6 @@ NtfBaseSet<N>::NtfBaseSet(){
 
 template <size_t N>
 void NtfBaseSet<N>::addNtf(NtfBase *p){
-
   for(size_t i = 0; i < N; i++){
     //Find first available slot
     if(!_ntf[i]){
@@ -155,6 +156,7 @@ void NtfBaseSet<N>::addNtf(NtfBase *p){
     }      
   }    
 }
+
 
 template<size_t N>
 template<class T>
@@ -167,12 +169,13 @@ void NtfBaseSet<N>::put(const char *key, const T& t){
   }  
 }
 
+
 template<size_t N>
 template<class T>
 void NtfBaseSet<N>::put_F(const __FlashStringHelper *key, const T& t){
-
   NTF_FUNC_F(put, key, t);
 }
+
 
 template<size_t N>
 template<class T>
@@ -184,6 +187,7 @@ void NtfBaseSet<N>::put(const char *key, const T *t, size_t size){
     _ntf[i]->send();
   }  
 }
+
 
 template<size_t N>
 template<class T>
