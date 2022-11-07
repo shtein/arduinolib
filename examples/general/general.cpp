@@ -55,6 +55,7 @@ void test(NtfBase *p, const ARGS&... args){
 typedef NtfBaseSet<MAX_NTF> NtfSet;
 
 
+
 void setup() {
   DBG_INIT();
 
@@ -68,22 +69,17 @@ void setup() {
 
   NtfSet set;
   set.addNtf(&ctrl);
-  set.addNtf(&ctrl);
 
   CtrlQueueItem itm;
-
-  test(&ctrl, &itm, 1);
 
   for(;;){
     
     panel.loop(itm);    
 
     if(itm.cmd != EEMC_NONE){      
-      
-      
-      set.put_F(F("cmd"), &itm, 1);
-      //set.put("", itm);
-      
+            
+      set.put_F(F("response"), itm.cmd);
+
     }  
   }
 

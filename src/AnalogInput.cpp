@@ -329,13 +329,16 @@ void SerialInput::read(){
     int8_t c = Serial.read();
   
     switch (c){
-      case SI_CR:  
+      case SI_CR:   //Skip it
+      break;
+
       case SI_LF:
         _bufRead[_lenRead] = SI_NULLCHAR;
 
         if (_lenRead > 0){
           _lenRead = 0;                           
         }
+        
       break;
 
       case SI_BS:                                    
