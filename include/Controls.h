@@ -6,6 +6,7 @@
 
 //Change commands
 #define EEMC_NONE        0x00   //Nothing changed
+#define EEMC_ERROR       0xFF   //Input error
 
 ///////////////////////////////////
 // Control flags
@@ -15,6 +16,8 @@
 #define CTF_VAL_DELTA   0x02  //Value is delta
 #define CTF_VAL_NEXT    0x03  //Go next - in cycles
 #define CTF_VAL_PREV    0x04  //Go previous - in cycles
+
+
 
 
 ////////////////////////////////////
@@ -62,6 +65,7 @@ struct CtrlQueueData{
 // Control queue element
 struct CtrlQueueItem {
   uint8_t       cmd;    // Command
+  uint8_t       error;  //Error
   CtrlQueueData data;   // Data
 
   CtrlQueueItem(){

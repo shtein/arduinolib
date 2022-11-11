@@ -55,12 +55,12 @@ uint8_t FunctionName(char *cmdLine, CtrlQueueData &data){ \
   char  *tokens[MAX_TOKENS + 1]; \
   memset(tokens, 0, sizeof(tokens)); \
   if(!getTokens(cmdLine, tokens, MAX_TOKENS)){ \
-    return EEMC_NONE; \
+    return EEMC_ERROR; \
   } \
   int8_t index = -1;
 
 #define END_PARSE_ROUTINE() \
-  return EEMC_NONE; \
+  return EEMC_ERROR; \
 }
 
 #define _IF_TOKEN_MATCH(a, b) if(checkTokenMatch(a, PSTR(b)) ) \
