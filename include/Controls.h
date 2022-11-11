@@ -65,7 +65,6 @@ struct CtrlQueueData{
 // Control queue element
 struct CtrlQueueItem {
   uint8_t       cmd;    // Command
-  uint8_t       error;  //Error
   CtrlQueueData data;   // Data
 
   CtrlQueueItem(){
