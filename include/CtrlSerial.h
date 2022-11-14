@@ -104,7 +104,7 @@ uint8_t FunctionName(char *cmdLine, CtrlQueueData &data){ \
 //Final, noithing after it, there are token and value
 #define TOKEN_IS_PAIR(token, cmd, ...) \
   _BEGIN_TOKEN(token) \
-    TOKEN_IS_NUMBER(cmd) \
+    TOKEN_IS_NUMBER(cmd, ##__VA_ARGS__) \
   _END_TOKEN()
 
 
