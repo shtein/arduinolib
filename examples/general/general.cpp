@@ -23,6 +23,7 @@ BEGIN_PARSE_ROUTINE(TestParse)
         TOKEN_IS_TEXT("next|n|", 16, 1)
         TOKEN_IS_TEXT("prev|p", 17, 2)
         TOKEN_IS_NUMBER(15)
+        TOKEN_IS_PAIR("color|c", 30)
     END_GROUP_TOKEN()
   END_GROUP_TOKEN();
   

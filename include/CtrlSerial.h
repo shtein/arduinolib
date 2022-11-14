@@ -66,40 +66,46 @@ uint8_t FunctionName(char *cmdLine, CtrlQueueData &data){ \
 #define _IF_TOKEN_MATCH(a, b) if(checkTokenMatch(a, PSTR(b)) ) \
 
 #define _BEGIN_TOKEN(token) \
-    index ++; \
-    _IF_TOKEN_MATCH(tokens[index], token){ 
+  index ++; \
+  _IF_TOKEN_MATCH(tokens[index], token){ 
     
 #define _END_TOKEN() \
-    } \
-    index --;
+  } \
+  index --;
 
 //Group token
 #define BEGIN_GROUP_TOKEN(token, ...) \
-    _BEGIN_TOKEN(token) \
-      if(!tokens[index + 1]) { \
-        CQD_SET_DATA(data, ##__VA_ARGS__) \
-      }
+  _BEGIN_TOKEN(token) \
+    if(!tokens[index + 1]) { \
+      CQD_SET_DATA(data, ##__VA_ARGS__) \
+    }
                 
 #define END_GROUP_TOKEN() _END_TOKEN()
     
 //Final token, nothing after it, it is a fixed string    
 #define TOKEN_IS_TEXT(token, cmd, ...) \
-    _BEGIN_TOKEN(token) \
-      if(!tokens[index + 1]) { \
-         CQD_SET_DATA(data, cmd, ##__VA_ARGS__) \
-      } \
-    _END_TOKEN()
+  _BEGIN_TOKEN(token) \
+    if(!tokens[index + 1]) { \
+        CQD_SET_DATA(data, cmd, ##__VA_ARGS__) \
+    } \
+  _END_TOKEN()
 
+//Final, nothing after it, it is a number
 #define TOKEN_IS_NUMBER(cmd, ...) \
-      index ++; \
-      if(!tokens[index + 1]) { \
-        int n; \
-        if(strToInt(tokens[index], n)){ \
-          CQD_SET_DATA(data, cmd, n, ##__VA_ARGS__) \
-        } \
-      } \
-      index --;  
+  index ++; \
+  if(!tokens[index + 1]) { \
+    int n; \
+    if(strToInt(tokens[index], n)){ \
+      CQD_SET_DATA(data, cmd, n, ##__VA_ARGS__) \
+    } \
+  } \
+  index --;  
 
+//Final, noithing after it, there are token and value
+#define TOKEN_IS_PAIR(token, cmd, ...) \
+  _BEGIN_TOKEN(token) \
+    TOKEN_IS_NUMBER(cmd) \
+  _END_TOKEN()
 
 
 /*
