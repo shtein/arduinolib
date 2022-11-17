@@ -99,7 +99,7 @@ void setup() {
   DBG_OUTLN("%d, %d, %d, %s", s1.ver, s1.val1, s1.val2, s1.str);
 
   {
-    EEPROMConf cfg;
+    EEPROMCfg cfg;
     cfg.write(&s1, sizeof(S1));
     
     s1.ver = 2;
@@ -110,7 +110,7 @@ void setup() {
   memset(&s1, 0, sizeof(S1));
 
   { 
-    EEPROMConf cfg;
+    EEPROMCfg cfg;
     cfg.read(&s1, sizeof(S1));
     DBG_OUTLN("%d, %d, %d, %s", s1.ver, s1.val1, s1.val2, s1.str);
     cfg.read(&s1, sizeof(S1));

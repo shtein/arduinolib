@@ -4,9 +4,9 @@
 ////////////////////////////////
 // EEPROMConf
 
-class EEPROMConf{
+class EEPROMCfg{
 public:
-  EEPROMConf();
+  EEPROMCfg();
 
   bool read(void *p, size_t size);        //read block
   bool write(const void *p, size_t size); //write block
@@ -18,10 +18,10 @@ public:
   bool write(const T &t){ return write(&t, sizeof(T));}
 
   template<typename T>
-  EEPROMConf & operator >> (T &t){ read(t); return *this; }
+  EEPROMCfg & operator >> (T &t){ read(t); return *this; }
 
   template<typename T>
-  EEPROMConf & operator << (const T &t){ write(t); return *this; }
+  EEPROMCfg & operator << (const T &t){ write(t); return *this; }
 
 private:
   size_t _index;  //EEPROM cell index

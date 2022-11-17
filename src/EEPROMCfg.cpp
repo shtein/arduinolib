@@ -9,11 +9,11 @@
 
 /////////////////////////////////
 // EEPROMConf
-EEPROMConf::EEPROMConf(){  
+EEPROMCfg::EEPROMCfg(){  
   _index = 0;
 }
 
-bool EEPROMConf::read(void *p, size_t size){  
+bool EEPROMCfg::read(void *p, size_t size){  
   uint8_t *cur = (uint8_t *)p;
 
   //Read byte by byte
@@ -25,7 +25,7 @@ bool EEPROMConf::read(void *p, size_t size){
   return true;
 }
 
-bool EEPROMConf::write(const void *p, size_t size){
+bool EEPROMCfg::write(const void *p, size_t size){
   const uint8_t *cur = (uint8_t *)p;
 
   //Write byte by byte if different from what is in EEProm cell
