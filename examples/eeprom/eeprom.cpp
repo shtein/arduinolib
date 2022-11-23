@@ -1,8 +1,7 @@
 #include <Arduino.h>
 #include <DbgTool.h>
-#include <AnalogInput.h>
-#include <CtrlSerial.h>
 #include <EEPROMCfg.h>
+
 
 void setup() {
   DBG_INIT();

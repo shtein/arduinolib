@@ -9,8 +9,8 @@
 
 /////////////////////////////////
 // EEPROMConf
-EEPROMCfg::EEPROMCfg(){  
-  _index = 0;
+EEPROMCfg::EEPROMCfg(size_t index){  
+  _index = index;
 }
 
 bool EEPROMCfg::read(void *p, size_t size){  

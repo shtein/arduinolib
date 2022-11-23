@@ -6,7 +6,7 @@
 
 class EEPROMCfg{
 public:
-  EEPROMCfg();
+  EEPROMCfg(size_t index = 0);
 
   bool read(void *p, size_t size);        //read block
   bool write(const void *p, size_t size); //write block
@@ -22,6 +22,8 @@ public:
 
   template<typename T>
   EEPROMCfg & operator << (const T &t){ write(t); return *this; }
+
+  void moveTo(size_t index){ _index = index; }
 
 private:
   size_t _index;  //EEPROM cell index
