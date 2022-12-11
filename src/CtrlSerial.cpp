@@ -6,32 +6,6 @@
 #include "DbgTool.h"
 
 
-//////////////////////////////
-// CtrlItemSerial
-CtrlItemSerial::CtrlItemSerial(SerialInput *input, FuncParseCmd_t funcParse): 
-  CtrlItem(EEMC_NONE, input){    
-    _funcParse = funcParse;
-}
-
-CtrlItemSerial::~CtrlItemSerial(){  
-}
-
-bool CtrlItemSerial::triggered() const{
-  return ((SerialInput *)_input)->isReady();
-}
-
-void CtrlItemSerial::getData(CtrlQueueData &data){  
-  char *cmdLine = ((SerialInput *)_input)->getCommandLine();
-
-  if( cmdLine ){
-    //Buffer is ready
-    _cmd = _funcParse ? _funcParse(cmdLine, data) : EEMC_NONE;     
-    cmdLine[0] = 0;
-  }
-  else {
-    _cmd = EEMC_NONE;
-  }
-}
 
 //////////////////////////////////////////
 //Parser Helpers

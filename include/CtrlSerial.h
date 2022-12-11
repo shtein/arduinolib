@@ -9,21 +9,31 @@
 // Control from serial buffer
 // Multi-command interface
 
-class SerialInput;
-typedef uint8_t (*FuncParseCmd_t) (char *cmdLine, CtrlQueueData &data);
-
+template<uint8_t (*PARSER) (char *cmdLine, CtrlQueueData &data)>
 class CtrlItemSerial: public CtrlItem, public NtfSerial {
   public:
-    CtrlItemSerial(SerialInput *input, FuncParseCmd_t funcParse);
-    ~CtrlItemSerial();
+    CtrlItemSerial(SerialInput *input):
+      CtrlItem(EEMC_NONE, input) {   
+    }
 
   protected:
     // CtrlItem functions
-    bool triggered() const;
-    void getData(CtrlQueueData &data);    
+    bool triggered() const{     
+      return ((SerialInput *)_input)->isReady(); 
+    }
 
-  protected:
-    FuncParseCmd_t _funcParse;
+    void getData(CtrlQueueData &data){     
+      char *cmdLine = ((SerialInput *)_input)->getCommandLine();
+
+      if( cmdLine ){
+        //Buffer is ready
+        _cmd = PARSER(cmdLine, data);     
+        cmdLine[0] = 0;
+      }
+      else {
+        _cmd = EEMC_NONE;
+      } 
+    }    
 };
 
 //Helpers for creating parser function for SerialInput 

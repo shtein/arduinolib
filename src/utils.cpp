@@ -21,3 +21,17 @@ long mapEx( long x, long in_min, long in_max, long out_min, long out_max ){
 
   return (x - in_min) * out_range / in_range + out_min;
 }
+
+
+int powInt(int x, int y, int limit){
+  int n = 1;
+
+  if(y > limit)
+    y = limit;
+  
+  for(int i = 0; i < y; i++){
+    n = n * x;
+  }
+
+  return n; 
+}

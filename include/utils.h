@@ -4,6 +4,19 @@
 //Map function
 long mapEx( long x, long in_min, long in_max, long out_min, long out_max ); 
 
+//Use with millis function and to save on unsigned long 
+template<typename T>
+bool cmpWithOverflow(T t, uint32_t c, T delta){  
+  T t1 = (T)c;
+
+  if(t1 > t)
+    return t1 - t >= delta;
+  
+  return t1 + (T)(1-2) - t >= delta;
+}
+
+//Pow for integers
+int powInt(int x, int y, int limit);
 
 //Macro for handndling variable number of arguments
 #define TOKEN_CONCAT(x, y) TOKEN_CONCAT_(x, y)
@@ -11,7 +24,6 @@ long mapEx( long x, long in_min, long in_max, long out_min, long out_max );
 
 #define GET_NTH_ARG(P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, N,...) N
 #define NUM_ARGS(...) GET_NTH_ARG(, ##__VA_ARGS__ ,9, 8, 7, 6, 5, 4, 3, 2, 1, 0)
-
 
 #define ARG_NUM_1(P1, ...) P1
 #define ARG_NUM_2(P1, P2, ...) P2

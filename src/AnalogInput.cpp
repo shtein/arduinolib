@@ -20,8 +20,7 @@ AnalogInput::AnalogInput(uint8_t pin){
   _value      = analogRead(_pin);
 }
 
-AnalogInput::~AnalogInput(){
-  
+AnalogInput::~AnalogInput(){  
 }
 
 void AnalogInput::read(){ 
@@ -221,7 +220,6 @@ void IRRemoteRecv::read(){
 
   //Check if we are waiting for receiver or for resuming receiver
   if (_millis == 0) { 
-
 
     //Stupid workaround for ws2811, ws2812 and ws2812b where internal clock conflicts with interrups required for IR receiver
     //See https://github.com/Fa9876rdstLED/FastLED/issues/198

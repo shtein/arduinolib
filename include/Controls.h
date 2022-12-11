@@ -2,6 +2,7 @@
 #define __CONTROLS_H
 
 #include "ControlCtx.h"
+#include "AnalogInput.h"
 
 
 //Change commands
@@ -82,8 +83,6 @@ struct CtrlQueueItem {
 //////////////////////////////////////////
 // ProcessControl - base class'
 
-class BaseInput;
-
 class CtrlItem{
   public:
     CtrlItem(uint8_t cmd, BaseInput *input);
@@ -103,20 +102,27 @@ class CtrlItem{
 
 ////////////////////////////////
 // Push button control, reacts on either short click, long click or long push
-class PushButton;
 
+template <const uint8_t CTRL = PB_CONTROL_CLICK,  const uint8_t FLAG = CTF_VAL_NEXT>
 class CtrlItemPb: public CtrlItem{
   public:
-    CtrlItemPb(uint8_t cmd, PushButton *input, uint8_t ctrl = PB_CONTROL_CLICK, uint8_t flag = CTF_VAL_NEXT, int8_t value = 0);
-   ~CtrlItemPb();
+    CtrlItemPb(uint8_t cmd, PushButton *input, int8_t value = 0):
+      CtrlItem(cmd, input){
+      _value = value;
+    }
 
   protected:
-    bool triggered() const;
-    void getData(CtrlQueueData &data);
+    bool triggered() const{
+      return ((PushButton *)getInput())->value(CTRL);
+    }
+    void getData(CtrlQueueData &data){
+      data.flag  = FLAG;
+      data.value = _value;
+      data.min   = 0;
+      data.max   = 0;
+    }
 
   protected:
-    uint8_t _flag:4;
-    uint8_t _ctrl:4;
     int8_t  _value;
 };
 
@@ -129,82 +135,133 @@ class CtrlItemPb: public CtrlItem{
 
 #define POT_NOISE_THRESHOLD 3
 
-class AnalogInput;
+#define POT_MARGIN_MAX          500
+#define POT_NOISE_THRESHOLD_MAX 16
 
+#define alfa 0.5
+
+
+template <const uint16_t NOISE_THRESHOLD = POT_NOISE_THRESHOLD, 
+         const uint16_t LOWER_MARGIN = POT_LOWER_MARGIN,
+         const uint16_t UPPER_MARGIN = POT_UPPER_MARGIN >
 class CtrlItemPtmtr: public CtrlItem{
   public:
-    CtrlItemPtmtr(uint8_t cmd, AnalogInput *ptn, 
-                  uint16_t noiseThreshold = POT_NOISE_THRESHOLD,
-                  uint16_t lowerMargin = POT_LOWER_MARGIN,
-                  uint16_t upperMargin = POT_UPPER_MARGIN );
-   ~CtrlItemPtmtr();
+    CtrlItemPtmtr(uint8_t cmd, AnalogInput *ptn):
+      CtrlItem(cmd, ptn){
+     _value          = POT_MAX; //just to make sure it is different from what we read
+    }
 
   protected:
-    bool triggered() const;
-    void getData(CtrlQueueData &data);
+    bool triggered() const{
+      uint16_t value = getValue(); 
+      return (abs(value - _value) >  min(NOISE_THRESHOLD, 
+                                         min(value - POT_MIN + LOWER_MARGIN, POT_MAX - UPPER_MARGIN - value)
+                                        )
+             ); 
+    }
 
-    uint16_t getValue() const;
+    void getData(CtrlQueueData &data){
+      _value  = getValue();
+      
+      data.flag  = CTF_VAL_ABS;
+      data.min   = POT_MIN + LOWER_MARGIN;
+      data.max   = POT_MAX - UPPER_MARGIN;
+      data.value = _value;
+
+      if(data.value < data.min)
+        data.value = data.min;
+      else if (data.value > data.max)
+        data.value = data.max;
+    }
+
+    uint16_t getValue() const{
+      uint16_t value = _value * alfa + (1 - alfa) * ((AnalogInput *)getInput())->value() + 0.5;
+
+      if(value < LOWER_MARGIN)
+        value = LOWER_MARGIN;
+
+      if(value > POT_MAX - UPPER_MARGIN)
+        value = POT_MAX - UPPER_MARGIN;
+
+      return value;
+    }
 
   protected:
-   uint16_t  _value:10;
-   uint16_t  _noiseThreshold:4;
-   uint16_t  _lowerMargin:9;
-   uint16_t  _upperMargin:9;
+   uint16_t  _value;
 };
 
 ///////////////////////////////
 // CtrlSwicth2Pos - two position swicth - digital input
-class Switch2Pos;
 
 class CtrlSwicth2Pos: public CtrlItem{
   public:
-    CtrlSwicth2Pos(uint8_t cmd, Switch2Pos *sw);
-    ~CtrlSwicth2Pos();
+    CtrlSwicth2Pos(uint8_t cmd, Switch2Pos *sw):
+      CtrlItem(cmd, sw){        
+      //Make sure first trigger works
+      _value = !((Switch2Pos *)getInput())->value();
+    }
 
   protected:
-    bool triggered() const;
-    void getData(CtrlQueueData &data);
+    bool triggered() const{
+      return _value != ((Switch2Pos *)getInput())->value();
+    }
+
+    void getData(CtrlQueueData &data){
+      _value = ((Switch2Pos *)getInput())->value();
+
+      data.flag  = CTF_VAL_ABS;
+      data.value = _value;
+      data.min   = 0;
+      data.max   = 0;
+    }
 
   protected:
     bool _value; 
 };
 
 
-//////////////////////////////
-// CtrlMic - analog input is Microphone - AnalogInput
-class CtrlMic: public CtrlItem{
-  public:
-    CtrlMic(uint8_t cmd, AnalogInput *mic);
-    ~CtrlMic();
-
-   protected:
-    bool triggered() const;
-    void getData(CtrlQueueData &data);
-};
-
-
 #ifdef USE_IR_REMOTE
+
 //////////////////////////////
 // CtrlItemIRBtn - analog input is one IR remote buttons
 // Returns returns delta
 // dir - direction (true is positive, false is negative)
 // repeat - button repeat limit, 0 = single push, same as next or prev
-class IRRemoteRecv;
 
-
+template<const unsigned long BTN, const bool DIR = TRUE, const uint8_t REPEAT = 0>
 class CtrlItemIRBtn: public CtrlItem{
   public:
-    CtrlItemIRBtn(uint8_t cmd, IRRemoteRecv *ir, unsigned long btn, bool dir = true, uint8_t repeat = 0);
+    CtrlItemIRBtn(uint8_t cmd, IRRemoteRecv *ir):
+      CtrlItem(cmd, ir){
+
+    }
+
     ~CtrlItemIRBtn();
 
    protected:
-    bool triggered() const;
-    void getData(CtrlQueueData &data);
+    bool triggered() const{
+      int n = ((IRRemoteRecv *)getInput())->pushed(BTN);
 
-  protected:
-    uint16_t _btn; //Making it 16 bit instead of 32 to save some memory for uno and nano. For the purpose of the remote key recognition first leading FFs are stripped
-    uint8_t  _dir:1;
-    uint8_t  _repeat:7;
+      //Not pushed
+      if(n == 0) {
+        return false;
+      }
+  
+      //Single click button
+      if(n > 1 && REPEAT == 0){
+        return false;
+      }
+  
+      //Pushed
+      return true;
+    }
+
+    void getData(CtrlQueueData &data){
+      data.flag  = REPEAT > 0 ? CTF_VAL_DELTA : (DIR ? CTF_VAL_NEXT: CTF_VAL_PREV ); 
+      data.value = (DIR ? 1 : -1) * powInt(2, ((IRRemoteRecv *)getInput())->pushed(BTN) - 1, REPEAT);
+      data.min   = 0;
+      data.max   = 0;
+    }
 };
 
 #endif //USE_IR_REMOTE
@@ -215,19 +272,24 @@ class CtrlItemIRBtn: public CtrlItem{
 
 #define ROTECT_DEFAULT_INC 10 //Default incremement value
 
-class RotaryEncoder;
-
+template <const uint8_t INC = ROTECT_DEFAULT_INC>
 class CtrlItemRotEnc: public CtrlItem{
   public:
-    CtrlItemRotEnc(uint8_t cmd, RotaryEncoder *re, uint8_t inc = ROTECT_DEFAULT_INC);
-    ~CtrlItemRotEnc();
+    CtrlItemRotEnc(uint8_t cmd, RotaryEncoder *re):
+      CtrlItem(cmd, re){        
+    }
 
   protected:
-    bool triggered() const;
-    void getData(CtrlQueueData &data);  
+    bool triggered() const{
+      return ((RotaryEncoder *)getInput())->value() != 0;
+    }
 
-  protected: 
-    uint8_t  _inc;
+    void getData(CtrlQueueData &data){
+       data.flag  = CTF_VAL_DELTA;
+      data.value = ((RotaryEncoder *)getInput())->value() * INC;  
+      data.min   = 0;
+      data.max   = 0;
+    } 
 };
 
 
@@ -236,8 +298,12 @@ class CtrlItemRotEnc: public CtrlItem{
 ////////////////////////////////////////
 // EffectControlPanel
 
-#define MAX_CONTROLS 20
-#define MAX_INPUTS   10
+#ifndef MAX_CONTROLS
+  #define MAX_CONTROLS 20
+#endif
+#ifndef MAX_INPUTS
+  #define MAX_INPUTS   10
+#endif
 
 class CtrlPanel{
   public:

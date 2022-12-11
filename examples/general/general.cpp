@@ -62,16 +62,26 @@ void setup() {
 
   DBG_OUTLN("Started");
 
-  SerialInput   serial;
-  CtrlItemSerial ctrl(&serial, TestParse);
+  static SerialInput serial;
+  static CtrlItemSerial<TestParse> ctrlSr(&serial);
+  
 
-  CtrlPanel panel;
-  panel.addControl(&ctrl);
+  static CtrlPanel panel;
+  panel.addControl(&ctrlSr);
 
-  NtfSet set;
-  set.addNtf(&ctrl);
+  static NtfSet set;
+  set.addNtf(&ctrlSr);
 
-  CtrlQueueItem itm;
+  static PushButton btn(10);  
+  static CtrlItemPb<PB_CONTROL_CLICK_LONG> ctrlPb(33, &btn);
+  panel.addControl(&ctrlPb);
+
+  AnalogInput ai(5);
+  CtrlItemPtmtr<> ptmr(10, &ai);
+
+
+
+  static CtrlQueueItem itm;
 
   for(;;){
     
@@ -80,7 +90,6 @@ void setup() {
     if(itm.cmd != EEMC_NONE){      
             
       set.put_F(F("response"), itm.cmd);
-
     }  
   }
 
