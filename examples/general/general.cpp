@@ -5,6 +5,7 @@
 #include <EEPROMCfg.h>
 
 
+
 BEGIN_PARSE_ROUTINE(TestParse)
 
   BEGIN_GROUP_TOKEN("mode|m")  
@@ -58,6 +59,7 @@ typedef NtfBaseSet<MAX_NTF> NtfSet;
 
 
 void setup() {
+
   DBG_INIT();
 
   DBG_OUTLN("Started");
@@ -92,8 +94,6 @@ void setup() {
       set.put_F(F("response"), itm.cmd);
     }  
   }
-
-
 }
 
 

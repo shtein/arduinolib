@@ -126,7 +126,6 @@ void PushButton::read(){
 
   //Read signal
   readValue();
-  
 }
 
 void PushButton::readValue(){

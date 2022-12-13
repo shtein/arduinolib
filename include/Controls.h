@@ -19,8 +19,6 @@
 #define CTF_VAL_PREV    0x04  //Go previous - in cycles
 
 
-
-
 ////////////////////////////////////
 // Control queue data
 struct CtrlQueueData{
@@ -76,10 +74,6 @@ struct CtrlQueueItem {
 };
 
 
-
-
-
-
 //////////////////////////////////////////
 // ProcessControl - base class'
 
@@ -128,18 +122,6 @@ class CtrlItemPb: public CtrlItem{
 
 ////////////////////////////////
 // CtrlItemPtmtr - analog input is Potentiometer - AnalogInput
-#define POT_MIN             0
-#define POT_MAX             1023
-#define POT_LOWER_MARGIN    10
-#define POT_UPPER_MARGIN    10
-
-#define POT_NOISE_THRESHOLD 3
-
-#define POT_MARGIN_MAX          500
-#define POT_NOISE_THRESHOLD_MAX 16
-
-#define alfa 0.5
-
 
 template <const uint16_t NOISE_THRESHOLD = POT_NOISE_THRESHOLD, 
          const uint16_t LOWER_MARGIN = POT_LOWER_MARGIN,
@@ -153,10 +135,10 @@ class CtrlItemPtmtr: public CtrlItem{
 
   protected:
     bool triggered() const{
-      uint16_t value = getValue(); 
-      return (abs(value - _value) >  min(NOISE_THRESHOLD, 
-                                         min(value - POT_MIN + LOWER_MARGIN, POT_MAX - UPPER_MARGIN - value)
-                                        )
+      int16_t value = (int16_t)getValue(); 
+      return (abs(value - (int16_t)_value) >  min(NOISE_THRESHOLD, 
+                                                  min(value - POT_MIN + LOWER_MARGIN, POT_MAX - UPPER_MARGIN - value)
+                                                )
              ); 
     }
 
@@ -167,23 +149,12 @@ class CtrlItemPtmtr: public CtrlItem{
       data.min   = POT_MIN + LOWER_MARGIN;
       data.max   = POT_MAX - UPPER_MARGIN;
       data.value = _value;
-
-      if(data.value < data.min)
-        data.value = data.min;
-      else if (data.value > data.max)
-        data.value = data.max;
     }
 
     uint16_t getValue() const{
-      uint16_t value = _value * alfa + (1 - alfa) * ((AnalogInput *)getInput())->value() + 0.5;
+      uint16_t value = ( _value + ((AnalogInput *)getInput())->value() ) / 2;
 
-      if(value < LOWER_MARGIN)
-        value = LOWER_MARGIN;
-
-      if(value > POT_MAX - UPPER_MARGIN)
-        value = POT_MAX - UPPER_MARGIN;
-
-      return value;
+      return value < POT_MIN + LOWER_MARGIN ? POT_MIN + LOWER_MARGIN : value > POT_MAX - UPPER_MARGIN ? POT_MAX - UPPER_MARGIN : value;
     }
 
   protected:
@@ -192,7 +163,6 @@ class CtrlItemPtmtr: public CtrlItem{
 
 ///////////////////////////////
 // CtrlSwicth2Pos - two position swicth - digital input
-
 class CtrlSwicth2Pos: public CtrlItem{
   public:
     CtrlSwicth2Pos(uint8_t cmd, Switch2Pos *sw):
@@ -285,7 +255,7 @@ class CtrlItemRotEnc: public CtrlItem{
     }
 
     void getData(CtrlQueueData &data){
-       data.flag  = CTF_VAL_DELTA;
+      data.flag  = CTF_VAL_DELTA;
       data.value = ((RotaryEncoder *)getInput())->value() * INC;  
       data.min   = 0;
       data.max   = 0;
