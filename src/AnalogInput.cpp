@@ -314,6 +314,11 @@ int RotaryEncoder::value() const{
 ///////////////////////////////////
 // Serial input
 SerialInput::SerialInput(){  
+  //Init serial
+  Serial.begin(57600);
+    while (!Serial);  
+
+  //Reset data
   reset();
 }
 
