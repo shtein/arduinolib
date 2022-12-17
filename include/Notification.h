@@ -32,6 +32,7 @@ public:
   virtual void put(const char *key, int8_t v) = 0;
   virtual void put(const char *key, int16_t v) = 0;
   virtual void put(const char *key, const char *v) = 0;
+  void put(const char *key, const __FlashStringHelper *v);
 
   template <class T>
   void put(const char *key, const T &t);
@@ -101,6 +102,19 @@ void NtfBase::put(const char *key, const T *t, size_t size){
   }
 
   endArray(key);
+}
+
+inline void NtfBase::put(const char *key, const __FlashStringHelper *v){
+  char buf[16]; 
+
+  if(v){  
+    strncpy_P(buf, (const char *)v, sizeof(buf) - 1);
+  }
+  else{
+    buf[0] = 0;
+  }
+
+  put(key, (const char *)buf);
 }
 
 
