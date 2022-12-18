@@ -136,10 +136,11 @@ class CtrlItemPtmtr: public CtrlItem{
   protected:
     bool triggered() const{
       int16_t value = (int16_t)getValue(); 
+      
       return (abs(value - (int16_t)_value) >  min(NOISE_THRESHOLD, 
                                                   min(value - POT_MIN + LOWER_MARGIN, POT_MAX - UPPER_MARGIN - value)
                                                 )
-             ); 
+             );     
     }
 
     void getData(CtrlQueueData &data){
@@ -151,14 +152,23 @@ class CtrlItemPtmtr: public CtrlItem{
       data.value = _value;
     }
 
-    uint16_t getValue() const{
-      uint16_t value = ( _value + ((AnalogInput *)getInput())->value() ) / 2;
+    uint16_t getValue() const{    
 
-      return value < POT_MIN + LOWER_MARGIN ? POT_MIN + LOWER_MARGIN : value > POT_MAX - UPPER_MARGIN ? POT_MAX - UPPER_MARGIN : value;
+      uint16_t value = ( _value + ((AnalogInput *)getInput())->value() ) / 2;
+      if(_value > value && value > 0)
+        value -= 1;
+      else if(_value < value)
+        value += 1;
+
+
+      return value < POT_MIN + LOWER_MARGIN ? 
+                       POT_MIN + LOWER_MARGIN : value > POT_MAX - UPPER_MARGIN ? 
+                        POT_MAX - UPPER_MARGIN : value;
+
     }
 
   protected:
-   uint16_t  _value;
+    uint16_t  _value;
 };
 
 ///////////////////////////////
