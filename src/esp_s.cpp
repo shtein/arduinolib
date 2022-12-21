@@ -1,4 +1,6 @@
 #include "arduinolib.h"
+
+#include <string.h>
 #include "esp_s.h"
 
 //Support for ESP8266, ESP32 etc

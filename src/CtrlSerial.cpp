@@ -3,6 +3,7 @@
 #include <Arduino.h>
 #include "AnalogInput.h"
 #include "CtrlSerial.h"
+#include "esp_s.h"
 #include "DbgTool.h"
 
 
