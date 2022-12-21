@@ -19,7 +19,6 @@ bool EEPROMCfg::read(void *p, size_t size){
   //Read byte by byte
   for(size_t i = 0; i < size; i++, cur++, _index ++){
     *cur = eeprom_read_byte( (uint8_t*) _index );
-    
   }
 
   return true;
