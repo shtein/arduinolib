@@ -53,7 +53,7 @@ void SoundCaptureMSGEQ7::getData(uint8_t *bands,
   digitalWrite(_pinReset, HIGH); 
   digitalWrite(_pinReset, LOW);
 
-  numBands = min(numBands, MSGEQ7_BANDS);
+  numBands = min(numBands, (uint16_t)MSGEQ7_BANDS);
 
   for(uint8_t i = 0; i < numBands; i++){
     //Prepare
