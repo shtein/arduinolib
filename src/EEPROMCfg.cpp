@@ -15,12 +15,21 @@
 
 
 #if defined(ESP8266) || defined(ESP32)
-uint8_t eeprom_read_byte (const uint8_t *__p){
-  return 0; 
+
+#define ESP_FLASH_ADDR(addr) (EEPROM_start - 0x40200000 + addr)
+
+uint8_t eeprom_read_byte (const uint8_t *p){
+  uint8_t value = 0;
+
+  //Read from flash
+  flash_hal_write( ESP_FLASH_ADDR( *((size_t *)p)), sizeof(value), &value); 
+
+  return value; 
 }
 
-void eeprom_write_byte (uint8_t *__p, uint8_t __value){
-
+void eeprom_write_byte (uint8_t *p, uint8_t value){
+  //Write to flash
+  flash_hal_write(ESP_FLASH_ADDR( *((size_t *)p)), sizeof(value), &value);
 }
 
 #endif
