@@ -1,10 +1,29 @@
 #include "arduinolib.h"
 
 #include <Arduino.h>
+
+
+#if defined(ESP8266) || defined(ESP32)
+#include <flash_hal.h>
+#else
 #include <avr/eeprom.h>
 #include <avr/io.h>
+#endif 
+
 #include "EEPROMCfg.h"
 #include "DbgTool.h"
+
+
+#if defined(ESP8266) || defined(ESP32)
+uint8_t eeprom_read_byte (const uint8_t *__p){
+  return 0; 
+}
+
+void eeprom_write_byte (uint8_t *__p, uint8_t __value){
+
+}
+
+#endif
 
 
 /////////////////////////////////
@@ -21,6 +40,7 @@ bool EEPROMCfg::read(void *p, size_t size){
     *cur = eeprom_read_byte( (uint8_t*) _index );
   }
 
+  
   return true;
 }
 

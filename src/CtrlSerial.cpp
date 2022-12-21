@@ -15,6 +15,8 @@ const char * 	strchr_P (const char *p, int __val){
 
   return strstr_P(p, b);
 }
+
+
 #endif
 
 
