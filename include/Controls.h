@@ -138,7 +138,7 @@ class CtrlItemPtmtr: public CtrlItem{
       int16_t value = (int16_t)getValue(); 
       
       return (abs(value - (int16_t)_value) >  min(NOISE_THRESHOLD, 
-                                                  min(value - POT_MIN + LOWER_MARGIN, POT_MAX - UPPER_MARGIN - value)
+                                                  (uint16_t)min(value - POT_MIN + LOWER_MARGIN, POT_MAX - UPPER_MARGIN - value)
                                                 )
              );     
     }
