@@ -98,12 +98,11 @@ class CtrlItem{
 ////////////////////////////////
 // Push button control, reacts on either short click, long click or long push
 
-template <const uint8_t CTRL = PB_CONTROL_CLICK,  const uint8_t FLAG = CTF_VAL_NEXT>
+template <const uint8_t CTRL = PB_CONTROL_CLICK,  const uint8_t FLAG = CTF_VAL_NEXT, const uint8_t VALUE = 0>
 class CtrlItemPb: public CtrlItem{
   public:
-    CtrlItemPb(uint8_t cmd, PushButton *input, int8_t value = 0):
+    CtrlItemPb(uint8_t cmd, PushButton *input):
       CtrlItem(cmd, input){
-      _value = value;
     }
 
   protected:
@@ -112,13 +111,10 @@ class CtrlItemPb: public CtrlItem{
     }
     void getData(CtrlQueueData &data){
       data.flag  = FLAG;
-      data.value = _value;
+      data.value = VALUE;
       data.min   = 0;
       data.max   = 0;
     }
-
-  protected:
-    int8_t  _value;
 };
 
 ////////////////////////////////
