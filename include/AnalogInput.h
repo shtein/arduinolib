@@ -114,8 +114,8 @@ class IRRemoteRecv: public BaseInput {
     IRrecv         _recv;          
     unsigned long  _millis;
     unsigned long  _value; 
-    uint16_t       _repeat:7;
-    uint16_t       _pushed:1;
+    uint8_t       _repeat:7;
+    uint8_t       _pushed:1;
 };
 
 #endif //USE_IR_REMOTE

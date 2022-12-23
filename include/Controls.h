@@ -3,6 +3,7 @@
 
 #include "ControlCtx.h"
 #include "AnalogInput.h"
+#include "utils.h"
 
 
 //Change commands
@@ -208,7 +209,7 @@ class CtrlSwicth2Pos: public CtrlItem{
 // dir - direction (true is positive, false is negative)
 // repeat - button repeat limit, 0 = single push, same as next or prev
 
-template<const unsigned long BTN, const bool DIR = TRUE, const uint8_t REPEAT = 0>
+template<const unsigned long BTN, const bool DIR = true, const uint8_t REPEAT = 0>
 class CtrlItemIRBtn: public CtrlItem{
   public:
     CtrlItemIRBtn(uint8_t cmd, IRRemoteRecv *ir):
