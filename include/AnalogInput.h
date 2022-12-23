@@ -79,7 +79,7 @@ class PushButton: public BaseInput{
 // Simple IR Receiver for Keyes remote
 #ifdef USE_IR_REMOTE
 
-//#include <IRremoteInt.h>
+#include <IRremoteInt.h>
 
 //Keys
 #define RKEY_REPEAT 0xFFFFFFFF
