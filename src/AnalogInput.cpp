@@ -63,7 +63,7 @@ bool Switch2Pos::value() const{
 
 PushButton::PushButton(uint8_t pin){
   _pin            = pin;
-   pinMode(_pin, INPUT);
+   pinMode(_pin, INPUT_PULLUP);
    digitalWrite(_pin, HIGH);  
   _value          = digitalRead(_pin); 
   _valueOff       = digitalRead(_pin); //Remember initial state
@@ -314,6 +314,9 @@ int RotaryEncoder::value() const{
 ///////////////////////////////////
 // Serial input
 SerialInput::SerialInput(){  
+  //In case it was already initialized
+  Serial.end(); 
+
   //Init serial
   Serial.begin(57600);
     while (!Serial);  

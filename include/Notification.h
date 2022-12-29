@@ -29,8 +29,10 @@ public:
   //Primitives
   virtual void put(const char *key, uint8_t v) = 0;
   virtual void put(const char *key, uint16_t v) = 0;
+  virtual void put(const char *key, uint32_t v) = 0;
   virtual void put(const char *key, int8_t v) = 0;
-  virtual void put(const char *key, int16_t v) = 0;
+  virtual void put(const char *key, int16_t v) = 0;  
+  virtual void put(const char *key, int32_t v) = 0;  
   virtual void put(const char *key, const char *v) = 0;
   void put(const char *key, const __FlashStringHelper *v);
 
@@ -226,8 +228,10 @@ public:
 
   void put(const char *key, uint8_t v);
   void put(const char *key, uint16_t v);
+  void put(const char *key, uint32_t v);
   void put(const char *key, int8_t v);
-  void put(const char *key, int16_t v);
+  void put(const char *key, int16_t v);  
+  void put(const char *key, int32_t v);
   void put(const char *key, const char *v);
 
 private:

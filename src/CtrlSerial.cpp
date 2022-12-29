@@ -8,12 +8,11 @@
 //Support for ESP8266, ESP32 etc
 #if defined(ESP8266) || defined(ESP32)
 
-const char * 	strchr_P (const char *p, int __val){
-  char b[2];
-  b[0] = (char)__val;
-  b[1] = 0;
+const char * 	strchr_P (const char *p, int val){
+  if(!p)
+    return NULL;
 
-  return strstr_P(p, b);
+  return (const char *)memchr_P(p, val, strlen_P(p)); 
 }
 
 

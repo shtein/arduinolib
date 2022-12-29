@@ -82,6 +82,11 @@ void NtfSerial::put(const char *key, uint16_t v){
   STR_PRN_VAL("%u", key, v);
 }
 
+void NtfSerial::put(const char *key, uint32_t v){
+  STR_PRN_VAL("%u", key, v);
+}
+
+
 void NtfSerial::put(const char *key, int8_t v){
   STR_PRN_VAL("%d", key, v);
 }
@@ -89,6 +94,11 @@ void NtfSerial::put(const char *key, int8_t v){
 void NtfSerial::put(const char *key, int16_t v){
   STR_PRN_VAL("%d", key, v);
 }
+
+void NtfSerial::put(const char *key, int32_t v){
+  STR_PRN_VAL("%d", key, v);
+}
+
 
 void NtfSerial::put(const char *key, const char *v){
   STR_PRN_VAL("%s", key, v);
