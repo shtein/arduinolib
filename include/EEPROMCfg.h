@@ -7,6 +7,7 @@
 class EEPROMCfg{
 public:
   EEPROMCfg(size_t index = 0);
+  ~EEPROMCfg();
 
   bool read(void *p, size_t size);        //read block
   bool write(const void *p, size_t size); //write block

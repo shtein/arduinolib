@@ -4,41 +4,48 @@
 
 
 #if defined(ESP8266) || defined(ESP32)
-#include <flash_hal.h>
+#include <EEPROM.h>
 #else
-#include <avr/eeprom.h>
 #include <avr/io.h>
 #endif 
 
 #include "EEPROMCfg.h"
 #include "DbgTool.h"
 
+//EEPROM init/flushread/write
 
-#if defined(ESP8266) || defined(ESP32)
+#if defined(ESP8266)       
+//EEPROM routines ESP8266
+  #define EEPROM_INIT() EEPROM.begin(512);
+  #define EEPROM_FLUSH() EEPROM.commit();  
+  #define EEPROM_READ_BYTE(addr, byte) byte = EEPROM.read(addr);
+  #define EEPROM_WRITE_BYTE(addr, byte) EEPROM.write(addr, byte);
 
-#define ESP_FLASH_ADDR(addr) (EEPROM_start - 0x40200000 + addr)
-
-uint8_t eeprom_read_byte (const uint8_t *p){
-  uint8_t value = 0;
-
-  //Read from flash
-  flash_hal_write( ESP_FLASH_ADDR( *((size_t *)p)), sizeof(value), &value); 
-
-  return value; 
-}
-
-void eeprom_write_byte (uint8_t *p, uint8_t value){
-  //Write to flash
-  flash_hal_write(ESP_FLASH_ADDR( *((size_t *)p)), sizeof(value), &value);
-}
-
+#elif defined(ESP32)        //ESP32
+//EEPROM routines ESP32
+  //Add ESP32 version here - see if it is the same as ESP8266  
+#else
+//EEPROM routines for ATMEGAXXX
+  #define EEPROM_INIT()
+  #define EEPROM_FLUSH()
+  #define EEPROM_READ_BYTE(addr, byte) byte = eeprom_read_byte( (uint8_t*) _index );
+  #define EEPROM_WRITE_BYTE(addr, byte) \
+    if(eeprom_read_byte( (uint8_t*) addr ) != byte){ \
+      eeprom_write_byte( (uint8_t*) addr, byte); \
+    }    
 #endif
 
 
 /////////////////////////////////
 // EEPROMConf
 EEPROMCfg::EEPROMCfg(size_t index){  
-  _index = index;
+  EEPROM_INIT();
+
+  _index = index;  
+}
+
+EEPROMCfg::~EEPROMCfg(){  
+  EEPROM_FLUSH();
 }
 
 bool EEPROMCfg::read(void *p, size_t size){  
@@ -46,7 +53,7 @@ bool EEPROMCfg::read(void *p, size_t size){
 
   //Read byte by byte
   for(size_t i = 0; i < size; i++, cur++, _index ++){
-    *cur = eeprom_read_byte( (uint8_t*) _index );
+    EEPROM_READ_BYTE(_index, *cur);
   }
 
   
@@ -58,9 +65,7 @@ bool EEPROMCfg::write(const void *p, size_t size){
 
   //Write byte by byte if different from what is in EEProm cell
   for(size_t i = 0; i < size; i++, cur++, _index ++){
-    if(eeprom_read_byte( (uint8_t*) _index ) != *cur){
-      eeprom_write_byte( (uint8_t*) _index, *cur );
-    }
+    EEPROM_WRITE_BYTE(_index, *cur);    
   }
 
 
