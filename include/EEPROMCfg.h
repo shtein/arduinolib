@@ -1,6 +1,11 @@
 #ifndef __EEPROMCFG_H
 #define __EEPROMCFG_H
 
+//A workaround for including EEPROM Library 
+#if defined(ESP8266) || defined(ESP32)
+#include <EEPROM.h>
+#endif 
+
 ////////////////////////////////
 // EEPROMConf
 

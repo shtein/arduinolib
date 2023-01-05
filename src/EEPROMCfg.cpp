@@ -2,10 +2,7 @@
 
 #include <Arduino.h>
 
-
-#if defined(ESP8266) || defined(ESP32)
-#include <EEPROM.h>
-#else
+#ifdef __AVR__
 #include <avr/io.h>
 #endif 
 
@@ -14,7 +11,17 @@
 
 //EEPROM init/flushread/write
 
-#if defined(ESP8266)       
+#if defined (__AVR__)
+//EEPROM routines for ATMEGAXXX
+  #define EEPROM_INIT()
+  #define EEPROM_FLUSH()
+  #define EEPROM_READ_BYTE(addr, byte) byte = eeprom_read_byte( (uint8_t*) _index );
+  #define EEPROM_WRITE_BYTE(addr, byte) \
+    if(eeprom_read_byte( (uint8_t*) addr ) != byte){ \
+      eeprom_write_byte( (uint8_t*) addr, byte); \
+    }    
+
+#elif defined(ESP8266)       
 //EEPROM routines ESP8266
   #define EEPROM_INIT() EEPROM.begin(512);
   #define EEPROM_FLUSH() EEPROM.commit();  
@@ -24,15 +31,6 @@
 #elif defined(ESP32)        //ESP32
 //EEPROM routines ESP32
   //Add ESP32 version here - see if it is the same as ESP8266  
-#else
-//EEPROM routines for ATMEGAXXX
-  #define EEPROM_INIT()
-  #define EEPROM_FLUSH()
-  #define EEPROM_READ_BYTE(addr, byte) byte = eeprom_read_byte( (uint8_t*) _index );
-  #define EEPROM_WRITE_BYTE(addr, byte) \
-    if(eeprom_read_byte( (uint8_t*) addr ) != byte){ \
-      eeprom_write_byte( (uint8_t*) addr, byte); \
-    }    
 #endif
 
 
@@ -67,7 +65,6 @@ bool EEPROMCfg::write(const void *p, size_t size){
   for(size_t i = 0; i < size; i++, cur++, _index ++){
     EEPROM_WRITE_BYTE(_index, *cur);    
   }
-
 
   return true;
 }
