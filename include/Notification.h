@@ -54,6 +54,7 @@ public:
    if(key){ \
     char buf[16]; \
     strncpy_P(buf, (const char *)key, sizeof(buf) - 1); \
+    buf[sizeof(buf) - 1] = 0; \
     name(buf, ##__VA_ARGS__); \
   } \
   else{ \
@@ -107,10 +108,11 @@ void NtfBase::put(const char *key, const T *t, size_t size){
 }
 
 inline void NtfBase::put(const char *key, const __FlashStringHelper *v){
-  char buf[16]; 
+  char buf[24]; 
 
   if(v){  
     strncpy_P(buf, (const char *)v, sizeof(buf) - 1);
+    buf[sizeof(buf) - 1] = 0;
   }
   else{
     buf[0] = 0;
