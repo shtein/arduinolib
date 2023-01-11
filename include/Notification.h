@@ -5,14 +5,18 @@
 /////////////////////////////
 // Base interface to send notifications
 
+//Context flags
+#define NTF_CTX_NONE   0x00 
+#define NTF_CTX_ARRAY  0x01
+
+
 class NtfBase {
 public:
+  NtfBase();
+
   //Actions
   virtual void reset() = 0;
-  virtual void send() = 0;
- 
-  //Block management
-  
+  virtual void send() = 0; 
   
   //Block management
   virtual void begin(const char *key = NULL) = 0;
@@ -47,6 +51,18 @@ public:
 
   template< class T>
   void put_F(const __FlashStringHelper *key, const T*, size_t size);
+
+  //Context manupulation
+  struct CONTEXT{
+    uint8_t flags;
+    size_t arrayIndex;
+  }; 
+
+  const CONTEXT& getContext() const; 
+  void setContext(const CONTEXT &context);
+
+private:
+  CONTEXT _context;
 };
 
 
@@ -60,6 +76,11 @@ public:
   else{ \
     name((const char *)NULL, ##__VA_ARGS__); \
   }
+
+inline NtfBase::NtfBase(){
+  _context.flags      = NTF_CTX_NONE;
+  _context.arrayIndex = 0;
+}
 
 template< class T>
 inline void NtfBase::put_F(const __FlashStringHelper *key, const T &t){
@@ -90,8 +111,10 @@ inline void NtfBase::endArray_F(const __FlashStringHelper *key){
 template <class T>
 void NtfBase::put(const char *key, const T &t){
   begin(key);
-
+  
+  //Serialize
   putNtfObject(*this, t);
+  
 
   end(key);
 }
@@ -100,7 +123,16 @@ template<class T>
 void NtfBase::put(const char *key, const T *t, size_t size){
   beginArray(key);
 
+  //Remeber current context
+  CONTEXT ctx = getContext();
+
+  //Init context for array;
+  _context.flags      = NTF_CTX_ARRAY;
+  _context.arrayIndex = 0;
+
   for(size_t i = 0; i < size; i++){
+    //Increment array index
+    _context.arrayIndex ++;
     put(NULL, t[i]);
   }
 
@@ -121,7 +153,13 @@ inline void NtfBase::put(const char *key, const __FlashStringHelper *v){
   put(key, (const char *)buf);
 }
 
+inline const NtfBase::CONTEXT& NtfBase::getContext() const{
+  return _context;
+}
 
+inline void NtfBase::setContext(const NtfBase::CONTEXT &context){
+  _context = context;
+}
 
 ///////////////////////////////
 // For custom struct to be able to use with NtfBase::put(NtfBase &resp, T), 

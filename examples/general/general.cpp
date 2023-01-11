@@ -100,33 +100,9 @@ void setup() {
 
     }  
 
-    itm.cmd = EEMC_NONE;    
-     
-    //btn.read();
-    //DBG_OUTLN("%d", btn.value(PB_CONTROL_CLICK)); 
-    //delay(1);
-    //DBG_OUTLN("test"); 
+    itm.cmd = EEMC_NONE;         
   }
   
-/*
-  const int pin = 2;
-  pinMode(pin, INPUT_PULLUP);
-  digitalWrite(pin, HIGH);  
-  int value  = digitalRead(pin);
-  DBG_OUTLN("Initial %d", value);
-
-  for(;;){
-    delay(5);
-
-    int value1 = digitalRead(pin);
-    if(value != value1){
-      value = value1;
-
-      DBG_OUTLN("Updated %d", value);
-      
-    }
-  }
-  */
   
 }
 
@@ -135,24 +111,3 @@ void setup() {
 void loop(){
 
 }
-/*
-
-void setup() {
-  //2qdelay(10000);
-  Serial.begin(57600);
-  //pinMode(LED_BUILTIN, OUTPUT);     // Initialize the LED_BUILTIN pin as an output
-}
-
-// the loop function runs over and over again forever
-void loop() {
-  //digitalWrite(LED_BUILTIN, LOW);   // Turn the LED on (Note that LOW is the voltage level
-                                    // but actually the LED is on; this is because 
-                                    // it is acive low on the ESP-01)
-  Serial.println("LED On!");
-  delay(1000);                      // Wait for a second
-  //digitalWrite(LED_BUILTIN, HIGH);  // Turn the LED off by making the voltage HIGH
-  Serial.println("LED Off!");
-  delay(2000);                      // Wait for two seconds (to demonstrate the active low LED)
-}
-
-*/
