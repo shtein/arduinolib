@@ -62,7 +62,7 @@ public:
   void setContext(const CONTEXT &context);
 
 private:
-  CONTEXT _context;
+  struct CONTEXT _context;
 };
 
 
@@ -135,6 +135,9 @@ void NtfBase::put(const char *key, const T *t, size_t size){
     _context.arrayIndex ++;
     put(NULL, t[i]);
   }
+
+  //Restore context
+  setContext(ctx);
 
   endArray(key);
 }
