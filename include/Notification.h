@@ -130,10 +130,12 @@ void NtfBase::put(const char *key, const T *t, size_t size){
   _context.flags      = NTF_CTX_ARRAY;
   _context.arrayIndex = 0;
 
-  for(size_t i = 0; i < size; i++){
+  for(size_t i = 0; i < size; i++){    
+    //Serialize
+    put(NULL, t[i]);
+
     //Increment array index
     _context.arrayIndex ++;
-    put(NULL, t[i]);
   }
 
   //Restore context
