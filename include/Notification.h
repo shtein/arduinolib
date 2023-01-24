@@ -89,15 +89,15 @@ inline void NtfBase::put_F(const __FlashStringHelper *key, const T &t){
 
 template<class T>
 inline void NtfBase::put_F(const __FlashStringHelper *key, const T *t, size_t size){
-    NTF_FUNC_F(put, key, t, size);
+  NTF_FUNC_F(put, key, t, size);
 }
 
 inline void NtfBase::begin_F(const __FlashStringHelper *key){
-    NTF_FUNC_F(begin, key);
+  NTF_FUNC_F(begin, key);
 }
 
 inline void NtfBase::end_F(const __FlashStringHelper *key){
-    NTF_FUNC_F(end, key);
+  NTF_FUNC_F(end, key);
 }
 
 inline void NtfBase::beginArray_F(const __FlashStringHelper *key){
@@ -187,16 +187,10 @@ public:
   void addNtf(NtfBase *p);
 
   template <class T>
-  void put(const char *key, const T& t);
+  void put(const T& t);
 
   template <class T>
-  void put_F(const __FlashStringHelper *key, const T& t);
-
-  template <class T>
-  void put(const char * key, const T *t, size_t size);
-
-  template <class T>
-  void put_F(const __FlashStringHelper *key, const T* t, size_t size);
+  void put(const T* t, size_t size);
 
 private:
   NtfBase *_ntf[N]; 
@@ -221,11 +215,11 @@ void NtfBaseSet<N>::addNtf(NtfBase *p){
 
 template<size_t N>
 template<class T>
-void NtfBaseSet<N>::put(const char *key, const T& t){
+void NtfBaseSet<N>::put(const T& t){
 
   for(size_t i = 0; i < N  && _ntf[i] != NULL; i++){
     _ntf[i]->reset();
-    _ntf[i]->put(key, t);
+    _ntf[i]->put(NULL, t);
     _ntf[i]->send();
   }  
 }
@@ -233,59 +227,14 @@ void NtfBaseSet<N>::put(const char *key, const T& t){
 
 template<size_t N>
 template<class T>
-void NtfBaseSet<N>::put_F(const __FlashStringHelper *key, const T& t){
-  NTF_FUNC_F(put, key, t);
-}
-
-
-template<size_t N>
-template<class T>
-void NtfBaseSet<N>::put(const char *key, const T *t, size_t size){
+void NtfBaseSet<N>::put(const T *t, size_t size){
 
   for(size_t i = 0; i < N  && _ntf[i] != NULL; i++){
     _ntf[i]->reset();
-    _ntf[i]->put(key, t, size);
+    _ntf[i]->put(NULL, t, size);
     _ntf[i]->send();
   }  
 }
-
-
-template<size_t N>
-template<class T>
-void NtfBaseSet<N>::put_F(const __FlashStringHelper *key, const T *t, size_t size){
-  NTF_FUNC_F(put, key, t, size);
-}
-
-////////////////////////////////
-// NtfSerial - notificatoins via serial port
-
-class NtfSerial: public NtfBase {
-public:    
-  NtfSerial();
-
-  void reset();
-  void send();
-
-  void begin(const char *key = NULL);
-  void end(const char *key = NULL);
-  void beginArray(const char *key = NULL);
-  void endArray(const char *key = NULL);
-
-  void put(const char *key, uint8_t v);
-  void put(const char *key, uint16_t v);
-  void put(const char *key, uint32_t v);
-  void put(const char *key, int8_t v);
-  void put(const char *key, int16_t v);  
-  void put(const char *key, int32_t v);
-  void put(const char *key, const char *v);
-
-private:
-  void print(const __FlashStringHelper *fmt, ...); 
-
-private:
-  uint8_t _ident;    
-};
-
 
 
 

@@ -1,5 +1,6 @@
 #include <Arduino.h>
 #include <DbgTool.h>
+#include <Controls.h>
 #include <AnalogInput.h>
 #include <CtrlSerial.h>
 #include <string.h>
@@ -7,21 +8,49 @@
 //#define FASTLED_ESP8266_D1_PIN_ORDER
 #include <fastled.h>
 
-
+struct TEST_DATA{  
+  int  n; 
+  int p;
+  char str[32];
+};
 
 BEGIN_PARSE_ROUTINE(TestParse)
 
   BEGIN_GROUP_TOKEN("set|")  
-     TOKEN_IS_TEXT("off", 1, 0)
-     TOKEN_IS_TEXT("on", 1, 1)
+     VALUE_IS_TOKEN("off", 1, 0)
+     VALUE_IS_TOKEN("on", 1, 1)
     END_GROUP_TOKEN()
+  
+  BEGIN_GROUP_TOKEN("test|t")
+    VALUE_IS_PAIR("str|s", 2, CTF_VAL_STRING)
+    VALUE_IS_PAIR("num|n", 2, CTF_VAL_ABS)
 
+    BEGIN_OBJECT("data|d", TEST_DATA, 3)
+      DATA_MEMBER("string|s", str)
+      DATA_MEMBER("num|n", n)
+      DATA_MEMBER("p", p, 20)
+    END_OBJECT()
+
+  END_GROUP_TOKEN()
+
+  
+
+  
 END_PARSE_ROUTINE()
 
-
+void putNtfObject(NtfBase &resp, const TEST_DATA &data){
+  resp.put_F(F("str"), data.str);
+  resp.put_F(F("n"), data.n);
+  resp.put_F(F("p"), data.p);
+}
 
 void putNtfObject(NtfBase &resp, const CtrlQueueData &data){
-  resp.put_F(F("value"), data.value);
+  if(data.flag == CTF_VAL_STRING){
+    resp.put_F(F("value"), data.str);
+  }
+  else{
+    resp.put_F(F("value"), data.value);
+  }
   resp.put_F(F("flag"), data.flag);
   resp.put_F(F("min"), data.min);
   resp.put_F(F("max"), data.max);
@@ -29,7 +58,15 @@ void putNtfObject(NtfBase &resp, const CtrlQueueData &data){
 
 void putNtfObject(NtfBase &resp, const CtrlQueueItem &data){
   resp.put_F(F("cmd"), data.cmd);
-  resp.put_F(F("data"), data.data);
+  if(data.cmd == 3){
+    
+    TEST_DATA *d = (TEST_DATA *)data.data.str;
+    resp.put_F(F("data"), *d);    
+  }
+  else{
+    resp.put_F(F("data"), data.data);
+  }
+  
 }
   
 
@@ -87,7 +124,7 @@ void setup() {
 
     if(itm.cmd != EEMC_NONE){      
             
-      set.put_F(F("response"), itm);
+      set.put(itm);
 
       if(itm.cmd == 1){
         if(itm.data.value == 0){
@@ -101,9 +138,7 @@ void setup() {
     }  
 
     itm.cmd = EEMC_NONE;         
-  }
-  
-  
+  }  
 }
 
 

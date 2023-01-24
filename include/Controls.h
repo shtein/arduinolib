@@ -5,26 +5,35 @@
 #include "AnalogInput.h"
 #include "utils.h"
 
-
 //Change commands
 #define EEMC_NONE        0x00   //Nothing changed
 #define EEMC_ERROR       0xFF   //Input error
 
 ///////////////////////////////////
 // Control flags
-#define CTF_NONE        0x00  //Nothing, value is absolute number
-#define CTF_VAL_ABS     0x00  //Absolute number
-#define CTF_VAL_BOOL    0x01  //Value is bool
-#define CTF_VAL_DELTA   0x02  //Value is delta
-#define CTF_VAL_NEXT    0x03  //Go next - in cycles
-#define CTF_VAL_PREV    0x04  //Go previous - in cycles
+#define CTF_NONE        0x00  //Nothing
+#define CTF_VAL_ABS     0x01  //Absolute number
+#define CTF_VAL_BOOL    0x02  //Value is bool
+#define CTF_VAL_DELTA   0x03  //Value is delta
+#define CTF_VAL_NEXT    0x04  //Go next - in cycles
+#define CTF_VAL_PREV    0x05  //Go previous - in cycles
+#define CTF_VAL_STRING  0x06  //Value is string
+#define CTF_VAL_OBJECT  0x07  //Value is object
 
+#if defined(ESP8266) || defined(ESP32)
+#define MAX_STR_VALUE 128
+#else
+#define MAX_STR_VALUE 16
+#endif
 
 ////////////////////////////////////
 // Control queue data
 struct CtrlQueueData{
   uint8_t flag;   //Flag that shows how to interpret the value: absolute number, inrement, etc 
-  int     value;  //Value
+  union{
+    int   value;              //integer value
+    char  str[MAX_STR_VALUE]; //string value or packed object
+  };
   int     min;    //Value minimum
   int     max;    //Value maximum   
   
@@ -35,6 +44,28 @@ struct CtrlQueueData{
       max    = 0;
   }
 
+  void setValue(int n){ 
+      flag  = CTF_VAL_ABS;
+      value = n; 
+  }
+
+  void setValue(const char *p){ 
+    flag  = CTF_VAL_STRING;
+    strncpy(str, p, MAX_STR_VALUE); 
+  }
+
+  void setValue(char *p){ 
+    flag  = CTF_VAL_STRING;
+    strncpy(str, p, MAX_STR_VALUE); 
+  }
+
+  template<typename T>
+  void setValue(const T &t){
+    flag  = CTF_VAL_OBJECT;
+    memcpy((void *)str, &t, min(sizeof(T), MAX_STR_VALUE)); 
+  }
+
+  
   int translate(int base, int vmin, int vmax) const{
     
      switch(flag){ 
@@ -76,7 +107,7 @@ struct CtrlQueueItem {
 
 
 //////////////////////////////////////////
-// ProcessControl - base class'
+// ProcessControl - base class
 
 class CtrlItem{
   public:
@@ -268,6 +299,185 @@ class CtrlItemRotEnc: public CtrlItem{
       data.max   = 0;
     } 
 };
+
+
+/////////////////////////////////////////
+// Multi-command interface
+template<class INP, class NTF, uint8_t (*PARSER) (char *cmdLine, CtrlQueueData &data)>
+class CtrlItemMultiCommand: public CtrlItem, public NTF{
+  public:
+    CtrlItemMultiCommand(INP *input):
+      CtrlItem(EEMC_NONE, input){   
+    }
+
+  protected:
+    // CtrlItem functions
+    bool triggered() const{     
+      return ((INP *)_input)->isReady(); 
+    }
+
+    void getData(CtrlQueueData &data){     
+      char *cmdLine = ((INP *)_input)->getCommandLine();
+
+      if( cmdLine ){
+        //Buffer is ready
+        _cmd = PARSER(cmdLine, data);     
+        cmdLine[0] = 0;
+      }
+      else {
+        _cmd = EEMC_NONE;
+      } 
+    }    
+};
+
+
+//Helpers for creating parser function for SerialInput 
+//Helper functions for pasrer
+bool getTokens(char *cmdLine, char *tokens[], size_t maxTokens);
+bool checkTokenMatch(const char *token, const char *match);
+const char *findTokenValue(char *tokens[], const char *match);
+bool strTo(const char *str, int &n);
+bool strTo(const char *str, char *dest);
+
+//Helper macros
+#define MAX_TOKENS         10
+#define MAX_COMMAND_LEN    32
+
+
+//Set corresponding data members of CtrlQueueData
+#define CQD_SET_NONE(data, ...) 
+#define CQD_SET_CMD(data, ...) return ARG_NUM_1(__VA_ARGS__);
+#define CQD_SET_VAL(data, ...) data.setValue(ARG_NUM_2(__VA_ARGS__)); CQD_SET_CMD(data, __VA_ARGS__);
+#define CQD_SET_FLG(data, ...) data.flag  = ARG_NUM_3(__VA_ARGS__); CQD_SET_VAL(data, __VA_ARGS__);
+#define CQD_SET_MIN(data, ...) data.min   = ARG_NUM_4(__VA_ARGS__); CQD_SET_FLG(data, __VA_ARGS__);
+#define CQD_SET_MAX(data, ...) data.max   = ARG_NUM_5(__VA_ARGS__); CQD_SET_MIN(data, __VA_ARGS__);
+
+//Parameter sequence is cmd, data.value, data.flag, data.min, data.max
+#define CQD_SET_DATA(data, ...) ARG_NUM( NUM_ARGS(data, ##__VA_ARGS__), CQD_SET_NONE, CQD_SET_CMD, CQD_SET_VAL, CQD_SET_FLG, CQD_SET_MIN, CQD_SET_MAX) (data, __VA_ARGS__)
+
+#define BEGIN_PARSE_ROUTINE(FunctionName) \
+uint8_t FunctionName(char *cmdLine, CtrlQueueData &data){ \
+  char  *tokens[MAX_TOKENS + 1]; \
+  memset(tokens, 0, sizeof(tokens)); \
+  if(!getTokens(cmdLine, tokens, MAX_TOKENS)){ \
+    return EEMC_ERROR; \
+  } \
+  int8_t index = -1;
+
+#define END_PARSE_ROUTINE() \
+  return EEMC_ERROR; \
+}
+
+#define _IF_TOKEN_MATCH(a, b) if(checkTokenMatch(a, PSTR(b)) ) \
+
+#define _BEGIN_TOKEN(token) \
+  index ++; \
+  _IF_TOKEN_MATCH(tokens[index], token){ 
+    
+    
+#define _END_TOKEN() \
+  } \
+  index --;
+
+//Group token
+#define BEGIN_GROUP_TOKEN(token, ...) \
+  _BEGIN_TOKEN(token) \
+    if(!tokens[index + 1]) { \
+      CQD_SET_DATA(data, ##__VA_ARGS__) \
+    }
+                
+#define END_GROUP_TOKEN() _END_TOKEN()
+    
+//Final token, nothing after it, it is a fixed string    
+#define VALUE_IS_TOKEN(token, cmd, ...) \
+  _BEGIN_TOKEN(token) \
+    if(!tokens[index + 1]) { \
+        CQD_SET_DATA(data, cmd, ##__VA_ARGS__) \
+    } \
+  _END_TOKEN()
+
+//Final, nothing after it, it is a number
+#define VALUE_IS_NUMBER(cmd, ...) \
+  index ++; \
+  if(!tokens[index + 1]) { \
+    int n; \
+    if(strTo(tokens[index], n)) { \
+      CQD_SET_DATA(data, cmd, n, ##__VA_ARGS__) \
+    } \
+  } \
+  index --;  
+
+//Final, nothing after it, it is a string
+#define VALUE_IS_STRING(cmd) \
+  index ++; \
+  if(!tokens[index + 1]) { \
+    CQD_SET_DATA(data, cmd, tokens[index], CTF_VAL_STRING) \
+  } \
+  index --;
+
+
+//Final, nothing after it, there are token and value
+#define VALUE_IS_PAIR(token, cmd, flag, ...) \
+  _BEGIN_TOKEN(token) \
+  if(flag & CTF_VAL_STRING){ \
+    VALUE_IS_STRING(cmd) \
+  } \
+  else {\
+    VALUE_IS_NUMBER(cmd, ##__VA_ARGS__) \
+  } \
+  _END_TOKEN()
+
+// Final, nothing after that, there are pairs token and value that correspond to object data members 
+#define BEGIN_OBJECT(token, object, cmd) \
+  _BEGIN_TOKEN(token) \
+  object obj; \
+  memset(&obj, 0, sizeof(obj)); \
+  uint8_t command = cmd; \
+
+#define END_OBJECT() \
+  CQD_SET_DATA(data, command, obj, CTF_VAL_STRING) \
+  _END_TOKEN();
+
+
+#define _DM_DEFAULT_NONE(value, ...) 
+#define _DM_DEFAULT_SPEC(value, ...) value = ARG_NUM_1(__VA_ARGS__);
+#define _DM_DEFAULT(value, ...) ARG_NUM( NUM_ARGS(value, ##__VA_ARGS__), _DM_DEFAULT_NONE, _DM_DEFAULT_SPEC)(value, __VA_ARGS__)
+
+#define _DM_MANDATORY_FALSE()
+#define _DM_MANDATORY_TRUE() return EEMC_ERROR;
+#define _DM_MANDATORY(...) ARG_NUM( NUM_ARGS(_, ##__VA_ARGS__), _DM_MANDATORY_TRUE, _DM_MANDATORY_FALSE)()
+
+//Key value pairs. Third macro parameter is default value, if not defined this member is mandatory
+#define DATA_MEMBER(token, member, ...) \
+  { \
+    const char *v = findTokenValue(&tokens[index + 1], PSTR(token)); \
+    if(!strTo(v, obj.member)){  \
+      _DM_MANDATORY(__VA_ARGS__) \
+      _DM_DEFAULT(obj.member, ##__VA_ARGS__); \
+    } \
+  }
+
+
+
+
+/*
+Usage of parser macro:
+
+BEGIN_PARSE_ROUTINE(YourFunctionName)
+  BEGIN_GROUP_TOKEN("group_token_a")
+    BEGIN_GROUP_TOKEN("group_token_a_1")
+        VALUE_IS_TOKEN("token_a_1_1", cmd, value, flags, max, min)
+        VALUE_IS_TOKEN("token_a_1_2", cmd, value, flags )
+        VALUE_IS_NUMBER(cmd)
+    END_GROUP_TOKEN()
+    VALUE_IS_TOKEN("token_a_2_1", cmd)    
+  END_GROUP_TOKEN()
+  BEGIN_GROUP_TOKEN("group_token_b", cmd)
+    ...
+  END_GROUP_TOKEN()
+END_PARSE_ROUTINE()
+*/
+
 
 
 
