@@ -34,21 +34,6 @@ void CtrlItem::loop(CtrlQueueItem &itm){
   }
 }
 
-////////////////////////////
-
-//Support for ESP8266, ESP32 etc
-#if defined(ESP8266) || defined(ESP32)
-
-const char * 	strchr_P (const char *p, int val){
-  if(!p)
-    return NULL;
-
-  return (const char *)memchr_P(p, val, strlen_P(p)); 
-}
-
-#endif
-
-
 
 //////////////////////////////////////////
 //Parser Helpers
@@ -59,7 +44,7 @@ const char * 	strchr_P (const char *p, int val){
 //Get tokens into from command line into array
 //Return false of numnber of tokens is more than number of elements in array
 bool getTokens(char *cmdLine, char *tokens[], size_t maxTokens){
-
+  
   //Make sure there data
   if(!cmdLine)
     return false;
@@ -85,15 +70,17 @@ bool getTokens(char *cmdLine, char *tokens[], size_t maxTokens){
 }
 
 //Check if tokens match to specified token
-bool checkTokenMatch(const char *token, const char *match){
+bool checkTokenMatch(const char *token, const char *token2){
+  char match[32];
+  strncpy_P(match, token2, sizeof(match));
 
   //Remember length of the token
   size_t lenToken = token ? strlen(token) : 0;
   size_t lenMatch = 0;
 
-  for(const char *begin = match, *end = strchr_P(begin, COMMAND_SEPARATOR); 
+  for(char *begin = match, *end = strchr(begin, COMMAND_SEPARATOR); 
       begin != NULL; 
-      begin = end, end = begin ? strchr_P(begin, COMMAND_SEPARATOR) : NULL){   
+      begin = end, end = begin ? strchr(begin, COMMAND_SEPARATOR) : NULL){   
 
     //Calculate length of the matching string
     lenMatch = end ? end - begin : strlen_P(begin);
@@ -103,7 +90,7 @@ bool checkTokenMatch(const char *token, const char *match){
       return true;
 
     //Look for full case insensitive  match, length and symbols
-    if(lenMatch == lenToken && strncasecmp_P(token, begin, lenMatch) == 0){
+    if(lenMatch == lenToken && strncasecmp(token, begin, lenMatch) == 0){
       return true;
     }
 
@@ -115,7 +102,7 @@ bool checkTokenMatch(const char *token, const char *match){
   return false;
 }
 
-const char *findTokenValue(char *tokens[], const char *match){
+const char *getValueAfterToken(char *tokens[], const char *match){
 
   for(size_t i = 0; tokens[i] != NULL; i++){
     if(checkTokenMatch(tokens[i], match))

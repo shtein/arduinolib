@@ -7,9 +7,19 @@
 #include "Controls.h"
 #include "Notification.h"
 
-#include <ESPAsyncWebServer.h>
+#if defined(ESP8266) 
+  #include <ESP8266WebServer.h>
+  #include <uri/UriRegex.h>
+  
+  typedef ESP8266WebServer ESPWebServer;
+#elif defined(ESP32)
+  #include <WebServer.h>
+  #include <uri/UriRegex.h>
 
-#define MAX_API_RESPONSE_SIZE 256
+  typedef WebServer ESPWebServer;
+#endif
+
+extern ESPWebServer webServer;
 
 ////////////////////////////////////////
 // Web Server Input
@@ -25,8 +35,6 @@ public:
 
 ////////////////////////////////////////
 // Json serialization for web api responses
-
-
 class NtfWebApi: public NtfBase{
 public:  
   void reset();
@@ -45,14 +53,18 @@ public:
   void put(const char *key, int32_t v);  
   void put(const char *key, const char *v);
 
-  
 private:
   String _data;
 };
 
 //////////////////////////////////////
 // APIRequestHandler
-void APIRequestHandler(AsyncWebServerRequest *request);
+void _APIRequestHandler(const char *uri);
+
+#define ADD_API_REQUEST_HANDLER(method, uri) \
+  webServer.on(UriRegex(uri".*"), method, [](){ \
+      _APIRequestHandler(uri); \
+    });
 
 //////////////////////////////////////
 // CtrlWebSrv - multi command interface

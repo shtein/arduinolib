@@ -113,7 +113,7 @@ void NtfSerial::print(const __FlashStringHelper *fmt, ...){
 }
 
 //Print helper
-#define STR_FMT(format) F(format "\n")
+#define STR_FMT(format) F(format"\n")
 #define STR_PRN(format, ...) print( STR_FMT(format), ## __VA_ARGS__ )
 #define STR_PRN_VAL(valformat, key, val) STR_PRN("%s: " valformat, key, val)
 

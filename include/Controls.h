@@ -62,7 +62,7 @@ struct CtrlQueueData{
   template<typename T>
   void setValue(const T &t){
     flag  = CTF_VAL_OBJECT;
-    memcpy((void *)str, &t, min(sizeof(T), MAX_STR_VALUE)); 
+    memcpy((void *)str, &t, (sizeof(T) < MAX_STR_VALUE) ? sizeof(T) : MAX_STR_VALUE); 
   }
 
   
@@ -335,7 +335,7 @@ class CtrlItemMultiCommand: public CtrlItem, public NTF{
 //Helper functions for pasrer
 bool getTokens(char *cmdLine, char *tokens[], size_t maxTokens);
 bool checkTokenMatch(const char *token, const char *match);
-const char *findTokenValue(char *tokens[], const char *match);
+const char *getValueAfterToken(char *tokens[], const char *match);
 bool strTo(const char *str, int &n);
 bool strTo(const char *str, char *dest);
 
@@ -345,15 +345,15 @@ bool strTo(const char *str, char *dest);
 
 
 //Set corresponding data members of CtrlQueueData
-#define CQD_SET_NONE(data, ...) 
-#define CQD_SET_CMD(data, ...) return ARG_NUM_1(__VA_ARGS__);
-#define CQD_SET_VAL(data, ...) data.setValue(ARG_NUM_2(__VA_ARGS__)); CQD_SET_CMD(data, __VA_ARGS__);
-#define CQD_SET_FLG(data, ...) data.flag  = ARG_NUM_3(__VA_ARGS__); CQD_SET_VAL(data, __VA_ARGS__);
-#define CQD_SET_MIN(data, ...) data.min   = ARG_NUM_4(__VA_ARGS__); CQD_SET_FLG(data, __VA_ARGS__);
-#define CQD_SET_MAX(data, ...) data.max   = ARG_NUM_5(__VA_ARGS__); CQD_SET_MIN(data, __VA_ARGS__);
+#define _CQD_SET_NONE(data, ...) 
+#define _CQD_SET_CMD(data, ...) return ARG_NUM_1(__VA_ARGS__);
+#define _CQD_SET_VAL(data, ...) data.setValue(ARG_NUM_2(__VA_ARGS__)); _CQD_SET_CMD(data, __VA_ARGS__);
+#define _CQD_SET_FLG(data, ...) data.flag  = ARG_NUM_3(__VA_ARGS__); _CQD_SET_VAL(data, __VA_ARGS__);
+#define _CQD_SET_MIN(data, ...) data.min   = ARG_NUM_4(__VA_ARGS__); _CQD_SET_FLG(data, __VA_ARGS__);
+#define _CQD_SET_MAX(data, ...) data.max   = ARG_NUM_5(__VA_ARGS__); _CQD_SET_MIN(data, __VA_ARGS__);
 
 //Parameter sequence is cmd, data.value, data.flag, data.min, data.max
-#define CQD_SET_DATA(data, ...) ARG_NUM( NUM_ARGS(data, ##__VA_ARGS__), CQD_SET_NONE, CQD_SET_CMD, CQD_SET_VAL, CQD_SET_FLG, CQD_SET_MIN, CQD_SET_MAX) (data, __VA_ARGS__)
+#define _CQD_SET_DATA(data, ...) ARG_NUM( NUM_ARGS(data, ##__VA_ARGS__), _CQD_SET_NONE, _CQD_SET_CMD, _CQD_SET_VAL, _CQD_SET_FLG, _CQD_SET_MIN, _CQD_SET_MAX) (data, __VA_ARGS__)
 
 #define BEGIN_PARSE_ROUTINE(FunctionName) \
 uint8_t FunctionName(char *cmdLine, CtrlQueueData &data){ \
@@ -383,7 +383,7 @@ uint8_t FunctionName(char *cmdLine, CtrlQueueData &data){ \
 #define BEGIN_GROUP_TOKEN(token, ...) \
   _BEGIN_TOKEN(token) \
     if(!tokens[index + 1]) { \
-      CQD_SET_DATA(data, ##__VA_ARGS__) \
+      _CQD_SET_DATA(data, ##__VA_ARGS__) \
     }
                 
 #define END_GROUP_TOKEN() _END_TOKEN()
@@ -392,7 +392,7 @@ uint8_t FunctionName(char *cmdLine, CtrlQueueData &data){ \
 #define VALUE_IS_TOKEN(token, cmd, ...) \
   _BEGIN_TOKEN(token) \
     if(!tokens[index + 1]) { \
-        CQD_SET_DATA(data, cmd, ##__VA_ARGS__) \
+        _CQD_SET_DATA(data, cmd, ##__VA_ARGS__) \
     } \
   _END_TOKEN()
 
@@ -402,7 +402,7 @@ uint8_t FunctionName(char *cmdLine, CtrlQueueData &data){ \
   if(!tokens[index + 1]) { \
     int n; \
     if(strTo(tokens[index], n)) { \
-      CQD_SET_DATA(data, cmd, n, ##__VA_ARGS__) \
+      _CQD_SET_DATA(data, cmd, n, ##__VA_ARGS__) \
     } \
   } \
   index --;  
@@ -411,7 +411,7 @@ uint8_t FunctionName(char *cmdLine, CtrlQueueData &data){ \
 #define VALUE_IS_STRING(cmd) \
   index ++; \
   if(!tokens[index + 1]) { \
-    CQD_SET_DATA(data, cmd, tokens[index], CTF_VAL_STRING) \
+    _CQD_SET_DATA(data, cmd, tokens[index], CTF_VAL_STRING) \
   } \
   index --;
 
@@ -435,7 +435,7 @@ uint8_t FunctionName(char *cmdLine, CtrlQueueData &data){ \
   uint8_t command = cmd; \
 
 #define END_OBJECT() \
-  CQD_SET_DATA(data, command, obj, CTF_VAL_STRING) \
+  _CQD_SET_DATA(data, command, obj, CTF_VAL_STRING) \
   _END_TOKEN();
 
 
@@ -450,7 +450,7 @@ uint8_t FunctionName(char *cmdLine, CtrlQueueData &data){ \
 //Key value pairs. Third macro parameter is default value, if not defined this member is mandatory
 #define DATA_MEMBER(token, member, ...) \
   { \
-    const char *v = findTokenValue(&tokens[index + 1], PSTR(token)); \
+    const char *v = getValueAfterToken(&tokens[index + 1], PSTR(token)); \
     if(!strTo(v, obj.member)){  \
       _DM_MANDATORY(__VA_ARGS__) \
       _DM_DEFAULT(obj.member, ##__VA_ARGS__); \

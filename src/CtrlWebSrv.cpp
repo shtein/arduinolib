@@ -8,139 +8,21 @@
 //Support for ESP8266, ESP32 etc
 #if defined(ESP8266) || defined(ESP32)
 
-
-/////////////////////////////////
-// API Response
-class AsyncResponseAPI: public AsyncAbstractResponse{
-public:
-  AsyncResponseAPI(){
-    _code              = 0;
-    _contentType       = "application/json";
-    _contentReady      = false;
-    //_chunked           = true;
-    _sendContentLength = false;
-    _filledLength      = 0;
-  }
-
-  ~AsyncResponseAPI(){
-  }
-
-  bool _sourceValid() const { 
-    return true; 
-  }
-
-  size_t _fillBuffer(uint8_t *buf, size_t maxLen){
-    if(!_contentReady){
-      return RESPONSE_TRY_AGAIN;
-    }
-
-    size_t len = _content.length()  - _filledLength;
-    if(len > maxLen)
-      len = maxLen;
-
-    memcpy(buf, _content.c_str(), len);
-
-    _filledLength += len;
-
-    return len;
-  }
-
-  void setContent(const String &content){
-    _content      = content;
-    _contentReady = true;
-  }
-
-private:  
-  String  _content;
-  bool    _contentReady;
-  size_t  _filledLength;
-};
-
-struct ApiRequestResponse{
-  String             requestStr;          //Request string, i.e. part of URL
-  bool               requestReady;        //free slot
-  AsyncResponseAPI  *response;            //Response to be called setReady
-};
-
-#define MAX_API_CALLS 2
-
-class ApiCalls{
-public:
-  ApiCalls(){
-    _lastSelected = MAX_API_CALLS;
-
-    for(int i = 0; i < MAX_API_CALLS; i++){
-      _apiCalls[i].response     = NULL;
-      _apiCalls[i].requestReady = false;
-    }
-  }
-
-  ApiRequestResponse *findFreeSlot(){        
-    for(size_t i = 0; i < MAX_API_CALLS; i++){
-      //Start from last selected            
-      ApiRequestResponse *p = &_apiCalls[i];
-      //Free slot found
-      if( p->requestReady == false){      
-        //ok        
-        return p;
-      }
-    }
-    //Fre slot not found
-    
-    return NULL;
-  }
-
-  ApiRequestResponse *findAndLockNextReadySlot(){
-    //Check if last selected slot is not processed yet
-    ApiRequestResponse *p = getLockedSlot();
-    if(p && p->requestReady){
-      return p;
-    }
-
-    size_t start = _lastSelected == MAX_API_CALLS ? 0 : _lastSelected;
-
-    for(size_t i = 0; i < MAX_API_CALLS; i++){
-      p = &_apiCalls[(start + i) % MAX_API_CALLS];
-      //Free slot found
-      if( p->requestReady == true){      
-        //ok
-        _lastSelected = (start + i) % MAX_API_CALLS;
-        return p;
-      }
-    }
-    //Fre slot not found
-    _lastSelected = MAX_API_CALLS;
-
-    return NULL;
-  }
-
-  ApiRequestResponse *getLockedSlot(){
-    //If current slot is set and it is ready then return it
-    return _lastSelected == MAX_API_CALLS ? NULL : &_apiCalls[_lastSelected];
-  }
-  
-private:
-  ApiRequestResponse _apiCalls[MAX_API_CALLS]; //Pool of requests/responses
-  size_t             _lastSelected;
-};
-
-
-ApiCalls apiCalls;
+ESPWebServer webServer;
+String       requestApi;
 
 ///////////////////////////////////
 //Web request API handler
-void APIRequestHandler(AsyncWebServerRequest *request){
-  //Find free slot for response  
-  ApiRequestResponse *p = apiCalls.findFreeSlot();
-  if(p){
-    p->requestStr = request->url();
-    p->response = new AsyncResponseAPI;
-    p->requestReady = true;    
+void _APIRequestHandler(const char *uri){
+  requestApi = webServer.uri().substring(strlen(uri));
 
-    request->send(p->response);
-  }
-  else{
-    request->send(500);
+  //Remove /, &, ?
+  requestApi.replace('&', ' ');
+  requestApi.replace('?', ' ');
+  requestApi.replace('/', ' ');
+
+  if(requestApi.length() == 0){
+    requestApi = " ";
   }
 }
 
@@ -150,18 +32,16 @@ WebApiInput::WebApiInput(){
 }
 
 void WebApiInput::read(){  
-  //Find next ready request
-  apiCalls.findAndLockNextReadySlot();
+  //Handle client
+  webServer.handleClient();
 }
 
 bool WebApiInput::isReady() const{
-  return apiCalls.getLockedSlot() ? true : false;
+  return requestApi.length() != 0;
 }
 
 char *WebApiInput::getCommandLine(){
-  ApiRequestResponse *p = apiCalls.getLockedSlot();  
-  
-  return p ? (char *)p->requestStr.c_str() : NULL;
+  return requestApi.length() == 0 ? NULL : (char *)requestApi.c_str(); 
 }
 
 
@@ -210,17 +90,11 @@ void NtfWebApi::reset(){
 void NtfWebApi::send(){
   CHECK_TRAILING_COMMA();
 
-  ApiRequestResponse *p = apiCalls.getLockedSlot();  
+  //Send response:
+  webServer.send(200, "application/json", _data);
 
-  if(p){
-    //Send data out
-    p->response->setContent(_data);
-    
-    //Release slot
-    p->requestReady = false;
-    p->response     = NULL;
-    p->requestStr   = emptyString;
-  }
+  //Clear request string
+  requestApi = emptyString;
 }
 
 

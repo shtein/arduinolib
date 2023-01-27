@@ -21,16 +21,12 @@
       eeprom_write_byte( (uint8_t*) addr, byte); \
     }    
 
-#elif defined(ESP8266)       
+#elif defined(ESP8266) ||  defined(ESP32) 
 //EEPROM routines ESP8266
   #define EEPROM_INIT() EEPROM.begin(512);
   #define EEPROM_FLUSH() EEPROM.commit();  
   #define EEPROM_READ_BYTE(addr, byte) byte = EEPROM.read(addr);
   #define EEPROM_WRITE_BYTE(addr, byte) EEPROM.write(addr, byte);
-
-#elif defined(ESP32)        //ESP32
-//EEPROM routines ESP32
-  //Add ESP32 version here - see if it is the same as ESP8266  
 #endif
 
 

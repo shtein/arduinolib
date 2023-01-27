@@ -225,6 +225,7 @@ void NtfBaseSet<N>::put(const T& t){
 }
 
 
+
 template<size_t N>
 template<class T>
 void NtfBaseSet<N>::put(const T *t, size_t size){
