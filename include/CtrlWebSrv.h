@@ -71,6 +71,27 @@ void _APIRequestHandler(const char *uri);
 template <uint8_t (*PARSER) (char *cmdLine, CtrlQueueData &data)>
 using CtrlItemWebApi = CtrlItemMultiCommand<WebApiInput, NtfWebApi, PARSER>;
 
+////////////////////////////////////
+// CtrlWifiStatus - wifi status change
+class CtrlWifiStatus: public CtrlItem{
+  public:
+    CtrlWifiStatus(uint8_t cmd): CtrlItem(cmd, NULL) {
+      _status = WiFi.status();        
+    }
+
+  protected:  
+    bool triggered() const{     
+      return _status != WiFi.status();
+    }
+
+    void getData(CtrlQueueData &data){                       
+      _status = WiFi.status();
+      data.setValue(_status);            
+    }    
+
+  private:
+    wl_status_t  _status;    
+};
 
 #endif
 

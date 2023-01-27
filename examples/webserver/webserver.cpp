@@ -94,25 +94,7 @@ void putNtfObject(NtfBase &resp, const WIFI_STATUS &data){
 }
 
 
-class CtrlWifiStatus: public CtrlItem{
-  public:
-    CtrlWifiStatus(): CtrlItem(CMD_WIFI_STATUS, NULL) {
-      _status = WiFi.status();        
-    }
 
-  protected:  
-    bool triggered() const{     
-      return _status != WiFi.status();
-    }
-
-    void getData(CtrlQueueData &data){                       
-      _status = WiFi.status();
-      data.setValue(_status);            
-    }    
-
-  private:
-    wl_status_t  _status;    
-};
 
 
 CtrlPanel cp;
@@ -147,7 +129,7 @@ void setup() {
   cp.addControl(&serCtrl);
   ntf.addNtf(&serCtrl);
 
-  static CtrlWifiStatus wifiStatus;
+  static CtrlWifiStatus wifiStatus(CMD_WIFI_STATUS);
   cp.addControl(&wifiStatus);
 
 }
