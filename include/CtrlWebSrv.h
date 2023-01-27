@@ -93,6 +93,62 @@ class CtrlWifiStatus: public CtrlItem{
     wl_status_t  _status;    
 };
 
+/////////////////////////////
+// Wifi configs and status
+
+//Connect to WiFi
+struct WIFI_CONNECT{
+  char ssid[32];
+  char pwd[32];
+};
+
+inline void putNtfObject(NtfBase &resp, const WIFI_CONNECT &data){
+  resp.put_F(F("ssid"), data.ssid);
+  resp.put_F(F("pwd"), data.pwd);
+}
+
+//Wifi statis
+struct WIFI_STATUS{
+  uint8_t      status;
+};
+
+
+inline void putNtfObject(NtfBase &resp, const WIFI_STATUS &data){
+  resp.put_F(F("wifistatus"), data.status);  
+}
+
+//Wifi config
+struct WIFI_CONFIG{
+  IPAddress ip;
+  IPAddress gateway;
+  IPAddress subnetMask;
+  IPAddress dns1;
+  IPAddress dns2;
+
+  void getWiFiConfig(){
+    ip          = WiFi.localIP();
+    gateway     = WiFi.gatewayIP();
+    subnetMask  = WiFi.subnetMask();
+    dns1        = WiFi.dnsIP(0);
+    dns2        = WiFi.dnsIP(1);
+}
+
+  void setWiFiConfig() const{
+    WiFi.config(ip, gateway, subnetMask, dns1, dns2);
+  }
+
+};
+
+inline void putNtfObject(NtfBase &resp, const WIFI_CONFIG &data){
+  resp.put_F(F("ip"), data.ip.toString().c_str());
+  resp.put_F(F("gateway"), data.gateway.toString().c_str());
+  resp.put_F(F("subnetmask"), data.subnetMask.toString().c_str());
+  resp.put_F(F("dns1"), data.dns1.toString().c_str());
+  resp.put_F(F("dns2"), data.dns2.toString().c_str());
+}
+
+
+
 #endif
 
 #endif //__CTRL_WEB_SRV_H

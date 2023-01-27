@@ -43,24 +43,6 @@ void putNtfObject(NtfBase &resp, const RESP<T> &r){
 }
 
 
-
-struct WIFI_CONNECT{
-  char ssid[16];
-  char pwd[16];
-};
-
-struct WIFI_CFG{
-  IPAddress   ip;
-  IPAddress   gateway;
-  IPAddress   subnet;
-  IPAddress   dns1;
-  IPAddress   dns2;
-};
-
-struct WIFI_STATUS{
-  uint8_t status;
-};
-
 BEGIN_PARSE_ROUTINE(TestParse)
 
   BEGIN_GROUP_TOKEN("wifi")  
@@ -75,25 +57,6 @@ BEGIN_PARSE_ROUTINE(TestParse)
   END_GROUP_TOKEN()
 
 END_PARSE_ROUTINE()
-
-void putNtfObject(NtfBase &resp, const WIFI_CONNECT &data){
-  resp.put_F(F("ssid"), data.ssid);
-  resp.put_F(F("pwd"), data.pwd);
-}
-
-void putNtfObject(NtfBase &resp, const WIFI_CFG &data){
-  resp.put_F(F("ip"), data.ip.toString().c_str());
-  resp.put_F(F("gateway"), data.gateway.toString().c_str());
-  resp.put_F(F("subnetmask"), data.subnet.toString().c_str());
-  resp.put_F(F("dns1"), data.dns1.toString().c_str());
-  resp.put_F(F("dns2"), data.dns2.toString().c_str());
-}
-
-void putNtfObject(NtfBase &resp, const WIFI_STATUS &data){
-  resp.put_F(F("wifistatus"), data.status);  
-}
-
-
 
 
 
@@ -156,13 +119,8 @@ void loop(){
         WiFi.mode(WIFI_OFF);        
       break;
       case CMD_WIFI_GET_CFG:{
-        RESP<WIFI_CFG> r;
-        r.cmd          = itm.cmd;        
-        r.data.ip      = WiFi.localIP();
-        r.data.gateway = WiFi.gatewayIP();
-        r.data.subnet  = WiFi.subnetMask();
-        r.data.dns1    = WiFi.dnsIP(0);
-        r.data.dns2    = WiFi.dnsIP(1); 
+        RESP<WIFI_CONFIG> r;
+        r.data.getWiFiConfig();
         ntf.put(r);         
       }
       break;
