@@ -118,14 +118,9 @@ void loop(){
       case CMD_WIFI_DISCONNECT:
         WiFi.mode(WIFI_OFF);        
       break;
-      case CMD_WIFI_GET_CFG:{
-        RESP<WIFI_CONFIG> r;
-        r.data.getWiFiConfig();
-        ntf.put(r);         
-      }
-      break;
+      case CMD_WIFI_GET_CFG: 
       case CMD_WIFI_STATUS: {
-        ntf.put(RESP<WIFI_STATUS>{itm.cmd, {(uint8_t)itm.data.value}});
+        ntf.put(RESP<WIFI_STATUS>{itm.cmd} );
       }
       break;
       case EEMC_ERROR: {

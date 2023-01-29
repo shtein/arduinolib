@@ -106,6 +106,7 @@ void NtfWebApi::begin(const char *key){
 void NtfWebApi::end(const char *){    
   CHECK_TRAILING_COMMA();
   PRINT(CLB);
+  PRINT(SEP);
 }
 
 void NtfWebApi::beginArray(const char *key){
@@ -113,7 +114,7 @@ void NtfWebApi::beginArray(const char *key){
   PRINT(AOPB);
 }
 
-void NtfWebApi::endArray(const char *key){  
+void NtfWebApi::endArray(const char *){  
   CHECK_TRAILING_COMMA();
   PRINT(ACLB);
 }

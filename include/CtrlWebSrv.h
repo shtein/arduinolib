@@ -102,19 +102,25 @@ struct WIFI_CONNECT{
   char pwd[32];
 };
 
-inline void putNtfObject(NtfBase &resp, const WIFI_CONNECT &data){
-  resp.put_F(F("ssid"), data.ssid);
-  resp.put_F(F("pwd"), data.pwd);
-}
 
-//Wifi statis
+//Wifi status - for notification 
 struct WIFI_STATUS{
-  uint8_t      status;
 };
 
-
 inline void putNtfObject(NtfBase &resp, const WIFI_STATUS &data){
-  resp.put_F(F("wifistatus"), data.status);  
+  resp.put_F(F("wifimode"), (uint8_t)WiFi.getMode());    
+
+  resp.put_F(F("macaddress"), WiFi.macAddress().c_str());
+  resp.put_F(F("wifistatus"), (uint8_t)WiFi.status());   
+
+  if(WiFi.status() == WL_CONNECTED){
+    resp.put_F(F("ssid"), WiFi.SSID().c_str());
+    resp.put_F(F("ip"), WiFi.localIP().toString().c_str());
+    resp.put_F(F("gateway"), WiFi.gatewayIP().toString().c_str());
+    resp.put_F(F("subnetmask"), WiFi.subnetMask().toString().c_str());
+    resp.put_F(F("dns1"), WiFi.dnsIP(0).toString().c_str());
+    resp.put_F(F("dns2"), WiFi.dnsIP(1).toString().c_str());
+  } 
 }
 
 //Wifi config
@@ -124,28 +130,7 @@ struct WIFI_CONFIG{
   IPAddress subnetMask;
   IPAddress dns1;
   IPAddress dns2;
-
-  void getWiFiConfig(){
-    ip          = WiFi.localIP();
-    gateway     = WiFi.gatewayIP();
-    subnetMask  = WiFi.subnetMask();
-    dns1        = WiFi.dnsIP(0);
-    dns2        = WiFi.dnsIP(1);
-}
-
-  void setWiFiConfig() const{
-    WiFi.config(ip, gateway, subnetMask, dns1, dns2);
-  }
-
 };
-
-inline void putNtfObject(NtfBase &resp, const WIFI_CONFIG &data){
-  resp.put_F(F("ip"), data.ip.toString().c_str());
-  resp.put_F(F("gateway"), data.gateway.toString().c_str());
-  resp.put_F(F("subnetmask"), data.subnetMask.toString().c_str());
-  resp.put_F(F("dns1"), data.dns1.toString().c_str());
-  resp.put_F(F("dns2"), data.dns2.toString().c_str());
-}
 
 
 
