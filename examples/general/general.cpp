@@ -16,7 +16,7 @@ struct TEST_DATA{
 
 BEGIN_PARSE_ROUTINE(TestParse)
 
-  BEGIN_GROUP_TOKEN("set|")  
+  BEGIN_GROUP_TOKEN("set|s")  
      VALUE_IS_TOKEN("off", 1, 0)
      VALUE_IS_TOKEN("on", 1, 1)
     END_GROUP_TOKEN()
@@ -32,17 +32,44 @@ BEGIN_PARSE_ROUTINE(TestParse)
     END_OBJECT()
 
   END_GROUP_TOKEN()
-
-  
-
   
 END_PARSE_ROUTINE()
 
-void putNtfObject(NtfBase &resp, const TEST_DATA &data){
-  resp.put_F(F("str"), data.str);
-  resp.put_F(F("n"), data.n);
-  resp.put_F(F("p"), data.p);
+/*
+template<class T>
+void test(NtfBase &resp, const T &data, void (*f)(NtfBase &resp, const T &data)){
+  f(resp, data);
 }
+*/
+
+void p1(NtfBase &resp, const TEST_DATA &data){
+      resp.put_F(F("str"), data.str);
+      resp.put_F(F("n"), data.n);
+      resp.put_F(F("p"), data.p);
+    };
+
+void putNtfObject(NtfBase &resp, const TEST_DATA &data){
+
+/*
+    test<TEST_DATA>(resp, data, [](NtfBase &resp, const TEST_DATA &data){
+      resp.put_F(F("str"), data.str);
+      resp.put_F(F("n"), data.n);
+      resp.put_F(F("p"), data.p);
+    });
+*/
+    auto p = [](NtfBase &resp, const TEST_DATA &data){
+      resp.put_F(F("str"), data.str);
+      resp.put_F(F("n"), data.n);
+      resp.put_F(F("p"), data.p);
+    };
+
+    resp.test(NULL, data, *p1);
+
+  //resp.put_F(F("str"), data.str);
+  //resp.put_F(F("n"), data.n);
+  //resp.put_F(F("p"), data.p);
+}
+
 
 void putNtfObject(NtfBase &resp, const CtrlQueueData &data){
   if(data.flag == CTF_VAL_STRING){
@@ -56,26 +83,30 @@ void putNtfObject(NtfBase &resp, const CtrlQueueData &data){
   resp.put_F(F("max"), data.max);
 }
 
+
 void putNtfObject(NtfBase &resp, const CtrlQueueItem &data){
   resp.put_F(F("cmd"), data.cmd);
   if(data.cmd == 3){
     
     TEST_DATA *d = (TEST_DATA *)data.data.str;
-    resp.put_F(F("data"), *d);    
+    resp.put_F(F("data"), *d);
+/*    
+    resp.put("data", *d, *[](NtfBase &resp, const TEST_DATA &data){
+      resp.put_F(F("str"), data.str);
+      resp.put_F(F("n"), data.n);
+      resp.put_F(F("p"), data.p);
+
+    });    
+*/
+    
   }
   else{
-    resp.put_F(F("data"), data.data);
+    resp.put_F(F("data"), data.data);    
   }
   
 }
   
 
-
-template <typename ... ARGS>
-void test(NtfBase *p, const ARGS&... args){
-  CtrlQueueData data;
-  p->put(NULL, args...);
-}
 
 #define MAX_NTF 3
 typedef NtfBaseSet<MAX_NTF> NtfSet;

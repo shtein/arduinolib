@@ -107,21 +107,14 @@ struct WIFI_CONNECT{
 struct WIFI_STATUS{
 };
 
-inline void putNtfObject(NtfBase &resp, const WIFI_STATUS &data){
-  resp.put_F(F("wifimode"), (uint8_t)WiFi.getMode());    
+//WiFi scan
+struct WIFI_SCAN{
+};
 
-  resp.put_F(F("macaddress"), WiFi.macAddress().c_str());
-  resp.put_F(F("wifistatus"), (uint8_t)WiFi.status());   
 
-  if(WiFi.status() == WL_CONNECTED){
-    resp.put_F(F("ssid"), WiFi.SSID().c_str());
-    resp.put_F(F("ip"), WiFi.localIP().toString().c_str());
-    resp.put_F(F("gateway"), WiFi.gatewayIP().toString().c_str());
-    resp.put_F(F("subnetmask"), WiFi.subnetMask().toString().c_str());
-    resp.put_F(F("dns1"), WiFi.dnsIP(0).toString().c_str());
-    resp.put_F(F("dns2"), WiFi.dnsIP(1).toString().c_str());
-  } 
-}
+void putNtfObject(NtfBase &resp, const ip_info &info);
+void putNtfObject(NtfBase &resp, const WIFI_STATUS &data);
+void putNtfObject(NtfBase &resp, const WIFI_SCAN &data);
 
 //Wifi config
 struct WIFI_CONFIG{

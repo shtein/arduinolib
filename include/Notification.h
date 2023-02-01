@@ -2,6 +2,7 @@
 #define __NOTIFICATION_H
 
 
+
 /////////////////////////////
 // Base interface to send notifications
 
@@ -40,22 +41,24 @@ public:
   virtual void put(const char *key, const char *v) = 0;
   void put(const char *key, const __FlashStringHelper *v);
 
+  
   template <class T>
   void put(const char *key, const T &t);
 
   template<class T>
   void put(const char *key, const T*, size_t size);
 
-  template< class T>
+  template<class T>
   void put_F (const __FlashStringHelper *key, const T &t);
 
-  template< class T>
+  template<class T>
   void put_F(const __FlashStringHelper *key, const T*, size_t size);
 
+  
   //Context manupulation
   struct CONTEXT{
     uint8_t flags;
-    size_t arrayIndex;
+    size_t  arrayIndex;
   }; 
 
   const CONTEXT& getContext() const; 
@@ -112,9 +115,7 @@ template <class T>
 void NtfBase::put(const char *key, const T &t){
   begin(key);
   
-  //Serialize
   putNtfObject(*this, t);
-  
 
   end(key);
 }
@@ -144,7 +145,7 @@ void NtfBase::put(const char *key, const T *t, size_t size){
   endArray(key);
 }
 
-inline void NtfBase::put(const char *key, const __FlashStringHelper *v){
+inline void NtfBase::put(const char *key, const __FlashStringHelper *v ){
   char buf[24]; 
 
   if(v){  

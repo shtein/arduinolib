@@ -13,7 +13,9 @@
 #define CMD_WIFI_DISCONNECT  0x02
 #define CMD_WIFI_GET_CFG     0x03
 #define CMD_WIFI_SET_CFG     0x04
-#define CMD_WIFI_STATUS      0x10
+#define CMD_WIFI_STATUS      0x05
+#define CMD_WIFI_NETWORKS    0x06
+#define CMD_WIFI_AP          0x07       
 
 template <typename ...Ts>
 struct RESP{};
@@ -36,11 +38,14 @@ inline void putNtfObject(NtfBase &resp, const RESP<> &r){
 }
 
 //Default serialization
-template<typename T>
+
+template <class T>
 void putNtfObject(NtfBase &resp, const RESP<T> &r){
   resp.put_F(F("cmd"), r.cmd);
   resp.put_F(F("data"), r.data);
 }
+
+
 
 
 BEGIN_PARSE_ROUTINE(TestParse)
@@ -54,6 +59,8 @@ BEGIN_PARSE_ROUTINE(TestParse)
     BEGIN_GROUP_TOKEN("cfg")
       VALUE_IS_TOKEN("get|g|", CMD_WIFI_GET_CFG)      
     END_GROUP_TOKEN();
+    VALUE_IS_TOKEN("networks|n", CMD_WIFI_NETWORKS);
+    VALUE_IS_TOKEN("ap|a", CMD_WIFI_AP);
   END_GROUP_TOKEN()
 
 END_PARSE_ROUTINE()
@@ -94,7 +101,6 @@ void setup() {
 
   static CtrlWifiStatus wifiStatus(CMD_WIFI_STATUS);
   cp.addControl(&wifiStatus);
-
 }
 
 
@@ -125,6 +131,28 @@ void loop(){
       break;
       case EEMC_ERROR: {
         ntf.put(RESP<>{itm.cmd, ERR_INVALID});
+      }
+      break;
+      case CMD_WIFI_NETWORKS: {
+        int8_t scan = WiFi.scanComplete();
+        if(scan == WIFI_SCAN_FAILED){
+          scan = WiFi.scanNetworks(true, true);
+        }      
+
+        ntf.put(RESP<WIFI_SCAN>{itm.cmd});
+
+        if(scan >= 0){
+          WiFi.scanDelete();
+        }
+      break; }
+      case CMD_WIFI_AP:{
+        WiFi.mode(WIFI_AP);
+        WiFi.softAPConfig( IPAddress(172, 16, 25, 25),
+                           IPAddress(172, 16, 25, 25), 
+                           IPAddress(255, 255, 255, 0) 
+                         );            
+        
+        WiFi.softAP("ESP8266_test");
       }
       break;
       default: {

@@ -148,5 +148,104 @@ void NtfWebApi::put(const char *key, const char *v){
 }
 
 
+///////////////////////////
+// Serialization for notifications
+
+//IP Info
+void putNtfObject(NtfBase &resp, const ip_info &info){
+  resp.put_F(F("ipaddress"), IPAddress(info.ip).toString().c_str());
+  resp.put_F(F("gateway"), IPAddress(info.gw).toString().c_str());
+  resp.put_F(F("subnetmask"), IPAddress(info.netmask).toString().c_str());    
+}
+
+//WiFi status
+void putNtfObject(NtfBase &resp, const WIFI_STATUS &data){
+  resp.put_F(F("macaddress"), WiFi.macAddress().c_str());   
+  resp.put_F(F("wifimode"), (uint8_t)WiFi.getMode());   
+
+  
+  if(WiFi.getMode() & WIFI_STA){
+    resp.begin_F(F("sta"));
+      //Station mode
+      resp.put_F(F("wifistatus"), (uint8_t)WiFi.status());  
+      
+      if(WiFi.status() == WL_CONNECTED){    
+        //SSID
+        resp.put_F(F("ssid"), WiFi.SSID().c_str());
+        
+        //IP 
+        struct ip_info ip;
+        wifi_get_ip_info(STATION_IF, &ip);
+        resp.put_F(F("ipconfig"), ip);
+
+        //DNS
+        resp.put_F(F("dns1"), WiFi.dnsIP(0).toString().c_str());
+        resp.put_F(F("dns2"), WiFi.dnsIP(1).toString().c_str());
+      } 
+    resp.end_F(F("sta"));
+  }
+
+  if(WiFi.getMode() & WIFI_AP){    
+    resp.begin_F(F("AP"));
+
+      //SSID
+      resp.put_F(F("ssid"), WiFi.softAPSSID().c_str());
+
+      //IP
+      struct ip_info ip;
+      wifi_get_ip_info(SOFTAP_IF, &ip);
+      resp.put_F(F("ipconfig"), ip);        
+
+    resp.end_F(F("AP"));
+  }
+  
+}
+
+//WiFi scan
+void putNtfObject(NtfBase &resp, const WIFI_SCAN &data){
+  //Scan result
+  int8_t result = WiFi.scanComplete();
+
+  resp.put_F(F("result"), result >= 0 ? 0 : result);    
+
+  //Networks
+  if(result > 0){
+    resp.beginArray_F(F("networks"));
+
+    for(int i = 0; i < result; i++){
+     
+      int index = i;
+
+      //Remove duplicates and select a better network
+      for(int j = 0; j < result; j++){
+
+        //Same network and better signal
+        if( i != j &&
+            WiFi.SSID(i) == WiFi.SSID(j) && 
+            WiFi.RSSI(i) < WiFi.RSSI(j) ){
+                                    
+          index = j;
+          break;
+        }
+      }
+
+      //The current network is the best
+      if(index == i) {
+        resp.begin(NULL);
+
+          resp.put_F(F("ssid"), WiFi.SSID(i).c_str());
+          resp.put_F(F("channel"), WiFi.channel(i));
+          resp.put_F(F("encryption"), WiFi.encryptionType(i));
+          resp.put_F(F("rssi"), WiFi.RSSI(i));
+          resp.put_F(F("bssid"), WiFi.BSSIDstr(i).c_str());                    
+          resp.put_F(F("hidden"), WiFi.isHidden(i) ? 1 : 0);
+
+        resp.end_F(NULL);
+      }
+    }
+    resp.endArray_F(F("networks"));
+  }
+}
+
 
 #endif

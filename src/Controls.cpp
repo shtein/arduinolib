@@ -72,7 +72,7 @@ bool getTokens(char *cmdLine, char *tokens[], size_t maxTokens){
 //Check if tokens match to specified token
 bool checkTokenMatch(const char *token, const char *token2){
   char match[32];
-  strncpy_P(match, token2, sizeof(match));
+  strncpy_P(match, token2, sizeof(match));  
 
   //Remember length of the token
   size_t lenToken = token ? strlen(token) : 0;
@@ -83,7 +83,7 @@ bool checkTokenMatch(const char *token, const char *token2){
       begin = end, end = begin ? strchr(begin, COMMAND_SEPARATOR) : NULL){   
 
     //Calculate length of the matching string
-    lenMatch = end ? end - begin : strlen_P(begin);
+    lenMatch = end ? end - begin : strlen(begin);
 
     //Special case - no string, i.e. default value
     if(lenMatch == 0 && lenToken == 0)
