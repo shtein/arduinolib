@@ -21,6 +21,12 @@ void _APIRequestHandler(const char *uri){
   requestApi.replace('?', ' ');
   requestApi.replace('/', ' ');
 
+  //Add command parameters
+  for(int i = 0; i < webServer.args(); i++){
+    requestApi += " " + webServer.argName(i) + " " + webServer.arg(i);    
+  }
+
+  //Ensure request processing
   if(requestApi.length() == 0){
     requestApi = " ";
   }
@@ -90,10 +96,16 @@ void NtfWebApi::reset(){
 void NtfWebApi::send(){
   CHECK_TRAILING_COMMA();
 
-  //Send response:
+  if(requestApi.length() == 0){
+    DBG_OUTLN("No web request");
+    return;
+  }
+
+  
+  //Send response
   webServer.send(200, "application/json", _data);
 
-  //Clear request string
+  //Clear request data
   requestApi = emptyString;
 }
 
@@ -160,19 +172,24 @@ void putNtfObject(NtfBase &resp, const ip_info &info){
 
 //WiFi status
 void putNtfObject(NtfBase &resp, const WIFI_STATUS &data){
-  resp.put_F(F("macaddress"), WiFi.macAddress().c_str());   
+  //Current mode
   resp.put_F(F("wifimode"), (uint8_t)WiFi.getMode());   
-
   
-  if(WiFi.getMode() & WIFI_STA){
-    resp.begin_F(F("sta"));
-      //Station mode
+  //Station
+  resp.begin_F(F("station"));
+
+    //Mac address
+    resp.put_F(F("macaddress"), WiFi.macAddress().c_str());   
+    //SSID
+    resp.put_F(F("ssid"), WiFi.SSID().c_str());
+
+    //Active 
+    if(WiFi.getMode() & WIFI_STA){
+        
+      //Statis      
       resp.put_F(F("wifistatus"), (uint8_t)WiFi.status());  
       
-      if(WiFi.status() == WL_CONNECTED){    
-        //SSID
-        resp.put_F(F("ssid"), WiFi.SSID().c_str());
-        
+      if(WiFi.status() == WL_CONNECTED){                    
         //IP 
         struct ip_info ip;
         wifi_get_ip_info(STATION_IF, &ip);
@@ -181,23 +198,22 @@ void putNtfObject(NtfBase &resp, const WIFI_STATUS &data){
         //DNS
         resp.put_F(F("dns1"), WiFi.dnsIP(0).toString().c_str());
         resp.put_F(F("dns2"), WiFi.dnsIP(1).toString().c_str());
-      } 
-    resp.end_F(F("sta"));
-  }
+      }     
+    }
+  resp.end_F(F("station"));
 
-  if(WiFi.getMode() & WIFI_AP){    
-    resp.begin_F(F("AP"));
-
-      //SSID
-      resp.put_F(F("ssid"), WiFi.softAPSSID().c_str());
-
+  resp.begin_F(F("AP"));
+    //Mac address
+    resp.put_F(F("macaddress"), WiFi.softAPmacAddress().c_str());   
+    //SSID
+    resp.put_F(F("ssid"), WiFi.softAPSSID().c_str());
+    if(WiFi.getMode() & WIFI_AP){    
       //IP
       struct ip_info ip;
       wifi_get_ip_info(SOFTAP_IF, &ip);
-      resp.put_F(F("ipconfig"), ip);        
-
-    resp.end_F(F("AP"));
-  }
+      resp.put_F(F("ipconfig"), ip);            
+      }
+  resp.end_F(F("AP"));
   
 }
 
