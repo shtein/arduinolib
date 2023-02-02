@@ -96,8 +96,8 @@ void NtfWebApi::reset(){
 void NtfWebApi::send(){
   CHECK_TRAILING_COMMA();
 
+  //Nothing to process
   if(requestApi.length() == 0){
-    DBG_OUTLN("No web request");
     return;
   }
 
@@ -163,13 +163,6 @@ void NtfWebApi::put(const char *key, const char *v){
 ///////////////////////////
 // Serialization for notifications
 
-//IP Info
-void putNtfObject(NtfBase &resp, const ip_info &info){
-  resp.put_F(F("ipaddress"), IPAddress(info.ip).toString().c_str());
-  resp.put_F(F("gateway"), IPAddress(info.gw).toString().c_str());
-  resp.put_F(F("subnetmask"), IPAddress(info.netmask).toString().c_str());    
-}
-
 //WiFi status
 void putNtfObject(NtfBase &resp, const WIFI_STATUS &data){
   //Current mode
@@ -191,10 +184,9 @@ void putNtfObject(NtfBase &resp, const WIFI_STATUS &data){
       
       if(WiFi.status() == WL_CONNECTED){                    
         //IP 
-        struct ip_info ip;
-        wifi_get_ip_info(STATION_IF, &ip);
-        resp.put_F(F("ipconfig"), ip);
-
+        resp.put_F(F("ipaddress"), WiFi.localIP().toString().c_str());
+        resp.put_F(F("gateway"), WiFi.gatewayIP().toString().c_str());
+        resp.put_F(F("netmask"), WiFi.subnetMask().toString().c_str());
         //DNS
         resp.put_F(F("dns1"), WiFi.dnsIP(0).toString().c_str());
         resp.put_F(F("dns2"), WiFi.dnsIP(1).toString().c_str());
@@ -202,19 +194,18 @@ void putNtfObject(NtfBase &resp, const WIFI_STATUS &data){
     }
   resp.end_F(F("station"));
 
-  resp.begin_F(F("AP"));
+  resp.begin_F(F("ap"));
     //Mac address
     resp.put_F(F("macaddress"), WiFi.softAPmacAddress().c_str());   
     //SSID
     resp.put_F(F("ssid"), WiFi.softAPSSID().c_str());
+    
     if(WiFi.getMode() & WIFI_AP){    
       //IP
-      struct ip_info ip;
-      wifi_get_ip_info(SOFTAP_IF, &ip);
-      resp.put_F(F("ipconfig"), ip);            
-      }
-  resp.end_F(F("AP"));
-  
+      resp.put_F(F("ipdadress"), WiFi.softAPIP().toString().c_str());  
+      resp.put_F(F("stations"), WiFi.softAPgetStationNum());  
+    }
+  resp.end_F(F("ap"));
 }
 
 //WiFi scan
@@ -251,10 +242,9 @@ void putNtfObject(NtfBase &resp, const WIFI_SCAN &data){
 
           resp.put_F(F("ssid"), WiFi.SSID(i).c_str());
           resp.put_F(F("channel"), WiFi.channel(i));
-          resp.put_F(F("encryption"), WiFi.encryptionType(i));
+          resp.put_F(F("encryption"), (uint8_t)WiFi.encryptionType(i));
           resp.put_F(F("rssi"), WiFi.RSSI(i));
-          resp.put_F(F("bssid"), WiFi.BSSIDstr(i).c_str());                    
-          resp.put_F(F("hidden"), WiFi.isHidden(i) ? 1 : 0);
+          resp.put_F(F("bssid"), WiFi.BSSIDstr(i).c_str()); 
 
         resp.end_F(NULL);
       }

@@ -112,7 +112,6 @@ struct WIFI_SCAN{
 };
 
 
-void putNtfObject(NtfBase &resp, const ip_info &info);
 void putNtfObject(NtfBase &resp, const WIFI_STATUS &data);
 void putNtfObject(NtfBase &resp, const WIFI_SCAN &data);
 

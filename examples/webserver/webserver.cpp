@@ -107,12 +107,11 @@ void setup() {
 
 void loop(){
   
-
   CtrlQueueItem itm;
   cp.loop(itm);
 
+
   if(itm.cmd != EEMC_NONE){
-    
 
     switch(itm.cmd){
       case CMD_WIFI_CONNECT:{
@@ -146,7 +145,7 @@ void loop(){
         }
       break; }
       case CMD_WIFI_AP:{
-        WiFi.mode(WIFI_AP);
+        WiFi.encryptionType(WIFI_AP);
         WiFi.softAPConfig( IPAddress(172, 16, 25, 25),
                            IPAddress(172, 16, 25, 25), 
                            IPAddress(255, 255, 255, 0) 
