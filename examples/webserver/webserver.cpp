@@ -2,8 +2,8 @@
 #include <DbgTool.h>
 #include <AnalogInput.h>
 #include <CtrlSerial.h>
-
 #include <CtrlWebSrv.h>
+#include <CtrlWiFi.h>
 
 #define ERR_SUCCESS    0x00
 #define ERR_INVALID    0x01

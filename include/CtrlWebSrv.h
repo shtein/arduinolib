@@ -45,6 +45,7 @@ public:
   void beginArray(const char *key = NULL);
   void endArray(const char *key = NULL);
   
+  void put(const char *key, bool v);
   void put(const char *key, uint8_t v);
   void put(const char *key, uint16_t v);
   void put(const char *key, uint32_t v);
@@ -71,58 +72,6 @@ void _APIRequestHandler(const char *uri);
 template <uint8_t (*PARSER) (char *cmdLine, CtrlQueueData &data)>
 using CtrlItemWebApi = CtrlItemMultiCommand<WebApiInput, NtfWebApi, PARSER>;
 
-////////////////////////////////////
-// CtrlWifiStatus - wifi status change
-class CtrlWifiStatus: public CtrlItem{
-  public:
-    CtrlWifiStatus(uint8_t cmd): CtrlItem(cmd, NULL) {
-      _status = WiFi.status();        
-    }
-
-  protected:  
-    bool triggered() const{     
-      return _status != WiFi.status();
-    }
-
-    void getData(CtrlQueueData &data){                       
-      _status = WiFi.status();
-      data.setValue(_status);            
-    }    
-
-  private:
-    wl_status_t  _status;    
-};
-
-/////////////////////////////
-// Wifi configs and status
-
-//Connect to WiFi
-struct WIFI_CONNECT{
-  char ssid[32];
-  char pwd[32];
-};
-
-
-//Wifi status - for notification 
-struct WIFI_STATUS{
-};
-
-//WiFi scan
-struct WIFI_SCAN{
-};
-
-
-void putNtfObject(NtfBase &resp, const WIFI_STATUS &data);
-void putNtfObject(NtfBase &resp, const WIFI_SCAN &data);
-
-//Wifi config
-struct WIFI_CONFIG{
-  IPAddress ip;
-  IPAddress gateway;
-  IPAddress subnetMask;
-  IPAddress dns1;
-  IPAddress dns2;
-};
 
 
 

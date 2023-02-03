@@ -32,6 +32,7 @@ public:
 
 
   //Primitives
+  virtual void put(const char *key, bool v) = 0;
   virtual void put(const char *key, uint8_t v) = 0;
   virtual void put(const char *key, uint16_t v) = 0;
   virtual void put(const char *key, uint32_t v) = 0;

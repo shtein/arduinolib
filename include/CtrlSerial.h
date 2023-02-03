@@ -45,6 +45,7 @@ public:
   void beginArray(const char *key = NULL);
   void endArray(const char *key = NULL);
 
+  void put(const char *key, bool v);
   void put(const char *key, uint8_t v);
   void put(const char *key, uint16_t v);
   void put(const char *key, uint32_t v);
