@@ -119,5 +119,10 @@ void putNtfObject(NtfBase &resp, const WIFI_CONFIG &data){
   }
 }
 
+//String for IP address for parser
+bool strTo(const char *str, IPAddress &ip){
+  return ip.fromString(str);
+}
+
 
 #endif

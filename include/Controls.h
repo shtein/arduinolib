@@ -337,7 +337,8 @@ bool getTokens(char *cmdLine, char *tokens[], size_t maxTokens);
 bool checkTokenMatch(const char *token, const char *match);
 const char *getValueAfterToken(char *tokens[], const char *match);
 bool strTo(const char *str, int &n);
-bool strTo(const char *str, char *dest);
+bool strTo(const char *str, char *dest); 
+
 
 //Helper macros
 #define MAX_TOKENS         10
