@@ -55,11 +55,11 @@ struct WIFI_SCAN{
 
 //Wifi config
 struct WIFI_CONFIG{
-  IPAddress ip;
-  IPAddress gateway;
-  IPAddress subnetMask;
-  IPAddress dns1;
-  IPAddress dns2;
+  uint32_t ip;
+  uint32_t gateway;
+  uint32_t subnetMask;
+  uint32_t dns1;
+  uint32_t dns2;
 };
 
 ////////////////////
@@ -67,6 +67,9 @@ struct WIFI_CONFIG{
 void putNtfObject(NtfBase &resp, const WIFI_STATUS &data);
 void putNtfObject(NtfBase &resp, const WIFI_SCAN &data);
 void putNtfObject(NtfBase &resp, const WIFI_CONFIG &data);
+
+//IPAddress from string
+bool strToIPAddr(const char *, uint32_t &);
 
 
 #endif

@@ -433,10 +433,10 @@ uint8_t FunctionName(char *cmdLine, CtrlQueueData &data){ \
   _BEGIN_TOKEN(token) \
   object obj; \
   memset(&obj, 0, sizeof(obj)); \
-  uint8_t command = cmd; \
+  uint8_t command = cmd;
 
 #define END_OBJECT() \
-  _CQD_SET_DATA(data, command, obj, CTF_VAL_STRING) \
+  _CQD_SET_DATA(data, command, obj, CTF_VAL_OBJECT) \
   _END_TOKEN();
 
 
@@ -448,16 +448,20 @@ uint8_t FunctionName(char *cmdLine, CtrlQueueData &data){ \
 #define _DM_MANDATORY_TRUE() return EEMC_ERROR;
 #define _DM_MANDATORY(...) ARG_NUM( NUM_ARGS(_, ##__VA_ARGS__), _DM_MANDATORY_TRUE, _DM_MANDATORY_FALSE)()
 
-//Key value pairs. Third macro parameter is default value, if not defined this member is mandatory
-#define DATA_MEMBER(token, member, ...) \
+
+#define _DM_AS(token, member, format, ...) \
   { \
     const char *v = getValueAfterToken(&tokens[index + 1], PSTR(token)); \
-    if(!strTo(v, obj.member)){  \
+    if(!format(v, obj.member)){  \
       _DM_MANDATORY(__VA_ARGS__) \
       _DM_DEFAULT(obj.member, ##__VA_ARGS__); \
     } \
   }
 
+//Key value pairs. Third macro parameter is default value, if not defined this member is mandatory
+
+#define DATA_MEMBER(token, member, ...) _DM_AS(token, member, strTo, ##__VA_ARGS__)
+#define DATA_MEMBER_AS_IP(token, member, ...) _DM_AS(token, member, strToIPAddr, ##__VA_ARGS__)
 
 
 

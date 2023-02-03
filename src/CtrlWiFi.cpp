@@ -104,24 +104,31 @@ void putNtfObject(NtfBase &resp, const WIFI_SCAN &data){
 }
 
 void putNtfObject(NtfBase &resp, const WIFI_CONFIG &data){
-  //resp.put_F(F("staticip"), data.ip.isSet());
+  resp.put_F(F("staticip"), data.ip == 0 ? false : true);
 
-  if(data.ip.isSet()){
-    resp.put_F(F("ipaddress"), data.ip.toString().c_str());
-    resp.put_F(F("gateway"), data.gateway.toString().c_str());
-    resp.put_F(F("netmask"), data.subnetMask.toString().c_str());  
+  if(data.ip != 0){
+    resp.put_F(F("ipaddress"), IPAddress(data.ip).toString().c_str());
+    resp.put_F(F("gateway"), IPAddress(data.gateway).toString().c_str());
+    resp.put_F(F("netmask"), IPAddress(data.subnetMask).toString().c_str());  
   }
-  if(data.dns1.isSet()){
-    resp.put_F(F("dns1"), data.dns1.toString().c_str());
+  if(data.dns1 != 0){
+    resp.put_F(F("dns1"), IPAddress(data.dns1).toString().c_str());
   }
-  if(data.dns2.isSet()){
-    resp.put_F(F("dns2"), data.dns2.toString().c_str());
+  if(data.dns2 != 0){
+    resp.put_F(F("dns2"), IPAddress(data.dns2).toString().c_str());
   }
+
 }
 
+
 //String for IP address for parser
-bool strTo(const char *str, IPAddress &ip){
-  return ip.fromString(str);
+bool strToIPAddr(const char *str, uint32_t &u){
+  if(!str)
+    return false;
+  
+  u = ipaddr_addr(str);
+
+  return true; 
 }
 
 

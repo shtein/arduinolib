@@ -53,11 +53,14 @@ BEGIN_PARSE_ROUTINE(TestParse)
   BEGIN_GROUP_TOKEN("wifi")  
     BEGIN_OBJECT("connect|c", WIFI_CONNECT, CMD_WIFI_CONNECT)
       DATA_MEMBER("ssid|s", ssid)
-      DATA_MEMBER("pwd|p", pwd)
+      DATA_MEMBER("pwd|p", pwd) 
     END_OBJECT()
     VALUE_IS_TOKEN("disconnect|d", CMD_WIFI_DISCONNECT)
     BEGIN_GROUP_TOKEN("cfg")
-      VALUE_IS_TOKEN("get|g|", CMD_WIFI_GET_CFG)      
+      VALUE_IS_TOKEN("get|g|", CMD_WIFI_GET_CFG) 
+      BEGIN_OBJECT("set|s", WIFI_CONFIG, CMD_WIFI_SET_CFG)
+        DATA_MEMBER_AS_IP("ipaddress|ip", ip, (uint32_t)0)
+      END_OBJECT()
     END_GROUP_TOKEN();
     VALUE_IS_TOKEN("networks|n", CMD_WIFI_NETWORKS);
     VALUE_IS_TOKEN("ap|a", CMD_WIFI_AP);
@@ -76,6 +79,9 @@ void handleNotFound() {
 
 
 void setup() {
+
+  //ip4_addr addr;
+  
 
   DBG_INIT();
   DBG_OUTLN("Started");
@@ -126,6 +132,13 @@ void loop(){
       case CMD_WIFI_GET_CFG: 
       case CMD_WIFI_STATUS: {
         ntf.put(RESP<WIFI_STATUS>{itm.cmd} );
+      }
+      break;
+      case CMD_WIFI_SET_CFG:{
+        RESP<WIFI_CONFIG> resp;
+        resp.cmd = itm.cmd;
+        resp.data = *(WIFI_CONFIG *)itm.data.str;
+        ntf.put(resp);
       }
       break;
       case EEMC_ERROR: {
