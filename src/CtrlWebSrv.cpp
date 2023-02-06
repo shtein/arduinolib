@@ -131,8 +131,8 @@ void NtfWebApi::endArray(const char *){
 }
 
 void NtfWebApi::put(const char *key, bool v){
-  char str[8];
-  strcpy_P(str, v ? PSTR("true"): PSTR("true"));
+  char str[5];
+  strcpy_P(str, v ? PSTR("true"): PSTR("false"));
   
   PRINT_KEY_VALUE(key, str);
 }

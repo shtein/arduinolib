@@ -341,8 +341,13 @@ bool strTo(const char *str, char *dest);
 
 
 //Helper macros
-#define MAX_TOKENS         10
-#define MAX_COMMAND_LEN    32
+#if defined(ESP8266) || defined(ESP32)
+  #define MAX_TOKENS         16
+  #define MAX_COMMAND_LEN    128
+#else
+  #define MAX_TOKENS         8
+  #define MAX_COMMAND_LEN    32
+#endif
 
 
 //Set corresponding data members of CtrlQueueData

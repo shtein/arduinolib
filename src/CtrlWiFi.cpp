@@ -22,14 +22,14 @@ void putNtfObject(NtfBase &resp, const WIFI_STATUS &data){
   resp.begin_F(F("station"));
     //Mac address
     resp.put_F(F("macaddress"), WiFi.macAddress().c_str());   
-    //SSID
-    resp.put_F(F("ssid"), WiFi.SSID().c_str());
 
     //Active 
     if(WiFi.getMode() & WIFI_STA){
         
       //Statis      
       resp.put_F(F("wifistatus"), (uint8_t)WiFi.status());  
+      //SSID
+      resp.put_F(F("ssid"), WiFi.SSID().c_str());
       
       if(WiFi.status() == WL_CONNECTED){                    
         //IP 
@@ -46,12 +46,13 @@ void putNtfObject(NtfBase &resp, const WIFI_STATUS &data){
   resp.begin_F(F("ap"));
     //Mac address
     resp.put_F(F("macaddress"), WiFi.softAPmacAddress().c_str());   
-    //SSID
-    resp.put_F(F("ssid"), WiFi.softAPSSID().c_str());
     
     if(WiFi.getMode() & WIFI_AP){    
+      //SSID
+      resp.put_F(F("ssid"), WiFi.softAPSSID().c_str());      
       //IP
       resp.put_F(F("ipdadress"), WiFi.softAPIP().toString().c_str());  
+      //Number of connected stations
       resp.put_F(F("stations"), WiFi.softAPgetStationNum());  
     }
   resp.end_F(F("ap"));
@@ -104,7 +105,7 @@ void putNtfObject(NtfBase &resp, const WIFI_SCAN &data){
 }
 
 void putNtfObject(NtfBase &resp, const WIFI_CONFIG &data){
-  resp.put_F(F("staticip"), data.ip == 0 ? false : true);
+  resp.put_F(F("staticip"), data.ip == 0);
 
   if(data.ip != 0){
     resp.put_F(F("ipaddress"), IPAddress(data.ip).toString().c_str());
@@ -117,7 +118,6 @@ void putNtfObject(NtfBase &resp, const WIFI_CONFIG &data){
   if(data.dns2 != 0){
     resp.put_F(F("dns2"), IPAddress(data.dns2).toString().c_str());
   }
-
 }
 
 

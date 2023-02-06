@@ -152,8 +152,8 @@ void NtfSerial::endArray(const char *key){
 }
 
 void NtfSerial::put(const char *key, bool v){
-  char str[8];
-  strcpy_P(str, v ? PSTR("true"): PSTR("true"));
+  char str[5];
+  strcpy_P(str, v ? PSTR("true"): PSTR("false"));
   
   STR_PRN_VAL("%s", key, str);
 }

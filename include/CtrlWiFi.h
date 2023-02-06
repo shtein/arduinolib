@@ -41,7 +41,7 @@ class NtfBase;
 //Connect to WiFi
 struct WIFI_CONNECT{
   char ssid[32];
-  char pwd[32];
+  char pwd[64];
 };
 
 

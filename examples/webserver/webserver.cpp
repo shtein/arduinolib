@@ -4,6 +4,8 @@
 #include <CtrlSerial.h>
 #include <CtrlWebSrv.h>
 #include <CtrlWiFi.h>
+#include <LittleFS.h>
+#include <DNSServer.h> 
 
 #define ERR_SUCCESS    0x00
 #define ERR_INVALID    0x01
@@ -11,11 +13,9 @@
 
 #define CMD_WIFI_CONNECT     0x01
 #define CMD_WIFI_DISCONNECT  0x02
-#define CMD_WIFI_GET_CFG     0x03
-#define CMD_WIFI_SET_CFG     0x04
-#define CMD_WIFI_STATUS      0x05
-#define CMD_WIFI_NETWORKS    0x06
-#define CMD_WIFI_AP          0x07       
+#define CMD_WIFI_STATUS      0x03
+#define CMD_WIFI_NETWORKS    0x04
+#define CMD_WIFI_AP          0x05       
 
 template <typename ...Ts>
 struct RESP{};
@@ -46,8 +46,6 @@ void putNtfObject(NtfBase &resp, const RESP<T> &r){
 }
 
 
-
-
 BEGIN_PARSE_ROUTINE(TestParse)
 
   BEGIN_GROUP_TOKEN("wifi")  
@@ -56,14 +54,12 @@ BEGIN_PARSE_ROUTINE(TestParse)
       DATA_MEMBER("pwd|p", pwd) 
     END_OBJECT()
     VALUE_IS_TOKEN("disconnect|d", CMD_WIFI_DISCONNECT)
-    BEGIN_GROUP_TOKEN("cfg")
-      VALUE_IS_TOKEN("get|g|", CMD_WIFI_GET_CFG) 
-      BEGIN_OBJECT("set|s", WIFI_CONFIG, CMD_WIFI_SET_CFG)
-        DATA_MEMBER_AS_IP("ipaddress|ip", ip, (uint32_t)0)
-      END_OBJECT()
-    END_GROUP_TOKEN();
-    VALUE_IS_TOKEN("networks|n", CMD_WIFI_NETWORKS);
-    VALUE_IS_TOKEN("ap|a", CMD_WIFI_AP);
+    VALUE_IS_TOKEN("status|", CMD_WIFI_STATUS)
+    VALUE_IS_TOKEN("scan|s", CMD_WIFI_NETWORKS)
+    BEGIN_GROUP_TOKEN("ap")
+      VALUE_IS_TOKEN("on", CMD_WIFI_AP, 1)
+      VALUE_IS_TOKEN("off", CMD_WIFI_AP, 0)
+    END_GROUP_TOKEN()
   END_GROUP_TOKEN()
 
 END_PARSE_ROUTINE()
@@ -73,24 +69,40 @@ END_PARSE_ROUTINE()
 CtrlPanel cp;
 NtfBaseSet<2> ntf;
 
-void handleNotFound() {
-  webServer.send(404);
-}
+DNSServer dnsServer;
 
 
 void setup() {
-
-  //ip4_addr addr;
   
 
   DBG_INIT();
   DBG_OUTLN("Started");
 
+  LittleFS.begin();
   webServer.begin(80);
 
   ADD_API_REQUEST_HANDLER(HTTP_GET, "/api");
-  webServer.onNotFound(handleNotFound);
-  
+
+  webServer.serveStatic("/", LittleFS, "/wifi_settings.html");
+  webServer.serveStatic("/favicon.ico", LittleFS, "/favicon.ico");
+
+  webServer.onNotFound([](){
+    DBG_OUTLN("URI %s", webServer.uri().c_str());
+
+    if(WiFi.softAPIP() == webServer.client().localIP()){
+      String url = "htt[://" + WiFi.softAPIP().toString() + "/wifi_settings.html";
+
+      webServer.sendHeader("Location", "/" ,true); 
+      webServer.send(302, "text/plane", url); 
+     DBG_OUTLN("redirecting"); 
+    }
+    else{
+      webServer.send(404);
+    }
+  });
+
+  dnsServer.setErrorReplyCode(DNSReplyCode::NoError);
+  dnsServer.start(53, "*", IPAddress(172, 16, 25, 25));
 
   
   static WebApiInput webIn;
@@ -107,12 +119,15 @@ void setup() {
 
   static CtrlWifiStatus wifiStatus(CMD_WIFI_STATUS);
   cp.addControl(&wifiStatus);
+
+  
 }
 
 
 
 void loop(){
-  
+  dnsServer.processNextRequest();
+
   CtrlQueueItem itm;
   cp.loop(itm);
 
@@ -121,30 +136,20 @@ void loop(){
 
     switch(itm.cmd){
       case CMD_WIFI_CONNECT:{
-        WIFI_CONNECT *c = (WIFI_CONNECT *)itm.data.str;
-        WiFi.mode(WIFI_STA);
+        WIFI_CONNECT *c = (WIFI_CONNECT *)itm.data.str;        
         WiFi.begin(c->ssid, c->pwd);
       }        
       break;
+
       case CMD_WIFI_DISCONNECT:
-        WiFi.mode(WIFI_OFF);        
+        WiFi.disconnect(true);
       break;
-      case CMD_WIFI_GET_CFG: 
+
       case CMD_WIFI_STATUS: {
         ntf.put(RESP<WIFI_STATUS>{itm.cmd} );
       }
       break;
-      case CMD_WIFI_SET_CFG:{
-        RESP<WIFI_CONFIG> resp;
-        resp.cmd = itm.cmd;
-        resp.data = *(WIFI_CONFIG *)itm.data.str;
-        ntf.put(resp);
-      }
-      break;
-      case EEMC_ERROR: {
-        ntf.put(RESP<>{itm.cmd, ERR_INVALID});
-      }
-      break;
+          
       case CMD_WIFI_NETWORKS: {
         int8_t scan = WiFi.scanComplete();
         if(scan == WIFI_SCAN_FAILED){
@@ -157,16 +162,28 @@ void loop(){
           WiFi.scanDelete();
         }
       break; }
+
       case CMD_WIFI_AP:{
-        WiFi.encryptionType(WIFI_AP);
-        WiFi.softAPConfig( IPAddress(172, 16, 25, 25),
-                           IPAddress(172, 16, 25, 25), 
-                           IPAddress(255, 255, 255, 0) 
-                         );            
+        if(itm.data.value == 0){ //Disconnect AP
+          WiFi.softAPdisconnect(true);
+        }
+        else {          
+          WiFi.softAPConfig(IPAddress(172, 16, 25, 25),
+                            IPAddress(172, 16, 25, 25), 
+                            IPAddress(255, 255, 255, 0) 
+                          );            
         
-        WiFi.softAP("ESP8266_test");
+          WiFi.softAP("ESP8266_test");
+        }
+        ntf.put(RESP<WIFI_STATUS>{itm.cmd} );
       }
       break;
+
+      case EEMC_ERROR: {
+        ntf.put(RESP<>{itm.cmd, ERR_INVALID});
+      }
+      break;
+
       default: {
         ntf.put(RESP<>{itm.cmd, ERR_UNHANDLED});
       }        
