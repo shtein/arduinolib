@@ -87,14 +87,14 @@ void setup() {
   webServer.serveStatic("/favicon.ico", LittleFS, "/favicon.ico");
 
   webServer.onNotFound([](){
-    DBG_OUTLN("URI %s", webServer.uri().c_str());
+    DBG_OUTLN("URI %s, method %d", webServer.uri().c_str(), (int)webServer.method());
 
     if(WiFi.softAPIP() == webServer.client().localIP()){
-      String url = "htt[://" + WiFi.softAPIP().toString() + "/wifi_settings.html";
+      String url = "http://" + WiFi.softAPIP().toString() + "/wifi_settings.html";
 
-      webServer.sendHeader("Location", "/" ,true); 
-      webServer.send(302, "text/plane", url); 
-     DBG_OUTLN("redirecting"); 
+      webServer.sendHeader("Location", "http://" + WiFi.softAPIP().toString() + "/", true); 
+      webServer.send(302, "text/plain", ""); 
+      DBG_OUTLN("redirecting"); 
     }
     else{
       webServer.send(404);

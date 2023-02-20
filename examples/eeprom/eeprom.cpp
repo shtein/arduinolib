@@ -8,7 +8,7 @@ void setup() {
 
   DBG_OUTLN("Started");
   
-
+/*
   struct S1{
     uint8_t ver; 
     uint8_t val1;
@@ -38,6 +38,13 @@ void setup() {
     cfg.read(&s1, sizeof(S1));
     DBG_OUTLN("%d, %d, %d, %s", s1.ver, s1.val1, s1.val2, s1.str);
   }
+
+*/
+  EEPROMCfg cfg;
+  for(int i = 0; i < 512; i++){
+    cfg.write(0, 1);  
+  }
+
 }
 
 

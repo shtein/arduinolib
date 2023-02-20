@@ -6,6 +6,7 @@
 #include "AnalogInput.h"
 #include "Controls.h"
 #include "Notification.h"
+#include <LittleFS.h>
 
 #if defined(ESP8266) 
   #include <ESP8266WebServer.h>
@@ -63,7 +64,7 @@ private:
 void _APIRequestHandler(const char *uri);
 
 #define ADD_API_REQUEST_HANDLER(method, uri) \
-  webServer.on(UriRegex(uri".*"), method, [](){ \
+  webServer.on(UriRegex("^(" uri ").*"), method, [](){ \
       _APIRequestHandler(uri); \
     });
 
