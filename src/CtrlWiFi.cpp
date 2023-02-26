@@ -13,6 +13,8 @@
 ///////////////////////////
 // Serialization for notifications
 
+#define IP_ADDRESS_STR(ip) (ip.isSet() ? ip.toString().c_str() : "")
+
 //WiFi status
 void putNtfObject(NtfBase &resp, const WIFI_STATUS &data){
   //Current mode
@@ -24,22 +26,20 @@ void putNtfObject(NtfBase &resp, const WIFI_STATUS &data){
     resp.put_F(F("macaddress"), WiFi.macAddress().c_str());   
 
     //Active 
-    if(WiFi.getMode() & WIFI_STA){
-        
+    if(WiFi.getMode() & WIFI_STA){        
       //Statis      
       resp.put_F(F("wifistatus"), (uint8_t)WiFi.status());  
       //SSID
       resp.put_F(F("ssid"), WiFi.SSID().c_str());
+                             
+      //IP 
+      resp.put_F(F("ipaddress"), IP_ADDRESS_STR( WiFi.localIP()));
+      resp.put_F(F("gateway"), IP_ADDRESS_STR(WiFi.gatewayIP()));
+      resp.put_F(F("netmask"), IP_ADDRESS_STR(WiFi.subnetMask()));
+      //DNS
+      resp.put_F(F("dns1"), IP_ADDRESS_STR(WiFi.dnsIP(0)));
+      resp.put_F(F("dns2"), IP_ADDRESS_STR(WiFi.dnsIP(1)));
       
-      if(WiFi.status() == WL_CONNECTED){                    
-        //IP 
-        resp.put_F(F("ipaddress"), WiFi.localIP().toString().c_str());
-        resp.put_F(F("gateway"), WiFi.gatewayIP().toString().c_str());
-        resp.put_F(F("netmask"), WiFi.subnetMask().toString().c_str());
-        //DNS
-        resp.put_F(F("dns1"), WiFi.dnsIP(0).toString().c_str());
-        resp.put_F(F("dns2"), WiFi.dnsIP(1).toString().c_str());
-      }     
     }
   resp.end_F(F("station"));
 
@@ -47,14 +47,12 @@ void putNtfObject(NtfBase &resp, const WIFI_STATUS &data){
     //Mac address
     resp.put_F(F("macaddress"), WiFi.softAPmacAddress().c_str());   
     
-    if(WiFi.getMode() & WIFI_AP){    
-      //SSID
-      resp.put_F(F("ssid"), WiFi.softAPSSID().c_str());      
-      //IP
-      resp.put_F(F("ipdadress"), WiFi.softAPIP().toString().c_str());  
-      //Number of connected stations
-      resp.put_F(F("stations"), WiFi.softAPgetStationNum());  
-    }
+    //SSID
+    resp.put_F(F("ssid"), WiFi.softAPSSID().c_str());      
+    //IP
+    resp.put_F(F("ipdadress"), IP_ADDRESS_STR(WiFi.softAPIP()));  
+    //Number of connected stations
+    resp.put_F(F("stations"), WiFi.softAPgetStationNum());  
   resp.end_F(F("ap"));
 }
 
@@ -108,15 +106,15 @@ void putNtfObject(NtfBase &resp, const WIFI_CONFIG &data){
   resp.put_F(F("staticip"), data.ip == 0);
 
   if(data.ip != 0){
-    resp.put_F(F("ipaddress"), IPAddress(data.ip).toString().c_str());
-    resp.put_F(F("gateway"), IPAddress(data.gateway).toString().c_str());
-    resp.put_F(F("netmask"), IPAddress(data.subnetMask).toString().c_str());  
+    resp.put_F(F("ipaddress"), IP_ADDRESS_STR(IPAddress(data.ip)));
+    resp.put_F(F("gateway"), IP_ADDRESS_STR(IPAddress(data.gateway)));
+    resp.put_F(F("netmask"), IP_ADDRESS_STR(IPAddress(data.subnetMask)));  
   }
   if(data.dns1 != 0){
-    resp.put_F(F("dns1"), IPAddress(data.dns1).toString().c_str());
+    resp.put_F(F("dns1"), IP_ADDRESS_STR(IPAddress(data.dns1)));
   }
   if(data.dns2 != 0){
-    resp.put_F(F("dns2"), IPAddress(data.dns2).toString().c_str());
+    resp.put_F(F("dns2"), IP_ADDRESS_STR(IPAddress(data.dns2)));
   }
 }
 

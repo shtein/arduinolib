@@ -102,6 +102,7 @@ void NtfWebApi::send(){
 
   
   //Send response
+  webServer.sendHeader("Access-Control-Allow-Origin", "*", true);
   webServer.send(200, "application/json", _data);
 
   //Clear request data
