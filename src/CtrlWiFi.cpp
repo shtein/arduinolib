@@ -23,30 +23,24 @@ void putNtfObject(NtfBase &resp, const WIFI_STATUS &data){
   //Station
   resp.begin_F(F("station"));
     //Mac address
-    resp.put_F(F("macaddress"), WiFi.macAddress().c_str());   
-
-    //Active 
-    if(WiFi.getMode() & WIFI_STA){        
-      //Statis      
-      resp.put_F(F("wifistatus"), (uint8_t)WiFi.status());  
-      //SSID
-      resp.put_F(F("ssid"), WiFi.SSID().c_str());
-                             
-      //IP 
-      resp.put_F(F("ipaddress"), IP_ADDRESS_STR( WiFi.localIP()));
-      resp.put_F(F("gateway"), IP_ADDRESS_STR(WiFi.gatewayIP()));
-      resp.put_F(F("netmask"), IP_ADDRESS_STR(WiFi.subnetMask()));
-      //DNS
-      resp.put_F(F("dns1"), IP_ADDRESS_STR(WiFi.dnsIP(0)));
-      resp.put_F(F("dns2"), IP_ADDRESS_STR(WiFi.dnsIP(1)));
-      
-    }
+    resp.put_F(F("macaddress"), WiFi.macAddress().c_str());         
+    //Status      
+    resp.put_F(F("wifistatus"), (uint8_t)WiFi.status());  
+    //SSID
+    resp.put_F(F("ssid"), WiFi.SSID().c_str());                             
+    //IP 
+    resp.put_F(F("ipaddress"), IP_ADDRESS_STR( WiFi.localIP()));
+    resp.put_F(F("gateway"), IP_ADDRESS_STR(WiFi.gatewayIP()));
+    resp.put_F(F("netmask"), IP_ADDRESS_STR(WiFi.subnetMask()));
+    //DNS
+    resp.put_F(F("dns1"), IP_ADDRESS_STR(WiFi.dnsIP(0)));
+    resp.put_F(F("dns2"), IP_ADDRESS_STR(WiFi.dnsIP(1)));      
+    
   resp.end_F(F("station"));
 
   resp.begin_F(F("ap"));
     //Mac address
-    resp.put_F(F("macaddress"), WiFi.softAPmacAddress().c_str());   
-    
+    resp.put_F(F("macaddress"), WiFi.softAPmacAddress().c_str());       
     //SSID
     resp.put_F(F("ssid"), WiFi.softAPSSID().c_str());      
     //IP
