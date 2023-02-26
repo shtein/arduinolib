@@ -34,8 +34,7 @@ void putNtfObject(NtfBase &resp, const WIFI_STATUS &data){
     resp.put_F(F("netmask"), IP_ADDRESS_STR(WiFi.subnetMask()));
     //DNS
     resp.put_F(F("dns1"), IP_ADDRESS_STR(WiFi.dnsIP(0)));
-    resp.put_F(F("dns2"), IP_ADDRESS_STR(WiFi.dnsIP(1)));      
-    
+    resp.put_F(F("dns2"), IP_ADDRESS_STR(WiFi.dnsIP(1)));          
   resp.end_F(F("station"));
 
   resp.begin_F(F("ap"));
@@ -44,7 +43,7 @@ void putNtfObject(NtfBase &resp, const WIFI_STATUS &data){
     //SSID
     resp.put_F(F("ssid"), WiFi.softAPSSID().c_str());      
     //IP
-    resp.put_F(F("ipdadress"), IP_ADDRESS_STR(WiFi.softAPIP()));  
+    resp.put_F(F("ipaddress"), IP_ADDRESS_STR(WiFi.softAPIP()));  
     //Number of connected stations
     resp.put_F(F("stations"), WiFi.softAPgetStationNum());  
   resp.end_F(F("ap"));
@@ -96,22 +95,15 @@ void putNtfObject(NtfBase &resp, const WIFI_SCAN &data){
   }
 }
 
-void putNtfObject(NtfBase &resp, const WIFI_CONFIG &data){
+void putNtfObject(NtfBase &resp, const WIFI_CONNECT &data){
+  resp.put_F(F("ssid"), data.ssid);
   resp.put_F(F("staticip"), data.ip == 0);
-
-  if(data.ip != 0){
-    resp.put_F(F("ipaddress"), IP_ADDRESS_STR(IPAddress(data.ip)));
-    resp.put_F(F("gateway"), IP_ADDRESS_STR(IPAddress(data.gateway)));
-    resp.put_F(F("netmask"), IP_ADDRESS_STR(IPAddress(data.subnetMask)));  
-  }
-  if(data.dns1 != 0){
-    resp.put_F(F("dns1"), IP_ADDRESS_STR(IPAddress(data.dns1)));
-  }
-  if(data.dns2 != 0){
-    resp.put_F(F("dns2"), IP_ADDRESS_STR(IPAddress(data.dns2)));
-  }
+  resp.put_F(F("ipaddress"), IP_ADDRESS_STR(IPAddress(data.ip)));
+  resp.put_F(F("gateway"), IP_ADDRESS_STR(IPAddress(data.gateway)));
+  resp.put_F(F("netmask"), IP_ADDRESS_STR(IPAddress(data.subnetMask)));  
+  resp.put_F(F("dns1"), IP_ADDRESS_STR(IPAddress(data.dns1)));
+  resp.put_F(F("dns2"), IP_ADDRESS_STR(IPAddress(data.dns2)));
 }
-
 
 //String for IP address for parser
 bool strToIPAddr(const char *str, uint32_t &u){

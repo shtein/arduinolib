@@ -42,6 +42,11 @@ class NtfBase;
 struct WIFI_CONNECT{
   char ssid[32];
   char pwd[64];
+  uint32_t ip;
+  uint32_t gateway;
+  uint32_t subnetMask;
+  uint32_t dns1;
+  uint32_t dns2;
 };
 
 
@@ -53,20 +58,12 @@ struct WIFI_STATUS{
 struct WIFI_SCAN{
 };
 
-//Wifi config
-struct WIFI_CONFIG{
-  uint32_t ip;
-  uint32_t gateway;
-  uint32_t subnetMask;
-  uint32_t dns1;
-  uint32_t dns2;
-};
 
 ////////////////////
 //Serialization
 void putNtfObject(NtfBase &resp, const WIFI_STATUS &data);
 void putNtfObject(NtfBase &resp, const WIFI_SCAN &data);
-void putNtfObject(NtfBase &resp, const WIFI_CONFIG &data);
+void putNtfObject(NtfBase &resp, const WIFI_CONNECT &data);
 
 //IPAddress from string
 bool strToIPAddr(const char *, uint32_t &);
