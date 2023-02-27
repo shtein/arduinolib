@@ -452,7 +452,7 @@ uint8_t FunctionName(char *cmdLine, CtrlQueueData &data){ \
 
 
 #define _DM_DEFAULT_NONE(value, ...) 
-#define _DM_DEFAULT_SPEC(value, ...) setValue(value, ARG_NUM_1(__VA_ARGS__));
+#define _DM_DEFAULT_SPEC(value, ...) setValue(ARG_NUM_1(__VA_ARGS__), value);
 #define _DM_DEFAULT(value, ...) ARG_NUM( NUM_ARGS(value, ##__VA_ARGS__), _DM_DEFAULT_NONE, _DM_DEFAULT_SPEC)(value, __VA_ARGS__)
 
 #define _DM_MANDATORY_FALSE()
