@@ -331,13 +331,19 @@ class CtrlItemMultiCommand: public CtrlItem, public NTF{
 };
 
 
-//Helpers for creating parser function for SerialInput 
+//Helpers for creating parser function for multi-command input 
 //Helper functions for pasrer
 bool getTokens(char *cmdLine, char *tokens[], size_t maxTokens);
 bool checkTokenMatch(const char *token, const char *match);
 const char *getValueAfterToken(char *tokens[], const char *match);
 bool strTo(const char *str, int &n);
 bool strTo(const char *str, char *dest); 
+void setValue(const char *src, char * dst, size_t size);
+
+template <typename T>
+void setValue(const T &src, T &dst, size_t size){
+  memcpy(&dst, &src, size);
+}
 
 
 //Helper macros
@@ -446,7 +452,7 @@ uint8_t FunctionName(char *cmdLine, CtrlQueueData &data){ \
 
 
 #define _DM_DEFAULT_NONE(value, ...) 
-#define _DM_DEFAULT_SPEC(value, ...) value = ARG_NUM_1(__VA_ARGS__);
+#define _DM_DEFAULT_SPEC(value, ...) setValue(value, ARG_NUM_1(__VA_ARGS__));
 #define _DM_DEFAULT(value, ...) ARG_NUM( NUM_ARGS(value, ##__VA_ARGS__), _DM_DEFAULT_NONE, _DM_DEFAULT_SPEC)(value, __VA_ARGS__)
 
 #define _DM_MANDATORY_FALSE()

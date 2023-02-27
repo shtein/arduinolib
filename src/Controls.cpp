@@ -133,6 +133,10 @@ bool strTo(const char *str, char *dest){
   return true;
 }
 
+void setValue(const char *src, char * dst, size_t size){
+  strncpy(dst, src, size);
+}
+
 
 
 ////////////////////////////
