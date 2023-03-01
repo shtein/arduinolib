@@ -15,38 +15,40 @@
 
 #define IP_ADDRESS_STR(ip) (ip.isSet() ? ip.toString().c_str() : "")
 
+void putNtfObject(NtfBase &resp, const WIFI_STATUS_STATION &data){
+  //Mac address
+  resp.put_F(F("macaddress"), WiFi.macAddress().c_str());         
+  //Status      
+  resp.put_F(F("wifistatus"), (uint8_t)WiFi.status());  
+  //SSID
+  resp.put_F(F("ssid"), WiFi.SSID().c_str());                             
+  //IP 
+  resp.put_F(F("ipaddress"), IP_ADDRESS_STR( WiFi.localIP()));
+  resp.put_F(F("gateway"), IP_ADDRESS_STR(WiFi.gatewayIP()));
+  resp.put_F(F("netmask"), IP_ADDRESS_STR(WiFi.subnetMask()));
+  //DNS
+  resp.put_F(F("dns1"), IP_ADDRESS_STR(WiFi.dnsIP(0)));
+  resp.put_F(F("dns2"), IP_ADDRESS_STR(WiFi.dnsIP(1)));    
+}
+
+void putNtfObject(NtfBase &resp, const WIFI_STATUS_AP &data){
+  //Mac address
+  resp.put_F(F("macaddress"), WiFi.softAPmacAddress().c_str());       
+  //SSID
+  resp.put_F(F("ssid"), WiFi.softAPSSID().c_str());      
+  //IP
+  resp.put_F(F("ipaddress"), IP_ADDRESS_STR(WiFi.softAPIP()));  
+  //Number of connected stations
+  resp.put_F(F("stations"), WiFi.softAPgetStationNum());  
+}
+
+
 //WiFi status
 void putNtfObject(NtfBase &resp, const WIFI_STATUS &data){
   //Current mode
-  resp.put_F(F("wifimode"), (uint8_t)WiFi.getMode());   
-  
-  //Station
-  resp.begin_F(F("station"));
-    //Mac address
-    resp.put_F(F("macaddress"), WiFi.macAddress().c_str());         
-    //Status      
-    resp.put_F(F("wifistatus"), (uint8_t)WiFi.status());  
-    //SSID
-    resp.put_F(F("ssid"), WiFi.SSID().c_str());                             
-    //IP 
-    resp.put_F(F("ipaddress"), IP_ADDRESS_STR( WiFi.localIP()));
-    resp.put_F(F("gateway"), IP_ADDRESS_STR(WiFi.gatewayIP()));
-    resp.put_F(F("netmask"), IP_ADDRESS_STR(WiFi.subnetMask()));
-    //DNS
-    resp.put_F(F("dns1"), IP_ADDRESS_STR(WiFi.dnsIP(0)));
-    resp.put_F(F("dns2"), IP_ADDRESS_STR(WiFi.dnsIP(1)));          
-  resp.end_F(F("station"));
-
-  resp.begin_F(F("ap"));
-    //Mac address
-    resp.put_F(F("macaddress"), WiFi.softAPmacAddress().c_str());       
-    //SSID
-    resp.put_F(F("ssid"), WiFi.softAPSSID().c_str());      
-    //IP
-    resp.put_F(F("ipaddress"), IP_ADDRESS_STR(WiFi.softAPIP()));  
-    //Number of connected stations
-    resp.put_F(F("stations"), WiFi.softAPgetStationNum());  
-  resp.end_F(F("ap"));
+  resp.put_F(F("wifimode"), (uint8_t)WiFi.getMode()); 
+  resp.put_F(F("station"), data.station);
+  resp.put_F(F("ap"), data.ap);    
 }
 
 
@@ -168,7 +170,6 @@ void setWiFiConnect(const WIFI_CONNECT &wcn, uint8_t &flags){
       flags |= IP_CONFIG_DNS2_SET;
     }
   }
-  
 }
 
 

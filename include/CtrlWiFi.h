@@ -58,8 +58,18 @@ void getWiFiConnect(WIFI_CONNECT &wcn, uint8_t flags);
 void setWiFiConnect(const WIFI_CONNECT &wcn, uint8_t &flags);
 
 
+//Wifi station status
+struct WIFI_STATUS_STATION{
+};
+
+//WIFI AP status
+struct WIFI_STATUS_AP{  
+};
+
 //Wifi status - for notification 
 struct WIFI_STATUS{
+  WIFI_STATUS_STATION station;
+  WIFI_STATUS_AP      ap;
 };
 
 //WiFi scan
@@ -76,6 +86,8 @@ struct WIFI_CONFIG_ALL{
 
 ////////////////////
 //Serialization
+void putNtfObject(NtfBase &resp, const WIFI_STATUS_STATION &data);
+void putNtfObject(NtfBase &resp, const WIFI_STATUS_AP &data);
 void putNtfObject(NtfBase &resp, const WIFI_STATUS &data);
 void putNtfObject(NtfBase &resp, const WIFI_SCAN &data);
 void putNtfObject(NtfBase &resp, const WIFI_CONNECT &data);
