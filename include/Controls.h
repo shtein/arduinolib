@@ -338,11 +338,14 @@ bool checkTokenMatch(const char *token, const char *match);
 const char *getValueAfterToken(char *tokens[], const char *match);
 bool strTo(const char *str, int &n);
 bool strTo(const char *str, char *dest); 
-void setValue(const char *src, char * dst, size_t size);
 
-template <typename T>
-void setValue(const T &src, T &dst, size_t size){
-  memcpy(&dst, &src, size);
+inline void setValue(const char *src, char *dst){
+  strcpy(dst, src);
+}
+
+template <typename T1, typename T2 >
+void setValue(const T1 &src, T2 &dst){
+  dst = src;
 }
 
 

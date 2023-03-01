@@ -49,6 +49,14 @@ struct WIFI_CONNECT{
   uint32_t dns2;
 };
 
+//Read wifi config from current wifi
+#define IP_CONFIG_STATIC_IP  0x01
+#define IP_CONFIG_DNS1_SET   0x02
+#define IP_CONFIG_DNS2_SET   0x04
+
+void getWiFiConnect(WIFI_CONNECT &wcn, uint8_t flags);
+void setWiFiConnect(const WIFI_CONNECT &wcn, uint8_t &flags);
+
 
 //Wifi status - for notification 
 struct WIFI_STATUS{
@@ -58,12 +66,20 @@ struct WIFI_STATUS{
 struct WIFI_SCAN{
 };
 
+//Use to store wifi configuration
+struct WIFI_CONFIG_ALL{
+  WIFI_CONNECT wifiConnect;
+};
+
+
+
 
 ////////////////////
 //Serialization
 void putNtfObject(NtfBase &resp, const WIFI_STATUS &data);
 void putNtfObject(NtfBase &resp, const WIFI_SCAN &data);
 void putNtfObject(NtfBase &resp, const WIFI_CONNECT &data);
+void putNtfObject(NtfBase &resp, const WIFI_CONFIG_ALL &);
 
 //IPAddress from string
 bool strToIPAddr(const char *, uint32_t &);

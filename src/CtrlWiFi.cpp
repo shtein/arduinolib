@@ -97,13 +97,18 @@ void putNtfObject(NtfBase &resp, const WIFI_SCAN &data){
 
 void putNtfObject(NtfBase &resp, const WIFI_CONNECT &data){
   resp.put_F(F("ssid"), data.ssid);
-  resp.put_F(F("staticip"), data.ip == 0);
+  resp.put_F(F("staticip"), data.ip == 0 ? false : true);
   resp.put_F(F("ipaddress"), IP_ADDRESS_STR(IPAddress(data.ip)));
   resp.put_F(F("gateway"), IP_ADDRESS_STR(IPAddress(data.gateway)));
   resp.put_F(F("netmask"), IP_ADDRESS_STR(IPAddress(data.subnetMask)));  
   resp.put_F(F("dns1"), IP_ADDRESS_STR(IPAddress(data.dns1)));
   resp.put_F(F("dns2"), IP_ADDRESS_STR(IPAddress(data.dns2)));
 }
+
+void putNtfObject(NtfBase &resp, const WIFI_CONFIG_ALL &wcn){
+  resp.put_F(F("station"), wcn.wifiConnect);
+}
+
 
 //String for IP address for parser
 bool strToIPAddr(const char *str, uint32_t &u){
@@ -113,6 +118,57 @@ bool strToIPAddr(const char *str, uint32_t &u){
   u = ipaddr_addr(str);
 
   return true; 
+}
+
+
+void getWiFiConnect(WIFI_CONNECT &wcn, uint8_t flags){
+  memset(&wcn, 0, sizeof(wcn));
+
+  //Remeber ssid and password
+  strncpy(wcn.ssid, WiFi.SSID().c_str(), sizeof(wcn.ssid) - 1);
+  strncpy(wcn.pwd, WiFi.psk().c_str(), sizeof(wcn.pwd) - 1);
+  
+  //Remember ip config
+  if(flags & IP_CONFIG_STATIC_IP){      
+    wcn.ip         = WiFi.localIP();
+    wcn.gateway    = WiFi.gatewayIP();
+    wcn.subnetMask = WiFi.subnetMask();
+    if(flags & IP_CONFIG_DNS1_SET){
+      wcn.dns1       =  WiFi.dnsIP(0);
+    }
+    if(flags & IP_CONFIG_DNS2_SET){
+      wcn.dns2       =  WiFi.dnsIP(1);
+    }
+  }
+}
+
+void setWiFiConnect(const WIFI_CONNECT &wcn, uint8_t &flags){
+  //Configure wifi settings
+  WiFi.setAutoReconnect(true);
+  WiFi.setAutoConnect(true);
+  WiFi.persistent(false);
+  
+  //Confiogure ip settings
+  WiFi.config(wcn.ip, wcn.gateway, wcn.subnetMask, wcn.dns1, wcn.dns2);
+
+  //Enable wifi
+  WiFi.begin(wcn.ssid, wcn.pwd);  
+
+  //Configuration flags
+  flags = 0;
+
+  if(wcn.ip != 0){
+    flags |= IP_CONFIG_STATIC_IP;
+
+    if(wcn.dns1 != 0){
+      flags |= IP_CONFIG_DNS1_SET;
+    }
+
+    if(wcn.dns2 != 0){
+      flags |= IP_CONFIG_DNS2_SET;
+    }
+  }
+  
 }
 
 
