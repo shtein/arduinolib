@@ -107,8 +107,14 @@ void putNtfObject(NtfBase &resp, const WIFI_CONNECT &data){
   resp.put_F(F("dns2"), IP_ADDRESS_STR(IPAddress(data.dns2)));
 }
 
+void putNtfObject(NtfBase &resp, const WIFI_APP_CONFIG &wap){
+  resp.put_F(F("ssid"), wap.ssid);
+}
+
+
 void putNtfObject(NtfBase &resp, const WIFI_CONFIG_ALL &wcn){
   resp.put_F(F("station"), wcn.wifiConnect);
+  resp.put_F(F("ap"), wcn.wifiAP);
 }
 
 

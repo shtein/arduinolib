@@ -38,15 +38,23 @@ class CtrlWifiStatus: public CtrlItem{
 // Wifi configs and status
 class NtfBase;
 
+#define SSID_LENGHT 32
+#define PWD_LENGHT  64
+
 //Connect to WiFi
 struct WIFI_CONNECT{
-  char ssid[32];
-  char pwd[64];
+  char ssid[SSID_LENGHT];
+  char pwd[PWD_LENGHT];
   uint32_t ip;
   uint32_t gateway;
   uint32_t subnetMask;
   uint32_t dns1;
   uint32_t dns2;
+};
+
+//AP config
+struct WIFI_APP_CONFIG{
+  char ssid[SSID_LENGHT];
 };
 
 //Read wifi config from current wifi
@@ -78,7 +86,8 @@ struct WIFI_SCAN{
 
 //Use to store wifi configuration
 struct WIFI_CONFIG_ALL{
-  WIFI_CONNECT wifiConnect;
+  WIFI_CONNECT    wifiConnect;
+  WIFI_APP_CONFIG wifiAP;
 };
 
 
@@ -91,7 +100,8 @@ void putNtfObject(NtfBase &resp, const WIFI_STATUS_AP &data);
 void putNtfObject(NtfBase &resp, const WIFI_STATUS &data);
 void putNtfObject(NtfBase &resp, const WIFI_SCAN &data);
 void putNtfObject(NtfBase &resp, const WIFI_CONNECT &data);
-void putNtfObject(NtfBase &resp, const WIFI_CONFIG_ALL &);
+void putNtfObject(NtfBase &resp, const WIFI_APP_CONFIG &data);
+void putNtfObject(NtfBase &resp, const WIFI_CONFIG_ALL &data);
 
 //IPAddress from string
 bool strToIPAddr(const char *, uint32_t &);
