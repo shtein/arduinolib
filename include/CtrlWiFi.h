@@ -53,7 +53,7 @@ struct WIFI_CONNECT{
 };
 
 //AP config
-struct WIFI_APP_CONFIG{
+struct WIFI_AP_CONNECT{
   char ssid[SSID_LENGHT];
 };
 
@@ -87,7 +87,7 @@ struct WIFI_SCAN{
 //Use to store wifi configuration
 struct WIFI_CONFIG_ALL{
   WIFI_CONNECT    wifiConnect;
-  WIFI_APP_CONFIG wifiAP;
+  WIFI_AP_CONNECT wifiAP;
 };
 
 
@@ -100,7 +100,7 @@ void putNtfObject(NtfBase &resp, const WIFI_STATUS_AP &data);
 void putNtfObject(NtfBase &resp, const WIFI_STATUS &data);
 void putNtfObject(NtfBase &resp, const WIFI_SCAN &data);
 void putNtfObject(NtfBase &resp, const WIFI_CONNECT &data);
-void putNtfObject(NtfBase &resp, const WIFI_APP_CONFIG &data);
+void putNtfObject(NtfBase &resp, const WIFI_AP_CONNECT &data);
 void putNtfObject(NtfBase &resp, const WIFI_CONFIG_ALL &data);
 
 //IPAddress from string

@@ -107,7 +107,7 @@ void putNtfObject(NtfBase &resp, const WIFI_CONNECT &data){
   resp.put_F(F("dns2"), IP_ADDRESS_STR(IPAddress(data.dns2)));
 }
 
-void putNtfObject(NtfBase &resp, const WIFI_APP_CONFIG &wap){
+void putNtfObject(NtfBase &resp, const WIFI_AP_CONNECT &wap){
   resp.put_F(F("ssid"), wap.ssid);
 }
 
