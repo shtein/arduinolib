@@ -52,11 +52,6 @@ struct WIFI_CONNECT{
   uint32_t dns2;
 };
 
-//AP config
-struct WIFI_AP_CONNECT{
-  char ssid[SSID_LENGHT];
-};
-
 //Read wifi config from current wifi
 #define IP_CONFIG_STATIC_IP  0x01
 #define IP_CONFIG_DNS1_SET   0x02
@@ -64,6 +59,15 @@ struct WIFI_AP_CONNECT{
 
 void getWiFiConnect(WIFI_CONNECT &wcn, uint8_t flags);
 void setWiFiConnect(const WIFI_CONNECT &wcn, uint8_t &flags);
+
+
+//AP 
+struct WIFI_AP_CONNECT{
+  char ssid[SSID_LENGHT];
+};
+
+void getWiFiAPConnect(WIFI_AP_CONNECT &wcn);
+void setWiFiAPConnect(const WIFI_AP_CONNECT &wcn);
 
 
 //Wifi station status

@@ -128,7 +128,7 @@ bool strToIPAddr(const char *str, uint32_t &u){
   return true; 
 }
 
-
+//Retrive information abut WiFi
 void getWiFiConnect(WIFI_CONNECT &wcn, uint8_t flags){
   memset(&wcn, 0, sizeof(wcn));
 
@@ -150,6 +150,7 @@ void getWiFiConnect(WIFI_CONNECT &wcn, uint8_t flags){
   }
 }
 
+//Connect to Wifi
 void setWiFiConnect(const WIFI_CONNECT &wcn, uint8_t &flags){
   //Configure wifi settings
   WiFi.setAutoReconnect(true);
@@ -160,7 +161,7 @@ void setWiFiConnect(const WIFI_CONNECT &wcn, uint8_t &flags){
   WiFi.config(wcn.ip, wcn.gateway, wcn.subnetMask, wcn.dns1, wcn.dns2);
 
   //Enable wifi
-  WiFi.begin(wcn.ssid, wcn.pwd);  
+  WiFi.begin(wcn.ssid, wcn.pwd[0] == 0 ? NULL : wcn.pwd);  
 
   //Configuration flags
   flags = 0;
@@ -178,5 +179,23 @@ void setWiFiConnect(const WIFI_CONNECT &wcn, uint8_t &flags){
   }
 }
 
+void getWiFiAPConnect(WIFI_AP_CONNECT &wcn){
+  //Copy SSID
+  strcpy(wcn.ssid, WiFi.softAPSSID().c_str());
+}
+
+void setWiFiAPConnect(const WIFI_AP_CONNECT &wcn){
+  //Setup IP Address
+  WiFi.softAPConfig( IPAddress(172, 16, 25, 25),
+                     IPAddress(172, 16, 25, 25), 
+                     IPAddress(255, 255, 255, 0) 
+                    );   
+  //Enable AP SSID
+  WiFi.softAP(wcn.ssid);
+}
+
+
+
+  
 
 #endif
