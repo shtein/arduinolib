@@ -7,6 +7,7 @@
 #include "CtrlWebSrv.h"
 #include "DbgTool.h"
 
+DNSServer    dnsServer;
 ESPWebServer webServer;
 String       requestApi;
 
@@ -32,6 +33,28 @@ void _APIRequestHandler(const char *uri){
 }
 
 /////////////////////
+// Handle all DNS requests in AP Mode
+void enableCaptivePortalDNS(bool enable){
+  if(enable){
+    dnsServer.setErrorReplyCode(DNSReplyCode::NoError);
+    dnsServer.start(53, "*", WiFi.softAPIP());
+  }
+  else{
+    dnsServer.stop();
+  }
+}
+
+bool handleCaptivePortal(const char *redirect){
+  if(WiFi.softAPIP() == webServer.client().localIP()){  
+    webServer.sendHeader("Location", "http://" + WiFi.softAPIP().toString() + redirect, true); 
+    webServer.send(302, "text/plain", "");       
+    return true;
+  }
+
+  return false; 
+}
+
+/////////////////////
 // WebApiInput
 WebApiInput::WebApiInput(){  
 }
@@ -39,6 +62,8 @@ WebApiInput::WebApiInput(){
 void WebApiInput::read(){  
   //Handle client
   webServer.handleClient();
+  //Handle DNS
+  dnsServer.processNextRequest();
 }
 
 bool WebApiInput::isReady() const{

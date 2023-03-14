@@ -4,8 +4,6 @@
 #include <CtrlSerial.h>
 #include <CtrlWebSrv.h>
 #include <CtrlWiFi.h>
-#include <LittleFS.h>
-#include <DNSServer.h> 
 
 #define ERR_SUCCESS    0x00
 #define ERR_INVALID    0x01
@@ -69,7 +67,6 @@ END_PARSE_ROUTINE()
 CtrlPanel cp;
 NtfBaseSet<2> ntf;
 
-DNSServer dnsServer;
 
 
 void setup() {
@@ -89,21 +86,10 @@ void setup() {
   webServer.onNotFound([](){
     DBG_OUTLN("URI %s, method %d", webServer.uri().c_str(), (int)webServer.method());
 
-    if(WiFi.softAPIP() == webServer.client().localIP()){
-      String url = "http://" + WiFi.softAPIP().toString() + "/wifi_settings.html";
-
-      webServer.sendHeader("Location", "http://" + WiFi.softAPIP().toString() + "/", true); 
-      webServer.send(302, "text/plain", ""); 
-      DBG_OUTLN("redirecting"); 
-    }
-    else{
+    if(!handleCaptivePortal("/")){
       webServer.send(404);
     }
   });
-
-  dnsServer.setErrorReplyCode(DNSReplyCode::NoError);
-  dnsServer.start(53, "*", IPAddress(172, 16, 25, 25));
-
   
   static WebApiInput webIn;
   static CtrlItemWebApi<TestParse> webCtrl(&webIn);
@@ -125,9 +111,7 @@ void setup() {
 
 
 
-void loop(){
-  dnsServer.processNextRequest();
-
+void loop(){  
   CtrlQueueItem itm;
   cp.loop(itm);
 
@@ -161,11 +145,13 @@ void loop(){
         if(scan >= 0){
           WiFi.scanDelete();
         }
-      break; }
+      }
+      break; 
 
       case CMD_WIFI_AP:{
         if(itm.data.value == 0){ //Disconnect AP
-          WiFi.softAPdisconnect(true);
+          enableCaptivePortalDNS(false);          
+          WiFi.softAPdisconnect(true);          
         }
         else {          
           WiFi.softAPConfig(IPAddress(172, 16, 25, 25),
@@ -174,6 +160,7 @@ void loop(){
                           );            
         
           WiFi.softAP("ESP8266_test");
+          enableCaptivePortalDNS(true);
         }
         ntf.put(RESP<WIFI_STATUS>{itm.cmd} );
       }

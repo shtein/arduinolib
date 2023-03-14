@@ -13,7 +13,12 @@
 #define SI_BS          '\b'
 #define SI_NULLCHAR    '\0'
 #define SI_SPACE       ' '
-#define SI_BUFF_LEN     32
+
+#if defined(ESP8266) || defined(ESP32)
+  #define SI_BUFF_LEN     128
+#else
+  #define SI_BUFF_LEN     32
+#endif
 
 
 class SerialInput: public BaseInput{

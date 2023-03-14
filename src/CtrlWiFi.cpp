@@ -154,7 +154,7 @@ void getWiFiConnect(WIFI_CONNECT &wcn, uint8_t flags){
 void setWiFiConnect(const WIFI_CONNECT &wcn, uint8_t &flags){
   //Configure wifi settings
   WiFi.setAutoReconnect(true);
-  WiFi.setAutoConnect(true);
+  WiFi.setAutoConnect(false);
   WiFi.persistent(false);
   
   //Confiogure ip settings

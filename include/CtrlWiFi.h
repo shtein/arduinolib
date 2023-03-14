@@ -38,8 +38,8 @@ class CtrlWifiStatus: public CtrlItem{
 // Wifi configs and status
 class NtfBase;
 
-#define SSID_LENGHT 32
-#define PWD_LENGHT  64
+#define SSID_LENGHT 33
+#define PWD_LENGHT  65
 
 //Connect to WiFi
 struct WIFI_CONNECT{

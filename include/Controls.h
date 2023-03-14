@@ -21,7 +21,7 @@
 #define CTF_VAL_OBJECT  0x07  //Value is object
 
 #if defined(ESP8266) || defined(ESP32)
-#define MAX_STR_VALUE 128
+#define MAX_STR_VALUE 256
 #else
 #define MAX_STR_VALUE 16
 #endif

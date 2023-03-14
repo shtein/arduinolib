@@ -20,7 +20,10 @@
   typedef WebServer ESPWebServer;
 #endif
 
+#include <DNSServer.h> 
+
 extern ESPWebServer webServer;
+extern DNSServer dnsServer;
 
 ////////////////////////////////////////
 // Web Server Input
@@ -69,12 +72,17 @@ void _APIRequestHandler(const char *uri);
     });
 
 //////////////////////////////////////
+// Captive portal functions
+
+//Enable on DNS
+void enableCaptivePortalDNS(bool enable);
+//Handle captive portal in not found request
+bool handleCaptivePortal(const char *redirect);
+
+//////////////////////////////////////
 // CtrlWebSrv - multi command interface
 template <uint8_t (*PARSER) (char *cmdLine, CtrlQueueData &data)>
 using CtrlItemWebApi = CtrlItemMultiCommand<WebApiInput, NtfWebApi, PARSER>;
-
-
-
 
 #endif
 
