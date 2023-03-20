@@ -52,23 +52,17 @@ struct WIFI_CONNECT{
   uint32_t dns2;
 };
 
-//Read wifi config from current wifi
-#define IP_CONFIG_STATIC_IP  0x01
-#define IP_CONFIG_DNS1_SET   0x02
-#define IP_CONFIG_DNS2_SET   0x04
-
-void getWiFiConnect(WIFI_CONNECT &wcn, uint8_t flags);
-void setWiFiConnect(const WIFI_CONNECT &wcn, uint8_t &flags);
-
+void connectWiFi(const WIFI_CONNECT &wcn);
 
 //AP 
 struct WIFI_AP_CONNECT{
   char ssid[SSID_LENGHT];
+  uint32_t ipaddress;
+  uint32_t gateway;
+  uint32_t subnetMask;
 };
 
-void getWiFiAPConnect(WIFI_AP_CONNECT &wcn);
-void setWiFiAPConnect(const WIFI_AP_CONNECT &wcn);
-
+void connectWiFiAP(const WIFI_AP_CONNECT &wcn);
 
 //Wifi station status
 struct WIFI_STATUS_STATION{
@@ -94,8 +88,7 @@ struct WIFI_CONFIG_ALL{
   WIFI_AP_CONNECT wifiAP;
 };
 
-
-
+void initWiFi(const char *hostName, const char *apName);
 
 ////////////////////
 //Serialization

@@ -525,7 +525,7 @@ class CtrlPanel{
     uint8_t        _numControls;            //Number of controls
     uint8_t        _controlNum;             //Last processed control
 
-    BaseInput    *_inputs[MAX_INPUTS];     //Analog inputs
+    BaseInput    *_inputs[MAX_INPUTS];      //Analog inputs
     uint8_t       _numInputs;
 };
 

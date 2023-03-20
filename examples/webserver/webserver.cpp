@@ -49,7 +49,7 @@ BEGIN_PARSE_ROUTINE(TestParse)
   BEGIN_GROUP_TOKEN("wifi")  
     BEGIN_OBJECT("connect|c", WIFI_CONNECT, CMD_WIFI_CONNECT)
       DATA_MEMBER("ssid|s", ssid)
-      DATA_MEMBER("pwd|p", pwd) 
+      DATA_MEMBER("pwd|p", pwd, "") 
     END_OBJECT()
     VALUE_IS_TOKEN("disconnect|d", CMD_WIFI_DISCONNECT)
     VALUE_IS_TOKEN("status|", CMD_WIFI_STATUS)
@@ -67,13 +67,14 @@ END_PARSE_ROUTINE()
 CtrlPanel cp;
 NtfBaseSet<2> ntf;
 
-
+#define DEFAUKL_HOST_NAME "ESP8266TEST"
 
 void setup() {
-  
 
   DBG_INIT();
   DBG_OUTLN("Started");
+
+  ESP.eraseConfig();
 
   LittleFS.begin();
   webServer.begin(80);
@@ -106,9 +107,8 @@ void setup() {
   static CtrlWifiStatus wifiStatus(CMD_WIFI_STATUS);
   cp.addControl(&wifiStatus);
 
-  
+  initWiFi(DEFAUKL_HOST_NAME, DEFAUKL_HOST_NAME);
 }
-
 
 
 void loop(){  
@@ -121,7 +121,7 @@ void loop(){
     switch(itm.cmd){
       case CMD_WIFI_CONNECT:{
         WIFI_CONNECT *c = (WIFI_CONNECT *)itm.data.str;        
-        WiFi.begin(c->ssid, c->pwd);
+        connectWiFi(*c);              
       }        
       break;
 
@@ -154,12 +154,13 @@ void loop(){
           WiFi.softAPdisconnect(true);          
         }
         else {          
-          WiFi.softAPConfig(IPAddress(172, 16, 25, 25),
-                            IPAddress(172, 16, 25, 25), 
-                            IPAddress(255, 255, 255, 0) 
-                          );            
-        
-          WiFi.softAP("ESP8266_test");
+          WIFI_AP_CONNECT wcn;
+          strcpy(wcn.ssid, DEFAUKL_HOST_NAME);
+          wcn.ipaddress = IPAddress(172, 16, 25, 25);
+          wcn.gateway = IPAddress(172, 16, 25, 25);
+          wcn.subnetMask = IPAddress(172, 16, 25, 25);
+
+          connectWiFiAP(wcn);
           enableCaptivePortalDNS(true);
         }
         ntf.put(RESP<WIFI_STATUS>{itm.cmd} );

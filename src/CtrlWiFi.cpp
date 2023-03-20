@@ -17,7 +17,9 @@
 
 void putNtfObject(NtfBase &resp, const WIFI_STATUS_STATION &data){
   //Mac address
-  resp.put_F(F("macaddress"), WiFi.macAddress().c_str());         
+  resp.put_F(F("macaddress"), WiFi.macAddress().c_str()); 
+  //Host
+  resp.put_F(F("host"), WiFi.getHostname());         
   //Status      
   resp.put_F(F("wifistatus"), (uint8_t)WiFi.status());  
   //SSID
@@ -128,72 +130,46 @@ bool strToIPAddr(const char *str, uint32_t &u){
   return true; 
 }
 
-//Retrive information abut WiFi
-void getWiFiConnect(WIFI_CONNECT &wcn, uint8_t flags){
-  memset(&wcn, 0, sizeof(wcn));
-
-  //Remeber ssid and password
-  strncpy(wcn.ssid, WiFi.SSID().c_str(), sizeof(wcn.ssid) - 1);
-  strncpy(wcn.pwd, WiFi.psk().c_str(), sizeof(wcn.pwd) - 1);
-  
-  //Remember ip config
-  if(flags & IP_CONFIG_STATIC_IP){      
-    wcn.ip         = WiFi.localIP();
-    wcn.gateway    = WiFi.gatewayIP();
-    wcn.subnetMask = WiFi.subnetMask();
-    if(flags & IP_CONFIG_DNS1_SET){
-      wcn.dns1       =  WiFi.dnsIP(0);
-    }
-    if(flags & IP_CONFIG_DNS2_SET){
-      wcn.dns2       =  WiFi.dnsIP(1);
-    }
-  }
-}
 
 //Connect to Wifi
-void setWiFiConnect(const WIFI_CONNECT &wcn, uint8_t &flags){
-  //Configure wifi settings
-  WiFi.setAutoReconnect(true);
-  WiFi.setAutoConnect(false);
-  WiFi.persistent(false);
-  
+void connectWiFi(const WIFI_CONNECT &wcn){  
   //Confiogure ip settings
   WiFi.config(wcn.ip, wcn.gateway, wcn.subnetMask, wcn.dns1, wcn.dns2);
 
   //Enable wifi
-  WiFi.begin(wcn.ssid, wcn.pwd[0] == 0 ? NULL : wcn.pwd);  
-
-  //Configuration flags
-  flags = 0;
-
-  if(wcn.ip != 0){
-    flags |= IP_CONFIG_STATIC_IP;
-
-    if(wcn.dns1 != 0){
-      flags |= IP_CONFIG_DNS1_SET;
-    }
-
-    if(wcn.dns2 != 0){
-      flags |= IP_CONFIG_DNS2_SET;
-    }
-  }
+  WiFi.begin(wcn.ssid, wcn.pwd[0] == 0 ? NULL : wcn.pwd);    
 }
 
-void getWiFiAPConnect(WIFI_AP_CONNECT &wcn){
-  //Copy SSID
-  strcpy(wcn.ssid, WiFi.softAPSSID().c_str());
-}
-
-void setWiFiAPConnect(const WIFI_AP_CONNECT &wcn){
+void connectWiFiAP(const WIFI_AP_CONNECT &wcn){
   //Setup IP Address
-  WiFi.softAPConfig( IPAddress(172, 16, 25, 25),
-                     IPAddress(172, 16, 25, 25), 
-                     IPAddress(255, 255, 255, 0) 
-                    );   
+  WiFi.softAPConfig( wcn.ipaddress, wcn.gateway, wcn.subnetMask);   
+
   //Enable AP SSID
   WiFi.softAP(wcn.ssid);
 }
 
+
+void initWiFi(const char *hostName, const char *apName){
+  //Generic settings
+  WiFi.setAutoReconnect(true);
+  WiFi.setAutoConnect(false);
+  WiFi.persistent(false);
+
+  //Host name can be only set when mode is STA  
+  if(hostName){
+    WiFi.mode(WIFI_STA);
+    WiFi.setHostname(hostName);
+  }
+  //Turn wifi off after initialization
+  WiFi.mode(WIFI_OFF); 
+
+  //Set AP name
+  if(apName){
+    WiFi.softAP(apName);    
+  }
+  WiFi.softAPdisconnect(true);
+ 
+}
 
 
   
