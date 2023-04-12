@@ -38,36 +38,43 @@ void CtrlItem::loop(CtrlQueueItem &itm){
 //////////////////////////////////////////
 //Parser Helpers
 
-#define PARSE_DELIMETER    " "
-#define COMMAND_SEPARATOR  '|'
-
-//Get tokens into from command line into array
-//Return false of numnber of tokens is more than number of elements in array
-bool getTokens(char *cmdLine, char *tokens[], size_t maxTokens){
-  
-  //Make sure there data
-  if(!cmdLine)
+//List of tokens
+bool getTokens(char *str, const char *tokens[], size_t maxTokens, char separator, char escape){
+  //No data
+  if(!str){
     return false;
-
-  //Convert cmdline to string array
-  char *token = strtok(cmdLine, PARSE_DELIMETER);
-  for(size_t i = 0; token != NULL; i++){    
-    
-    //Save only if size allows
-    if(i < maxTokens){
-      //Remeber token
-      tokens[i] = token;
-    }  
-    else {
-      //Too many tokens
-      return false;
-    }
-
-    token = strtok(NULL, PARSE_DELIMETER);
   }
 
-  return true;
+  //Too many tokesn
+  if(maxTokens == 0){
+    return false;
+  }  
+
+  //Find begin of the token, replace separators by 0x00
+  for( ; *str != 0x00 && *str == separator; str++){  
+    *str = 0x00;
+  }  
+
+  //Cut leading escape
+  if(escape && *str == escape){
+    str ++;
+  }
+  
+  tokens[0] = str;
+  str++;
+ 
+  //Find end of the token
+  for( ; *str != 0x00 && *str != separator; str++){
+    if(escape && *str == escape){
+        memmove(str, str + 1, strlen(str));
+        str ++;
+    }
+  }
+  
+  return *str == 0x00 ? true : getTokens(str, &tokens[1], maxTokens - 1, separator, escape); 
 }
+
+#define COMMAND_SEPARATOR  '|'
 
 //Check if tokens match to specified token
 bool checkTokenMatch(const char *token, const char *token2){
@@ -102,7 +109,7 @@ bool checkTokenMatch(const char *token, const char *token2){
   return false;
 }
 
-const char *getValueAfterToken(char *tokens[], const char *match){
+const char *getValueAfterToken(const char * tokens[], const char *match){
 
   for(size_t i = 0; tokens[i] != NULL; i++){
     if(checkTokenMatch(tokens[i], match))

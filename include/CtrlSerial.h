@@ -28,11 +28,11 @@ class SerialInput: public BaseInput{
 
     void read();
     bool isReady() const;
-    char *getCommandLine();
+    bool getTokens(const char *tokens[], size_t maxTokens);
     void reset();
 
   protected:   
-    char    _bufRead[SI_BUFF_LEN + 1]; 
+    char    _bufRead[SI_BUFF_LEN + 2]; 
     uint8_t _lenRead; 
 };
 
@@ -73,7 +73,7 @@ private:
 /////////////////////////////////////////
 // Control from serial buffer
 // Multi-command interface
-template <uint8_t (*PARSER) (char *cmdLine, CtrlQueueData &data)>
+template <uint8_t (*PARSER) (const char *tokens[], CtrlQueueData &data)>
 using CtrlItemSerial = CtrlItemMultiCommand<SerialInput, NtfSerial, PARSER>;
 
 #endif //__CTRL_SERIAL_H

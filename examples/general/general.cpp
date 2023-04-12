@@ -56,18 +56,18 @@ void putNtfObject(NtfBase &resp, const TEST_DATA &data){
       resp.put_F(F("n"), data.n);
       resp.put_F(F("p"), data.p);
     });
-*/
+
     auto p = [](NtfBase &resp, const TEST_DATA &data){
       resp.put_F(F("str"), data.str);
       resp.put_F(F("n"), data.n);
       resp.put_F(F("p"), data.p);
     };
+*/
+    //resp.test(NULL, data, *p1);
 
-    resp.test(NULL, data, *p1);
-
-  //resp.put_F(F("str"), data.str);
-  //resp.put_F(F("n"), data.n);
-  //resp.put_F(F("p"), data.p);
+  resp.put_F(F("str"), data.str);
+  resp.put_F(F("n"), data.n);
+  resp.put_F(F("p"), data.p);
 }
 
 

@@ -303,7 +303,17 @@ class CtrlItemRotEnc: public CtrlItem{
 
 /////////////////////////////////////////
 // Multi-command interface
-template<class INP, class NTF, uint8_t (*PARSER) (char *cmdLine, CtrlQueueData &data)>
+
+#if defined(ESP8266) || defined(ESP32)
+  #define MAX_TOKENS         16
+  #define MAX_COMMAND_LEN    128
+#else
+  #define MAX_TOKENS         8
+  #define MAX_COMMAND_LEN    32
+#endif
+
+
+template<class INP, class NTF, uint8_t (*PARSER) (const char * tokens[], CtrlQueueData &data)>
 class CtrlItemMultiCommand: public CtrlItem, public NTF{
   public:
     CtrlItemMultiCommand(INP *input):
@@ -316,26 +326,27 @@ class CtrlItemMultiCommand: public CtrlItem, public NTF{
       return ((INP *)_input)->isReady(); 
     }
 
-    void getData(CtrlQueueData &data){     
-      char *cmdLine = ((INP *)_input)->getCommandLine();
+    void getData(CtrlQueueData &data){    
+      const char *tokens[MAX_TOKENS + 1];
+      memset(&tokens, 0, sizeof(tokens));
 
-      if( cmdLine ){
-        //Buffer is ready
-        _cmd = PARSER(cmdLine, data);     
-        cmdLine[0] = 0;
+      if(!((INP *)_input)->getTokens(tokens, MAX_TOKENS) ){
+        _cmd = EEMC_ERROR;
+      }
+      else if( tokens[0] !=  NULL){
+        _cmd = PARSER(tokens, data);        
       }
       else {
         _cmd = EEMC_NONE;
-      } 
+      }  
     }    
 };
 
 
 //Helpers for creating parser function for multi-command input 
-//Helper functions for pasrer
-bool getTokens(char *cmdLine, char *tokens[], size_t maxTokens);
+bool getTokens(char *str, const char *tokens[], size_t maxTokens, char separator, char escape);
 bool checkTokenMatch(const char *token, const char *match);
-const char *getValueAfterToken(char *tokens[], const char *match);
+const char *getValueAfterToken(const char * tokens[], const char *match);
 bool strTo(const char *str, int &n);
 bool strTo(const char *str, char *dest); 
 
@@ -350,14 +361,6 @@ void setValue(const T1 &src, T2 &dst){
 
 
 //Helper macros
-#if defined(ESP8266) || defined(ESP32)
-  #define MAX_TOKENS         16
-  #define MAX_COMMAND_LEN    128
-#else
-  #define MAX_TOKENS         8
-  #define MAX_COMMAND_LEN    32
-#endif
-
 
 //Set corresponding data members of CtrlQueueData
 #define _CQD_SET_NONE(data, ...) 
@@ -371,12 +374,7 @@ void setValue(const T1 &src, T2 &dst){
 #define _CQD_SET_DATA(data, ...) ARG_NUM( NUM_ARGS(data, ##__VA_ARGS__), _CQD_SET_NONE, _CQD_SET_CMD, _CQD_SET_VAL, _CQD_SET_FLG, _CQD_SET_MIN, _CQD_SET_MAX) (data, __VA_ARGS__)
 
 #define BEGIN_PARSE_ROUTINE(FunctionName) \
-uint8_t FunctionName(char *cmdLine, CtrlQueueData &data){ \
-  char  *tokens[MAX_TOKENS + 1]; \
-  memset(tokens, 0, sizeof(tokens)); \
-  if(!getTokens(cmdLine, tokens, MAX_TOKENS)){ \
-    return EEMC_ERROR; \
-  } \
+uint8_t FunctionName(const char * tokens[], CtrlQueueData &data){ \
   int8_t index = -1;
 
 #define END_PARSE_ROUTINE() \

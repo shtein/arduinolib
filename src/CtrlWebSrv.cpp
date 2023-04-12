@@ -16,16 +16,6 @@ String       requestApi;
 void _APIRequestHandler(const char *uri){
   requestApi = webServer.uri().substring(strlen(uri));
 
-  //Remove /, &, ?
-  requestApi.replace('&', ' ');
-  requestApi.replace('?', ' ');
-  requestApi.replace('/', ' ');
-
-  //Add command parameters
-  for(int i = 0; i < webServer.args(); i++){
-    requestApi += " " + webServer.argName(i) + " " + webServer.arg(i);    
-  }
-
   //Ensure request processing
   if(requestApi.length() == 0){
     requestApi = " ";
@@ -70,8 +60,38 @@ bool WebApiInput::isReady() const{
   return requestApi.length() != 0;
 }
 
-char *WebApiInput::getCommandLine(){
-  return requestApi.length() == 0 ? NULL : (char *)requestApi.c_str(); 
+bool WebApiInput::getTokens(const char *tokens[], size_t maxTokens){
+  //Make sure it is ready
+  if(!isReady()){
+    //Return true, handle 0 tokens as no command
+    return true;
+  }
+
+
+  //Parse API URI
+  if(!::getTokens((char *)requestApi.c_str(), tokens, maxTokens, '/', 0x00)){
+    return false;
+  }
+
+  //Find the last token from URI
+  size_t curTokens = 0;
+  while(tokens[curTokens] && curTokens < maxTokens){
+    curTokens ++;
+  }
+
+  //Check if there is enough slots to add parameter tokens
+  if(curTokens + webServer.args() * 2 >= maxTokens){
+    return false;
+  }
+
+  //Add command parameters
+  for(int i = 0; i < webServer.args(); i++){
+    tokens[curTokens + 2 * i]     = webServer.argName(i).c_str();
+    tokens[curTokens + 2 * i + 1] = webServer.arg(i).c_str();
+  }
+
+
+  return true;
 }
 
 
@@ -125,9 +145,7 @@ void NtfWebApi::send(){
     return;
   }
 
-  
   //Send response
-  webServer.sendHeader("Access-Control-Allow-Origin", "*", true);
   webServer.send(200, "application/json", _data);
 
   //Clear request data

@@ -33,7 +33,7 @@ public:
 
   void read();
   bool isReady() const;
-  char *getCommandLine();
+  bool getTokens(const char *tokens[], size_t maxTokens);
 };
 
 
@@ -81,7 +81,7 @@ bool handleCaptivePortal(const char *redirect);
 
 //////////////////////////////////////
 // CtrlWebSrv - multi command interface
-template <uint8_t (*PARSER) (char *cmdLine, CtrlQueueData &data)>
+template <uint8_t (*PARSER) (const char *tokens[], CtrlQueueData &data)>
 using CtrlItemWebApi = CtrlItemMultiCommand<WebApiInput, NtfWebApi, PARSER>;
 
 #endif

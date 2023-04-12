@@ -66,8 +66,25 @@ void SerialInput::read(){
   }
 }
 
-char *SerialInput::getCommandLine(){
-  return isReady() ? _bufRead : NULL;
+#define PARSE_DELIMETER  ' '
+#define ESCAPE_CHARACTER '\\'
+//Get tokens into from command line into array
+//Return false of numnber of tokens is more than number of elements in array
+
+bool SerialInput::getTokens(const char *tokens[], size_t maxTokens){
+  //Make sure it is ready
+  if(!isReady()){
+    //Return true, handle 0 tokens as no command
+    return true;
+  }
+
+  //Shift one bite before reset
+  memmove(_bufRead + 1, _bufRead, SI_BUFF_LEN);
+  //zero first byte 
+  reset();
+
+  //Parse}
+  return ::getTokens(_bufRead + 1, tokens, maxTokens, PARSE_DELIMETER, ESCAPE_CHARACTER);
 }
 
 bool SerialInput::isReady() const{
@@ -79,10 +96,8 @@ void SerialInput::reset(){
   _lenRead    = 0;
 }
 
-
 ///////////////////
 // NtfSerial
-
 NtfSerial::NtfSerial(){
   reset();
 }
