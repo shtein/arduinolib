@@ -167,7 +167,7 @@ void NtfSerial::endArray(const char *key){
 }
 
 void NtfSerial::put(const char *key, bool v){
-  char str[5];
+  char str[6];
   strcpy_P(str, v ? PSTR("true"): PSTR("false"));
   
   STR_PRN_VAL("%s", key, str);

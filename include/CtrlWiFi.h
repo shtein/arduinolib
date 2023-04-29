@@ -11,6 +11,7 @@
   #include <WiFi.h>
 #endif
 
+#define IP_ADDRESS_STR(ip) (ip.isSet() ? ip.toString().c_str() : "")
 
 ////////////////////////////////////
 // CtrlWifiStatus - wifi status change

@@ -47,17 +47,23 @@ void putNtfObject(NtfBase &resp, const RESP<T> &r){
 BEGIN_PARSE_ROUTINE(TestParse)
 
   BEGIN_GROUP_TOKEN("wifi")  
+    
     BEGIN_OBJECT("connect|c", WIFI_CONNECT, CMD_WIFI_CONNECT)
       DATA_MEMBER("ssid|s", ssid)
       DATA_MEMBER("pwd|p", pwd, "") 
     END_OBJECT()
+    
     VALUE_IS_TOKEN("disconnect|d", CMD_WIFI_DISCONNECT)
+    
     VALUE_IS_TOKEN("status|", CMD_WIFI_STATUS)
     VALUE_IS_TOKEN("scan|s", CMD_WIFI_NETWORKS)
+
+    
     BEGIN_GROUP_TOKEN("ap")
       VALUE_IS_TOKEN("on", CMD_WIFI_AP, 1)
       VALUE_IS_TOKEN("off", CMD_WIFI_AP, 0)
     END_GROUP_TOKEN()
+   
   END_GROUP_TOKEN()
 
 END_PARSE_ROUTINE()

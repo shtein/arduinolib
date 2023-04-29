@@ -13,8 +13,6 @@
 ///////////////////////////
 // Serialization for notifications
 
-#define IP_ADDRESS_STR(ip) (ip.isSet() ? ip.toString().c_str() : "")
-
 void putNtfObject(NtfBase &resp, const WIFI_STATUS_STATION &data){
   //Mac address
   resp.put_F(F("macaddress"), WiFi.macAddress().c_str()); 
@@ -168,7 +166,6 @@ void initWiFi(const char *hostName, const char *apName){
     WiFi.softAP(apName);    
   }
   WiFi.softAPdisconnect(true);
- 
 }
 
 
