@@ -17,7 +17,7 @@ inline void setValue(const char *src, char *dst){
 }
 
 template <typename T1, typename T2 >
-void setValue(const T1 &src, T2 &dst){
+inline void setValue(const T1 &src, T2 &dst){
   dst = src;
 }
 
@@ -52,7 +52,7 @@ uint8_t FunctionName(const char *src[], CtrlQueueData &data){ \
     
 #define _END_TOKEN() \
   } \
-  tokens = tokens == src ? tokens : tokens - 1;
+  tokens = tokens == src ? NULL : tokens - 1;
 
 //Group token
 #define BEGIN_GROUP_TOKEN(token, ...) \

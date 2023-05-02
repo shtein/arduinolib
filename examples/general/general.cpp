@@ -17,9 +17,9 @@ struct TEST_DATA{
 BEGIN_PARSE_ROUTINE(TestParse)
 
   BEGIN_GROUP_TOKEN("set|s")  
-     VALUE_IS_TOKEN("off", 1, 0)
-     VALUE_IS_TOKEN("on", 1, 1)
-    END_GROUP_TOKEN()
+    VALUE_IS_TOKEN("off", 1, 0)
+    VALUE_IS_TOKEN("on", 1, 1)
+  END_GROUP_TOKEN()
   
   BEGIN_GROUP_TOKEN("test|t")
     VALUE_IS_PAIR("str|s", 2, CTF_VAL_STRING)

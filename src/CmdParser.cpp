@@ -55,7 +55,7 @@ bool checkTokenMatch(const char *token, const char *token2){
   size_t lenToken = token ? strlen(token) : 0;
   size_t lenMatch = 0;
 
-  for(char *begin = match, *end = strchr(begin, COMMAND_SEPARATOR); 
+  for(char *begin = match, *end = strchr(begin, COMMAND_SEPARATOR);  
       begin != NULL; 
       begin = end, end = begin ? strchr(begin, COMMAND_SEPARATOR) : NULL){   
 
