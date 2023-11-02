@@ -6,8 +6,6 @@
 
   #pragma message "Warning: debugging via serial is enabled"
 
-  #include <wstring.h>
-
   void _dbgOut(const __FlashStringHelper *fmt, ...);
 
   #define DBG_INIT() \

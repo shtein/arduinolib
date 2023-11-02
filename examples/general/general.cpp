@@ -4,6 +4,7 @@
 #include <AnalogInput.h>
 #include <CtrlSerial.h>
 #include <string.h>
+#include <FS.h>
 
 //#define FASTLED_ESP8266_D1_PIN_ORDER
 #include <fastled.h>
@@ -116,8 +117,9 @@ typedef NtfBaseSet<MAX_NTF> NtfSet;
 void setup() {
 
   DBG_INIT();
-  DBG_OUTLN("Started");
 
+  delay(500);
+  DBG_OUTLN("Started");
 
   CtrlPanel panel;
 

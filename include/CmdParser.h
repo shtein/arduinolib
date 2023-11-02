@@ -28,7 +28,7 @@ inline void setValue(const T1 &src, T2 &dst){
 #define _CQD_SET_NONE(data, ...) 
 #define _CQD_SET_CMD(data, ...) return ARG_NUM_1(__VA_ARGS__);
 #define _CQD_SET_VAL(data, ...) data.setValue(ARG_NUM_2(__VA_ARGS__)); _CQD_SET_CMD(data, __VA_ARGS__);
-#define _CQD_SET_FLG(data, ...) data.flag  = ARG_NUM_3(__VA_ARGS__); _CQD_SET_VAL(data, __VA_ARGS__);
+#define _CQD_SET_FLG(data, ...) data.setValue(ARG_NUM_2(__VA_ARGS__)); data.flag  = ARG_NUM_3(__VA_ARGS__); _CQD_SET_CMD(data, __VA_ARGS__);
 #define _CQD_SET_MIN(data, ...) data.min   = ARG_NUM_4(__VA_ARGS__); _CQD_SET_FLG(data, __VA_ARGS__);
 #define _CQD_SET_MAX(data, ...) data.max   = ARG_NUM_5(__VA_ARGS__); _CQD_SET_MIN(data, __VA_ARGS__);
 
