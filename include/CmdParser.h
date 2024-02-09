@@ -43,7 +43,7 @@ uint8_t FunctionName(const char *src[], CtrlQueueData &data){ \
   return EEMC_ERROR; \
 }
 
-#define _IF_TOKEN_MATCH(a, b) if(checkTokenMatch(a, PSTR(b)) ) \
+#define _IF_TOKEN_MATCH(a, b) if(checkTokenMatch(a, b) ) \
 
 #define _BEGIN_TOKEN(token) \
   tokens = tokens == NULL? src : tokens + 1; \
@@ -125,7 +125,7 @@ uint8_t FunctionName(const char *src[], CtrlQueueData &data){ \
 
 #define _DM_AS(token, member, format, ...) \
   { \
-    const char *v = getValueAfterToken(&tokens[1], PSTR(token)); \
+    const char *v = getValueAfterToken(&tokens[1], token); \
     if(!format(v, obj.member)){  \
       _DM_MANDATORY(__VA_ARGS__) \
       _DM_DEFAULT(obj.member, ##__VA_ARGS__); \

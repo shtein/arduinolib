@@ -4,7 +4,7 @@
 #include <AnalogInput.h>
 #include <CtrlSerial.h>
 #include <string.h>
-#include <FS.h>
+//#include <FS.h>
 
 //#define FASTLED_ESP8266_D1_PIN_ORDER
 #include <fastled.h>
@@ -44,9 +44,9 @@ void test(NtfBase &resp, const T &data, void (*f)(NtfBase &resp, const T &data))
 */
 
 void p1(NtfBase &resp, const TEST_DATA &data){
-      resp.put_F(F("str"), data.str);
-      resp.put_F(F("n"), data.n);
-      resp.put_F(F("p"), data.p);
+      resp.put_F(PSTR("str"), data.str);
+      resp.put_F(PSTR("n"), data.n);
+      resp.put_F(PSTR("p"), data.p);
     };
 
 void putNtfObject(NtfBase &resp, const TEST_DATA &data){
@@ -66,31 +66,31 @@ void putNtfObject(NtfBase &resp, const TEST_DATA &data){
 */
     //resp.test(NULL, data, *p1);
 
-  resp.put_F(F("str"), data.str);
-  resp.put_F(F("n"), data.n);
-  resp.put_F(F("p"), data.p);
+  resp.put_F(PSTR("str"), data.str);
+  resp.put_F(PSTR("n"), data.n);
+  resp.put_F(PSTR("p"), data.p);
 }
 
 
 void putNtfObject(NtfBase &resp, const CtrlQueueData &data){
   if(data.flag == CTF_VAL_STRING){
-    resp.put_F(F("value"), data.str);
+    resp.put_F(PSTR("value"), data.str);
   }
   else{
-    resp.put_F(F("value"), data.value);
+    resp.put_F(PSTR("value"), data.value);
   }
-  resp.put_F(F("flag"), data.flag);
-  resp.put_F(F("min"), data.min);
-  resp.put_F(F("max"), data.max);
+  resp.put_F(PSTR("flag"), data.flag);
+  resp.put_F(PSTR("min"), data.min);
+  resp.put_F(PSTR("max"), data.max);
 }
 
 
 void putNtfObject(NtfBase &resp, const CtrlQueueItem &data){
-  resp.put_F(F("cmd"), data.cmd);
+  resp.put_F(PSTR("cmd"), data.cmd);
   if(data.cmd == 3){
     
     TEST_DATA *d = (TEST_DATA *)data.data.str;
-    resp.put_F(F("data"), *d);
+    resp.put_F(PSTR("data"), *d);
 /*    
     resp.put("data", *d, *[](NtfBase &resp, const TEST_DATA &data){
       resp.put_F(F("str"), data.str);
@@ -102,7 +102,7 @@ void putNtfObject(NtfBase &resp, const CtrlQueueItem &data){
     
   }
   else{
-    resp.put_F(F("data"), data.data);    
+    resp.put_F(PSTR("data"), data.data);    
   }
   
 }

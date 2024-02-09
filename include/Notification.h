@@ -22,13 +22,13 @@ public:
   //Block management
   virtual void begin(const char *key = NULL) = 0;
   virtual void end(const char *key = NULL) = 0;
-  void begin_F(const __FlashStringHelper *key = NULL);
-  void end_F(const __FlashStringHelper *key = NULL);
+  void begin_F(const char *key = NULL);
+  void end_F(const char *key = NULL);
 
   virtual void beginArray(const char *key = NULL) = 0;
   virtual void endArray(const char *key = NULL) = 0;
-  void beginArray_F(const __FlashStringHelper *key = NULL);
-  void endArray_F(const __FlashStringHelper *key = NULL);
+  void beginArray_F(const char *key = NULL);
+  void endArray_F(const char *key = NULL);
 
 
   //Primitives
@@ -50,10 +50,10 @@ public:
   void put(const char *key, const T*, size_t size);
 
   template<class T>
-  void put_F (const __FlashStringHelper *key, const T &t);
+  void put_F (const char *key, const T &t);
 
   template<class T>
-  void put_F(const __FlashStringHelper *key, const T*, size_t size);
+  void put_F(const char *key, const T*, size_t size);
 
   
   //Context manupulation
@@ -87,28 +87,28 @@ inline NtfBase::NtfBase(){
 }
 
 template< class T>
-inline void NtfBase::put_F(const __FlashStringHelper *key, const T &t){
+inline void NtfBase::put_F(const char *key, const T &t){
   NTF_FUNC_F(put, key, t);
 }
 
 template<class T>
-inline void NtfBase::put_F(const __FlashStringHelper *key, const T *t, size_t size){
+inline void NtfBase::put_F(const char *key, const T *t, size_t size){
   NTF_FUNC_F(put, key, t, size);
 }
 
-inline void NtfBase::begin_F(const __FlashStringHelper *key){
+inline void NtfBase::begin_F(const char *key){
   NTF_FUNC_F(begin, key);
 }
 
-inline void NtfBase::end_F(const __FlashStringHelper *key){
+inline void NtfBase::end_F(const char *key){
   NTF_FUNC_F(end, key);
 }
 
-inline void NtfBase::beginArray_F(const __FlashStringHelper *key){
+inline void NtfBase::beginArray_F(const char *key){
   NTF_FUNC_F(beginArray, key);
 }
 
-inline void NtfBase::endArray_F(const __FlashStringHelper *key){
+inline void NtfBase::endArray_F(const char *key){
   NTF_FUNC_F(endArray, key);
 }
 
