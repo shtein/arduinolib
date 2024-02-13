@@ -77,7 +77,6 @@ private:
    if(key){ \
     char buf[16]; \
     strncpy_P(buf, (const char *)key, sizeof(buf) - 1); \
-    buf[sizeof(buf) - 1] = 0; \
     name(buf, ##__VA_ARGS__); \
   } \
   else{ \
@@ -153,8 +152,7 @@ inline void NtfBase::put_P(const char *key, const char *v ){
   char buf[24]; 
 
   if(v){  
-    strncpy_P(buf, (const char *)v, sizeof(buf) - 1);
-    buf[sizeof(buf) - 1] = 0;
+    strncpy_P(buf, (const char *)v, sizeof(buf));
   }
   else{
     buf[0] = 0;
