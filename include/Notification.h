@@ -40,7 +40,10 @@ public:
   virtual void put(const char *key, int16_t v) = 0;  
   virtual void put(const char *key, int32_t v) = 0;  
   virtual void put(const char *key, const char *v) = 0;
+  void put_P(const char *key, const char *v);
   void put(const char *key, const __FlashStringHelper *v);
+  void put_FP(const char *key, const char *v);
+
 
   
   template <class T>
@@ -146,7 +149,7 @@ void NtfBase::put(const char *key, const T *t, size_t size){
   endArray(key);
 }
 
-inline void NtfBase::put(const char *key, const __FlashStringHelper *v ){
+inline void NtfBase::put_P(const char *key, const char *v ){
   char buf[24]; 
 
   if(v){  
@@ -158,6 +161,14 @@ inline void NtfBase::put(const char *key, const __FlashStringHelper *v ){
   }
 
   put(key, (const char *)buf);
+}
+
+inline void NtfBase::put_FP(const char *key, const char *v){
+  NTF_FUNC_F(put_P, key, v);
+}
+
+inline void NtfBase::put(const char *key, const __FlashStringHelper *v ){
+  put_P(key, (const char *)v);
 }
 
 inline const NtfBase::CONTEXT& NtfBase::getContext() const{

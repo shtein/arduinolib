@@ -17,19 +17,19 @@ struct TEST_DATA{
 
 BEGIN_PARSE_ROUTINE(TestParse)
 
-  BEGIN_GROUP_TOKEN("set|s")  
-    VALUE_IS_TOKEN("off", 1, 0)
-    VALUE_IS_TOKEN("on", 1, 1)
+  BEGIN_GROUP_TOKEN(PSTR("set|s"))  
+    VALUE_IS_TOKEN(PSTR("off"), 1, 0)
+    VALUE_IS_TOKEN(PSTR("on"), 1, 1)
   END_GROUP_TOKEN()
   
-  BEGIN_GROUP_TOKEN("test|t")
-    VALUE_IS_PAIR("str|s", 2, CTF_VAL_STRING)
-    VALUE_IS_PAIR("num|n", 2, CTF_VAL_ABS)
+  BEGIN_GROUP_TOKEN(PSTR("test|t"))
+    VALUE_IS_PAIR(PSTR("str|s"), 2, CTF_VAL_STRING)
+    VALUE_IS_PAIR(PSTR("num|n"), 2, CTF_VAL_ABS)
 
-    BEGIN_OBJECT("data|d", TEST_DATA, 3)
-      DATA_MEMBER("string|s", str)
-      DATA_MEMBER("num|n", n)
-      DATA_MEMBER("p", p, 20)
+    BEGIN_OBJECT(PSTR("data|d"), TEST_DATA, 3)
+      DATA_MEMBER(PSTR("string|s"), str)
+      DATA_MEMBER(PSTR("num|n"), n)
+      DATA_MEMBER(PSTR("p"), p, 20)
     END_OBJECT()
 
   END_GROUP_TOKEN()
