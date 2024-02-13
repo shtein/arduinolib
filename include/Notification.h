@@ -72,17 +72,6 @@ private:
   struct CONTEXT _context;
 };
 
-
-#define NTF_FUNC_F(name, key, ...) \
-   if(key){ \
-    char buf[16]; \
-    strncpy_P(buf, (const char *)key, sizeof(buf) - 1); \
-    name(buf, ##__VA_ARGS__); \
-  } \
-  else{ \
-    name((const char *)NULL, ##__VA_ARGS__); \
-  }
-
 inline NtfBase::NtfBase(){
   _context.flags      = NTF_CTX_NONE;
   _context.arrayIndex = 0;
@@ -90,28 +79,28 @@ inline NtfBase::NtfBase(){
 
 template< class T>
 inline void NtfBase::put_F(const char *key, const T &t){
-  NTF_FUNC_F(put, key, t);
+  put((const char *)Progmem2Str24(key), t);
 }
 
 template<class T>
 inline void NtfBase::put_F(const char *key, const T *t, size_t size){
-  NTF_FUNC_F(put, key, t, size);
+  put((const char *)Progmem2Str24(key), t, size);
 }
 
 inline void NtfBase::begin_F(const char *key){
-  NTF_FUNC_F(begin, key);
+  begin((const char *)Progmem2Str24(key));
 }
 
 inline void NtfBase::end_F(const char *key){
-  NTF_FUNC_F(end, key);
+  end((const char *)Progmem2Str24(key));
 }
 
 inline void NtfBase::beginArray_F(const char *key){
-  NTF_FUNC_F(beginArray, key);
+  beginArray((const char *)Progmem2Str24(key));
 }
 
 inline void NtfBase::endArray_F(const char *key){
-  NTF_FUNC_F(endArray, key);
+  endArray((const char *)Progmem2Str24(key));
 }
 
 template <class T>
@@ -149,20 +138,11 @@ void NtfBase::put(const char *key, const T *t, size_t size){
 }
 
 inline void NtfBase::put_P(const char *key, const char *v ){
-  char buf[24]; 
-
-  if(v){  
-    strncpy_P(buf, (const char *)v, sizeof(buf));
-  }
-  else{
-    buf[0] = 0;
-  }
-
-  put(key, (const char *)buf);
+  put(key, (const char *)Progmem2Str24(v));
 }
 
 inline void NtfBase::put_FP(const char *key, const char *v){
-  NTF_FUNC_F(put_P, key, v);
+  put_P((const char *)Progmem2Str24(key), v);
 }
 
 inline void NtfBase::put(const char *key, const __FlashStringHelper *v ){

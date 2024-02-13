@@ -40,4 +40,35 @@ int powInt(int x, int y, int limit);
 #define ARG_LAST(...) ARG_NUM( NUM_ARGS(__VA_ARGS__),  __VA_ARGS__)
 
 
+////////////////////////////////////////////////
+// const char * PROGMEM to const char converter
+// usage:
+// const char *p = (const char *)(Progmem2Str<>(pProgmemStr))
+
+#define PROGMEMSTR_SIZE_MAX 24
+
+template<size_t SIZE = PROGMEMSTR_SIZE_MAX>
+class Progmem2Str{
+public:
+  Progmem2Str(const char *s){
+    if(s){
+      strncpy_P(_buf, s, sizeof(_buf));
+    }
+    else{
+      _buf[0] = 0;
+    }
+  }
+
+  operator const char *() const{
+    return _buf;
+  }
+
+private:
+  char _buf[SIZE];  
+};
+
+
+typedef Progmem2Str<> Progmem2Str24;
+
+
 #endif //_UTILS_H
