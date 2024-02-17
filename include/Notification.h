@@ -21,14 +21,14 @@ public:
   
   //Block management
   virtual void begin(const char *key = NULL) = 0;
-  virtual void end(const char *key = NULL) = 0;
   void begin_F(const char *key = NULL);
-  void end_F(const char *key = NULL);
+  virtual void end(const char *key = NULL) = 0;
+  
 
   virtual void beginArray(const char *key = NULL) = 0;
-  virtual void endArray(const char *key = NULL) = 0;
   void beginArray_F(const char *key = NULL);
-  void endArray_F(const char *key = NULL);
+  virtual void endArray(const char *key = NULL) = 0;
+  
 
 
   //Primitives
@@ -91,16 +91,9 @@ inline void NtfBase::begin_F(const char *key){
   begin((const char *)Progmem2Str24(key));
 }
 
-inline void NtfBase::end_F(const char *key){
-  end((const char *)Progmem2Str24(key));
-}
 
 inline void NtfBase::beginArray_F(const char *key){
   beginArray((const char *)Progmem2Str24(key));
-}
-
-inline void NtfBase::endArray_F(const char *key){
-  endArray((const char *)Progmem2Str24(key));
 }
 
 template <class T>
