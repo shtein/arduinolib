@@ -143,7 +143,7 @@ void NtfSerial::begin(const char *key){
   _ident +=1;
 }
 
-void NtfSerial::end(const char *){  
+void NtfSerial::end(){  
   _ident -= 1;
 
   //STR_PRN("");
@@ -160,7 +160,7 @@ void NtfSerial::beginArray(const char *key ){
   _ident +=1;
 }
 
-void NtfSerial::endArray(const char *key){
+void NtfSerial::endArray(){
   _ident -= 1;
 
   //STR_PRN("");

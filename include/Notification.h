@@ -22,12 +22,12 @@ public:
   //Block management
   virtual void begin(const char *key = NULL) = 0;
   void begin_F(const char *key = NULL);
-  virtual void end(const char *key = NULL) = 0;
+  virtual void end() = 0;
   
 
   virtual void beginArray(const char *key = NULL) = 0;
   void beginArray_F(const char *key = NULL);
-  virtual void endArray(const char *key = NULL) = 0;
+  virtual void endArray() = 0;
   
 
 
@@ -102,7 +102,7 @@ void NtfBase::put(const char *key, const T &t){
   
   putNtfObject(*this, t);
 
-  end(key);
+  end();
 }
 
 template<class T>
@@ -127,7 +127,7 @@ void NtfBase::put(const char *key, const T *t, size_t size){
   //Restore context
   setContext(ctx);
 
-  endArray(key);
+  endArray();
 }
 
 inline void NtfBase::put_P(const char *key, const char *v ){
