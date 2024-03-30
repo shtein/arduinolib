@@ -36,12 +36,6 @@ BEGIN_PARSE_ROUTINE(TestParse)
   
 END_PARSE_ROUTINE()
 
-/*
-template<class T>
-void test(NtfBase &resp, const T &data, void (*f)(NtfBase &resp, const T &data)){
-  f(resp, data);
-}
-*/
 
 void p1(NtfBase &resp, const TEST_DATA &data){
       resp.put_F(PSTR("str"), data.str);
@@ -50,22 +44,6 @@ void p1(NtfBase &resp, const TEST_DATA &data){
     };
 
 void putNtfObject(NtfBase &resp, const TEST_DATA &data){
-
-/*
-    test<TEST_DATA>(resp, data, [](NtfBase &resp, const TEST_DATA &data){
-      resp.put_F(F("str"), data.str);
-      resp.put_F(F("n"), data.n);
-      resp.put_F(F("p"), data.p);
-    });
-
-    auto p = [](NtfBase &resp, const TEST_DATA &data){
-      resp.put_F(F("str"), data.str);
-      resp.put_F(F("n"), data.n);
-      resp.put_F(F("p"), data.p);
-    };
-*/
-    //resp.test(NULL, data, *p1);
-
   resp.put_F(PSTR("str"), data.str);
   resp.put_F(PSTR("n"), data.n);
   resp.put_F(PSTR("p"), data.p);
@@ -107,12 +85,7 @@ void putNtfObject(NtfBase &resp, const CtrlQueueItem &data){
   
 }
   
-
-
-#define MAX_NTF 3
-typedef NtfBaseSet<MAX_NTF> NtfSet;
-
-
+typedef NtfBaseSet<2> NtfSet;
 
 void setup() {
 
@@ -122,7 +95,6 @@ void setup() {
   DBG_OUTLN("Started");
 
   CtrlPanel panel;
-
 
   SerialInput serial;
   CtrlItemSerial<TestParse> ctrlSr(&serial);  
@@ -136,14 +108,15 @@ void setup() {
   CtrlItemPb<PB_CONTROL_CLICK_SHORT, 1> ctrlPb(1, &btn);
   panel.addControl(&ctrlPb);
 
-
-  CtrlQueueItem itm;
+  
 
   CRGB leds[30];
   FastLED.addLeds<NEOPIXEL, 2>(leds, 30).setCorrection( TypicalLEDStrip );
   fill_solid(leds, 30, CRGB::BlueViolet);
 
   unsigned long ms = 0;
+
+  CtrlQueueItem itm;
   
   for(;;){
 
@@ -157,8 +130,6 @@ void setup() {
 
     if(itm.cmd != EEMC_NONE){      
             
-      set.put(itm);
-
       if(itm.cmd == 1){
         if(itm.data.value == 0){
           fill_solid(leds, 30, CRGB::Black);
@@ -166,6 +137,15 @@ void setup() {
         else if(itm.data.value == 1){
           fill_solid(leds, 30, CRGB::Red);
         }
+      }
+
+      if(itm.cmd == EEMC_ERROR){
+        CmdResponse<> resp{itm.cmd, 0xFF};
+        set.put(resp);
+      }
+      else {
+        CmdResponse<const CtrlQueueItem &> resp{itm.cmd, itm};
+        set.put(resp);
       }
 
     }  

@@ -222,6 +222,40 @@ void NtfBaseSet<N>::put(const T *t, size_t size){
 }
 
 
+//////////////////////////////////
+// Structure for command response
+DECLARE_STR_PROGMEM(rs_Cmd)
+DECLARE_STR_PROGMEM(rs_Data)
+DECLARE_STR_PROGMEM(rs_Error)
+
+
+template <typename ...Ts>
+struct CmdResponse{};
+
+template<>
+struct CmdResponse<>{
+  uint8_t cmd;
+  uint8_t error;
+};
+
+template<typename T> 
+struct CmdResponse<T>{
+  uint8_t cmd;
+  T data;
+}; 
+
+inline void putNtfObject(NtfBase &resp, const CmdResponse<> &r){
+  resp.put_F(rs_Cmd, r.cmd);
+  resp.put_F(rs_Error, r.error);
+}
+
+//Default serialization
+template<typename T>
+void putNtfObject(NtfBase &resp, const CmdResponse<T> &r){
+  resp.put_F(rs_Cmd, r.cmd);
+  resp.put_F(rs_Data, r.data);
+}
+
 
 
 #endif //__NOTIFICATION_H

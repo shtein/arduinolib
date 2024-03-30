@@ -5,6 +5,13 @@
 #include "DbgTool.h"
 
 
+/////////////////////////////
+// Command response
+DEFINE_STR_PROGMEM(rs_Cmd,          "cmd")
+DEFINE_STR_PROGMEM(rs_Data,         "data")
+DEFINE_STR_PROGMEM(rs_Error,        "error")
+
+
 ///////////////////////////////////
 // Serial input
 

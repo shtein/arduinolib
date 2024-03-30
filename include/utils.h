@@ -70,5 +70,10 @@ private:
 
 typedef Progmem2Str<> Progmem2Str24;
 
+//String resources
+#define DEFINE_STR_PROGMEM(k, v) const char k[] PROGMEM = v;
+#define DECLARE_STR_PROGMEM(k) extern const char k[] PROGMEM;
+
+
 
 #endif //_UTILS_H
