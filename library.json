@@ -15,7 +15,7 @@
   },
   "dependencies":
   {
-      "z3t0/IRremote": "3.4.0"
+      "z3t0/IRremote": "*"
   },
   "version": "1.0.4",
   "license": "MIT",

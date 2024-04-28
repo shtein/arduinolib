@@ -1,3 +1,6 @@
+
+#define USE_IR_REMOTE
+
 #include <Arduino.h>
 #include <DbgTool.h>
 #include <Controls.h>
