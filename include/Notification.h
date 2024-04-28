@@ -1,8 +1,6 @@
 #ifndef __NOTIFICATION_H
 #define __NOTIFICATION_H
 
-
-
 /////////////////////////////
 // Base interface to send notifications
 
