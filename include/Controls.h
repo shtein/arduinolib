@@ -1,7 +1,6 @@
 #ifndef __CONTROLS_H
 #define __CONTROLS_H
 
-#include "ControlCtx.h"
 #include "AnalogInput.h"
 #include "utils.h"
 #include "CmdParser.h"
@@ -9,6 +8,7 @@
 //Change commands
 #define EEMC_NONE        0x00   //Nothing changed
 #define EEMC_ERROR       0xFF   //Input error
+
 
 ///////////////////////////////////
 // Control flags
