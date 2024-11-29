@@ -107,11 +107,10 @@ void setup() {
   set.addNtf(&ctrlSr);
 
   
-  PushButton btn(0);  
+  PushButton btn(10);  
   CtrlItemPb<PB_CONTROL_CLICK_SHORT, 1> ctrlPb(1, &btn);
   panel.addControl(&ctrlPb);
 
-  
 
   CRGB leds[30];
   FastLED.addLeds<NEOPIXEL, 2>(leds, 30).setCorrection( TypicalLEDStrip );

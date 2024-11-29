@@ -75,5 +75,14 @@ typedef Progmem2Str<> Progmem2Str24;
 #define DECLARE_STR_PROGMEM(k) extern const char k[] PROGMEM;
 
 
+//Time checks
+#define SET_MILLIS(var) \
+  var = (uint16_t)millis(); \
+  if(var == 0) var = 1;
+
+#define DELTA_MILLS(var) ((uint16_t)millis() - var )
+
+
+
 
 #endif //_UTILS_H

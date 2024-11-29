@@ -3,6 +3,7 @@
 
 #include "DbgTool.h"
 #include "AnalogInput.h"
+#include "utils.h"
 
 ///////////////////
 //BaseInput
@@ -100,7 +101,7 @@ void PushButton::read(){
         //Be ready for short push
         _state = BUTTON_STATE_PUSHED_SHORT;
         //Set timer
-        _millis = millis() + PUSH_LONG_INTERVAL; 
+        SET_MILLIS(_millis); 
         DBG_OUTLN("pushed - button D%d", (int)_pin);
       }
     break;
@@ -108,11 +109,11 @@ void PushButton::read(){
     case BUTTON_STATE_PUSHED_WAIT:  //Wait for next interval
 
        //Check timer
-      if(_millis < millis()){
+      if(DELTA_MILLS(_millis) > PUSH_LONG_INTERVAL){
         _state = BUTTON_STATE_PUSHED_LONG;
         //Reset the timer so next long push event happens
-        _millis = millis() + PUSH_LONG_INTERVAL;
-         DBG_OUTLN("long pushed - button D%d", (int)_pin);
+        SET_MILLIS(_millis); 
+        DBG_OUTLN("long pushed - button D%d", (int)_pin);
       }
     break;
     case BUTTON_STATE_PUSHED_LONG:
@@ -137,11 +138,11 @@ void PushButton::readValue(){
 
     if(_millisDebounce == 0){
       //Wait for some time
-      _millisDebounce = millis();
+      SET_MILLIS (_millisDebounce);
     }
     else{    
        //Change if the value is the same  
-      if(millis() - _millisDebounce > BUTTON_DEBOUNCE_TIME){
+      if(DELTA_MILLS(_millisDebounce) > BUTTON_DEBOUNCE_TIME){
         _value = value;
       }
     }

@@ -77,12 +77,12 @@ class PushButton: public BaseInput{
     void readValue();
     
   protected:
-    uint8_t        _pin:4;
-    uint8_t        _valueOff:1;
-    uint8_t        _value:1; 
-    uint8_t        _state:2;
-    unsigned long  _millis;  
-    unsigned long  _millisDebounce;  
+    uint8_t   _pin:4;
+    uint8_t   _valueOff:1;
+    uint8_t   _value:1; 
+    uint8_t   _state:2;
+    uint16_t  _millis;  
+    uint16_t  _millisDebounce;  
 };
 
 
