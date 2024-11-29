@@ -109,7 +109,7 @@ void PushButton::read(){
     case BUTTON_STATE_PUSHED_WAIT:  //Wait for next interval
 
        //Check timer
-      if(DELTA_MILLS(_millis) > PUSH_LONG_INTERVAL){
+      if(DELTA_MILLS(_millis) >= PUSH_LONG_INTERVAL){
         _state = BUTTON_STATE_PUSHED_LONG;
         //Reset the timer so next long push event happens
         SET_MILLIS(_millis); 
@@ -142,7 +142,7 @@ void PushButton::readValue(){
     }
     else{    
        //Change if the value is the same  
-      if(DELTA_MILLS(_millisDebounce) > BUTTON_DEBOUNCE_TIME){
+      if(DELTA_MILLS(_millisDebounce) >= BUTTON_DEBOUNCE_TIME){
         _value = value;
       }
     }
