@@ -103,39 +103,44 @@ void setup() {
   set.addNtf(&ctrlSr);
 
   
+  
+
   PushButton btn(10);  
   CtrlItemPb<PB_CONTROL_CLICK_SHORT, 1> ctrlPb(1, &btn);
   panel.addControl(&ctrlPb);
 
+
+  auto IRCmdMap = 
+  [](unsigned long btn, CtrlQueueData &data) -> uint8_t { 
+    memset(&data, 0, sizeof(data));
+
+    switch(btn){
+      case R_DEC_KEY_OK:                            
+      return 12;
+      case R_DEC_KEY_UP:                            
+        data.flag  = CTF_VAL_NEXT;                            
+      return 14;
+      case R_DEC_KEY_DOWN:
+        data.flag  = CTF_VAL_PREV;
+        data.value = 11;
+      return 14;    
+      case R_DEC_KEY_LEFT:
+        data.flag  = CTF_VAL_DELTA;
+        data.value = 5;
+      return 16;
+      case R_DEC_KEY_RIGHT:
+        data.flag  = CTF_VAL_DELTA;
+        data.value = -5;
+      return 16;
+    }
+
+    return EEMC_NONE;
+  };
+
+  
   IRRemoteRecv ir(7);
-  CtrlItemIR  ctrlIrB1([](unsigned long btn, CtrlQueueData &data) -> uint8_t { 
-                          memset(&data, 0, sizeof(data));
-
-                          switch(btn){
-                            case R_DEC_KEY_OK:                            
-                            return 12;
-                            case R_DEC_KEY_UP:                            
-                              data.flag  = CTF_VAL_NEXT;                            
-                            return 14;
-                            case R_DEC_KEY_DOWN:
-                              data.flag  = CTF_VAL_PREV;
-                              data.value = 11;
-                            return 14;    
-                            case R_DEC_KEY_LEFT:
-                             data.flag  = CTF_VAL_DELTA;
-                             data.value = 5;
-                            return 16;
-                            case R_DEC_KEY_RIGHT:
-                             data.flag  = CTF_VAL_DELTA;
-                             data.value = -5;
-                            return 16;
-                          }
-
-                          return EEMC_NONE;
-
-                        }, 
-                      &ir);
-  panel.addControl(&ctrlIrB1);
+  CtrlItemIR  ctrlIr(IRCmdMap, &ir);
+  panel.addControl(&ctrlIr);
 
 
   CRGB leds[30];

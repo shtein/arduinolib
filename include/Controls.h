@@ -238,19 +238,49 @@ class CtrlSwicth2Pos: public CtrlItem{
 // repeat - button repeat limit, 0 = single push, same as next or prev. 
 // It is a multi-command control
 // uint8_t (*IRCmdMap) (unsigned long, CtrlQueueData &) defines mapping of ir button to command and value
-
-
 class CtrlItemIR: public CtrlItem{
   public:
-    CtrlItemIR(uint8_t (*IRCmdMap) (unsigned long, CtrlQueueData &), IRRemoteRecv *ir);
-    
+    CtrlItemIR(uint8_t (*IR_CMD_MAP) (unsigned long, CtrlQueueData &),  
+              IRRemoteRecv *ir): CtrlItem(EEMC_NONE, ir){
+      _IR_CMD_MAP = IR_CMD_MAP;
+    }
 
    protected:
-    bool triggered() const;
-    void getData(CtrlQueueData &data);
+    bool triggered() const{
+        //See if anything is pushed
+        return ((IRRemoteRecv *)getInput())->pushed() ? true : false;
+    }
+
+    void getData(CtrlQueueData &data){
+      //Get pushed button  
+      unsigned long btn = ((IRRemoteRecv *)getInput())->pushedBtn();
+
+      //Retrieve cmd and data
+      _cmd = _IR_CMD_MAP(btn, data);
+      //Do nothing if command is not defined
+      if(_cmd == EEMC_NONE || _cmd == EEMC_ERROR){
+        return;
+      }
+
+      //Get repeats counts
+      uint8_t pushedCnt = ((IRRemoteRecv *)getInput())->pushed(btn);
+
+      if(data.value == 0){ 
+        //Don't process repeats for single click
+        if(pushedCnt > 1){
+          _cmd = EEMC_NONE;
+        }
+      }
+      else if(data.flag == CTF_VAL_DELTA){
+      // If it is positive or negative then it is power of 2^repeat 
+      // where repeat  is limited by absolute value of data.avlue
+        data.value = (data.value > 0 ? 1 : -1) * powInt(2, pushedCnt - 1, abs(data.value));
+      }
+    }
 
   protected:
-    uint8_t (*_IRCmdMap)(unsigned long, CtrlQueueData &);
+    uint8_t (*_IR_CMD_MAP) (unsigned long, CtrlQueueData &);
+
 };
 
 #endif //USE_IR_REMOTE
