@@ -1,6 +1,3 @@
-
-#define USE_IR_REMOTE
-
 #include <Arduino.h>
 #include <DbgTool.h>
 #include <Controls.h>
@@ -65,7 +62,6 @@ void putNtfObject(NtfBase &resp, const CtrlQueueData &data){
   resp.put_F(PSTR("max"), data.max);
 }
 
-
 void putNtfObject(NtfBase &resp, const CtrlQueueItem &data){
   resp.put_F(PSTR("cmd"), data.cmd);
   if(data.cmd == 3){
@@ -110,6 +106,36 @@ void setup() {
   PushButton btn(10);  
   CtrlItemPb<PB_CONTROL_CLICK_SHORT, 1> ctrlPb(1, &btn);
   panel.addControl(&ctrlPb);
+
+  IRRemoteRecv ir(7);
+  CtrlItemIR  ctrlIrB1([](unsigned long btn, CtrlQueueData &data) -> uint8_t { 
+                          memset(&data, 0, sizeof(data));
+
+                          switch(btn){
+                            case R_DEC_KEY_OK:                            
+                            return 12;
+                            case R_DEC_KEY_UP:                            
+                              data.flag  = CTF_VAL_NEXT;                            
+                            return 14;
+                            case R_DEC_KEY_DOWN:
+                              data.flag  = CTF_VAL_PREV;
+                              data.value = 11;
+                            return 14;    
+                            case R_DEC_KEY_LEFT:
+                             data.flag  = CTF_VAL_DELTA;
+                             data.value = 5;
+                            return 16;
+                            case R_DEC_KEY_RIGHT:
+                             data.flag  = CTF_VAL_DELTA;
+                             data.value = -5;
+                            return 16;
+                          }
+
+                          return EEMC_NONE;
+
+                        }, 
+                      &ir);
+  panel.addControl(&ctrlIrB1);
 
 
   CRGB leds[30];

@@ -88,7 +88,6 @@ void PushButton::read(){
       //Reset everything
        _millis = 0;
        _state  = BUTTON_STATE_OFF;  
-       DBG_OUTLN("off - button D%d", (int)_pin);
     }
   }
 
@@ -112,15 +111,13 @@ void PushButton::read(){
       if(DELTA_MILLS(_millis) >= PUSH_LONG_INTERVAL){
         _state = BUTTON_STATE_PUSHED_LONG;
         //Reset the timer so next long push event happens
-        SET_MILLIS(_millis); 
-        DBG_OUTLN("long pushed - button D%d", (int)_pin);
+        SET_MILLIS(_millis);       
       }
     break;
     case BUTTON_STATE_PUSHED_LONG:
         
       //Reset long push
       _state = BUTTON_STATE_PUSHED_WAIT;
-       DBG_OUTLN("wait - button D%d", (int)_pin);
     break;
   }
   
@@ -190,15 +187,16 @@ bool PushButton::value(uint8_t ctrl) const{
 
 #ifdef USE_IR_REMOTE
 
-#include <IRremote.h>
+#include <IRremote.hpp>
 
 //////////////////////////
 // IRRemoteRecv
 #define REMOTE_TIMEOUT      10
 #define REMOTE_REPEAT_LIMIT 127
 
-IRRemoteRecv::IRRemoteRecv(uint8_t pin): _recv(pin){
-  _recv.enableIRIn(); 
+IRRemoteRecv::IRRemoteRecv(uint8_t pin) {
+  IrReceiver.begin(pin, ENABLE_LED_FEEDBACK);
+
   _millis = 0;
   _value  = 0;
   _repeat = 0;
@@ -209,7 +207,6 @@ IRRemoteRecv::~IRRemoteRecv(){
 }
 
 
-
 void IRRemoteRecv::read(){
   
    //Reset if necessary
@@ -217,42 +214,38 @@ void IRRemoteRecv::read(){
     _pushed = false;
    }
 
-
   //Check if we are waiting for receiver or for resuming receiver
   if (_millis == 0) { 
 
     //Stupid workaround for ws2811, ws2812 and ws2812b where internal clock conflicts with interrups required for IR receiver
     //See https://github.com/Fa9876rdstLED/FastLED/issues/198
-    while (!_recv.isIdle());
+    while (!IrReceiver.isIdle());
  
     //Now go and get IR signals
-    decode_results results;
-    if (_recv.decode(&results)) {
-    
+    if (IrReceiver.decode()) {
+      
       // Remember time when reset IR
-      _millis = millis() + REMOTE_TIMEOUT;   
+      SET_MILLIS(_millis);
 
       //Remember value
-      _pushed = true;
-      
-      if(results.value == RKEY_REPEAT && _repeat < REMOTE_REPEAT_LIMIT){
+      _pushed = true;      
+
+      if(IrReceiver.decodedIRData.flags & IRDATA_FLAGS_IS_REPEAT && _repeat < REMOTE_REPEAT_LIMIT){
         _repeat ++;
       }
       else{
-        _value  = results.value;
+        _value  = IrReceiver.decodedIRData.command;
         _repeat = 1;
       }
 
-      DBG_OUTLN("Remote button: %lx", results.value);
+     // Receiving  next value   
+     IrReceiver.resume(); 
     }
-    
-    // Receiving  next value   
-    _recv.resume(); 
   }
   else {
-    if (_millis <= millis()){
+    if (DELTA_MILLS(_millis) >=  REMOTE_TIMEOUT){
       // Receiving  next value        
-      _recv.resume(); 
+      IrReceiver.resume();
       // Reset timer
       _millis = 0;      
     }
@@ -261,12 +254,16 @@ void IRRemoteRecv::read(){
 }
 
 
-int IRRemoteRecv::pushed(unsigned long key) const{
-  if(_pushed == true && _value == key){
+uint8_t IRRemoteRecv::pushed(unsigned long key) const{
+  if(_pushed == true && (_value == key || key == R_KEY_ANY)){
     return _repeat;
   }
 
   return 0;
+}
+
+unsigned long IRRemoteRecv::pushedBtn() const{
+  return _pushed ? _value : 0;
 }
 
 #endif //USE_IR_REMOTE

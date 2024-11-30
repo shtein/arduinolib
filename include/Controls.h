@@ -232,45 +232,25 @@ class CtrlSwicth2Pos: public CtrlItem{
 #ifdef USE_IR_REMOTE
 
 //////////////////////////////
-// CtrlItemIRBtn - analog input is one IR remote buttons
-// Returns returns delta
+// CtrlItemIR - analog input is  buttons
+// 
 // dir - direction (true is positive, false is negative)
-// repeat - button repeat limit, 0 = single push, same as next or prev
+// repeat - button repeat limit, 0 = single push, same as next or prev. 
+// It is a multi-command control
+// uint8_t (*IRCmdMap) (unsigned long, CtrlQueueData &) defines mapping of ir button to command and value
 
-template<const unsigned long BTN, const bool DIR = true, const uint8_t REPEAT = 0>
-class CtrlItemIRBtn: public CtrlItem{
+
+class CtrlItemIR: public CtrlItem{
   public:
-    CtrlItemIRBtn(uint8_t cmd, IRRemoteRecv *ir):
-      CtrlItem(cmd, ir){
-
-    }
-
-    ~CtrlItemIRBtn();
+    CtrlItemIR(uint8_t (*IRCmdMap) (unsigned long, CtrlQueueData &), IRRemoteRecv *ir);
+    
 
    protected:
-    bool triggered() const{
-      int n = ((IRRemoteRecv *)getInput())->pushed(BTN);
+    bool triggered() const;
+    void getData(CtrlQueueData &data);
 
-      //Not pushed
-      if(n == 0) {
-        return false;
-      }
-  
-      //Single click button
-      if(n > 1 && REPEAT == 0){
-        return false;
-      }
-  
-      //Pushed
-      return true;
-    }
-
-    void getData(CtrlQueueData &data){
-      data.flag  = REPEAT > 0 ? CTF_VAL_DELTA : (DIR ? CTF_VAL_NEXT: CTF_VAL_PREV ); 
-      data.value = (DIR ? 1 : -1) * powInt(2, ((IRRemoteRecv *)getInput())->pushed(BTN) - 1, REPEAT);
-      data.min   = 0;
-      data.max   = 0;
-    }
+  protected:
+    uint8_t (*_IRCmdMap)(unsigned long, CtrlQueueData &);
 };
 
 #endif //USE_IR_REMOTE

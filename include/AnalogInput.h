@@ -90,27 +90,27 @@ class PushButton: public BaseInput{
 // Simple IR Receiver for Keyes remote
 #ifdef USE_IR_REMOTE
 
-#include <IRremoteInt.h>
-
 //Keys
-#define RKEY_REPEAT 0xFFFFFFFF
-#define RKEY_OK     0xFF02FD
-#define RKEY_LEFT   0xFF22DD
-#define RKEY_RIGHT  0xFFC23D
-#define RKEY_UP     0xFF629D
-#define RKEY_DOWN   0xFFA857
-#define RKEY_0      0xFF4AB5
-#define RKEY_1      0xFF6897
-#define RKEY_2      0xFF9867
-#define RKEY_3      0xFFB04F
-#define RKEY_4      0xFF30CF
-#define RKEY_5      0xFF18E7
-#define RKEY_6      0xFF7A85
-#define RKEY_7      0xFF10EF
-#define RKEY_8      0xFF38C7
-#define RKEY_9      0xFF5AA5
-#define RKEY_STAR   0xFF42BD
-#define RKEY_HASH   0xFF52AD
+//DEC codes
+#define R_DEC_KEY_OK     0x40
+#define R_DEC_KEY_LEFT   0x44
+#define R_DEC_KEY_RIGHT  0x43
+#define R_DEC_KEY_UP     0x46
+#define R_DEC_KEY_DOWN   0x15
+#define R_DEC_KEY_0      0x52
+#define R_DEC_KEY_1      0x16
+#define R_DEC_KEY_2      0x19
+#define R_DEC_KEY_3      0x0D
+#define R_DEC_KEY_4      0x0C
+#define R_DEC_KEY_5      0x18
+#define R_DEC_KEY_6      0x5E
+#define R_DEC_KEY_7      0x08
+#define R_DEC_KEY_8      0x1C
+#define R_DEC_KEY_9      0x5A
+#define R_DEC_KEY_STAR   0x42
+#define R_DEC_KEY_HASH   0x4A
+
+#define R_KEY_ANY        0xFFFFFFFF
 
 
 class IRRemoteRecv: public BaseInput {
@@ -119,11 +119,11 @@ class IRRemoteRecv: public BaseInput {
     ~IRRemoteRecv();
 
     void read();
-    int pushed(unsigned long key) const;
+    uint8_t pushed(unsigned long key = R_KEY_ANY) const;
+    unsigned long pushedBtn() const;
 
-  protected:
-    IRrecv         _recv;          
-    unsigned long  _millis;
+  protected: 
+    uint16_t       _millis;
     unsigned long  _value; 
     uint8_t       _repeat:7;
     uint8_t       _pushed:1;
