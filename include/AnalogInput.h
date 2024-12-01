@@ -7,6 +7,7 @@
 #define PB_CONTROL_CLICK_LONG  0x02
 #define PB_CONTROL_CLICK       0x03
 #define PB_CONTROL_PUSH_LONG   0x04
+#define PB_CONTROL_ANY         0xFF
 
 #define POT_MIN             0
 #define POT_MAX             1023

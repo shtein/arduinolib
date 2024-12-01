@@ -103,10 +103,25 @@ void setup() {
   set.addNtf(&ctrlSr);
 
   
-  
+  auto PBMAP = 
+  [](uint8_t ctrl, CtrlQueueData &data) -> uint8_t {     
+    DBG_OUTLN("Ctrl %X", ctrl);
+
+    switch(ctrl){
+      //case PB_CONTROL_CLICK_SHORT:                                    
+      //return 1;
+      case PB_CONTROL_PUSH_LONG:
+        data.flag = CTF_VAL_ABS;
+        data.value = 22;
+      return 2;    
+    }
+
+    return EEMC_NONE;
+  };
+
 
   PushButton btn(10);  
-  CtrlItemPb<PB_CONTROL_CLICK_SHORT, 1> ctrlPb(1, &btn);
+  CtrlItemPb ctrlPb(PBMAP, &btn);
   panel.addControl(&ctrlPb);
 
 
@@ -139,8 +154,8 @@ void setup() {
 
   
   IRRemoteRecv ir(7);
-  CtrlItemIR  ctrlIr(IRCmdMap, &ir);
-  panel.addControl(&ctrlIr);
+  CtrlItemIR  ctrlIrB1(IRCmdMap, &ir);
+  panel.addControl(&ctrlIrB1);
 
 
   CRGB leds[30];

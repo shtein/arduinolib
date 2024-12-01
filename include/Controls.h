@@ -3,6 +3,7 @@
 
 #include "AnalogInput.h"
 #include "utils.h"
+#include "DbgTool.h"
 #include "CmdParser.h"
 
 //Change commands
@@ -129,24 +130,32 @@ class CtrlItem{
 
 ////////////////////////////////
 // Push button control, reacts on either short click, long click or long push
-
-template <const uint8_t CTRL = PB_CONTROL_CLICK,  const uint8_t FLAG = CTF_VAL_NEXT, const uint8_t VALUE = 0>
+// It is a multi-command control
 class CtrlItemPb: public CtrlItem{
   public:
-    CtrlItemPb(uint8_t cmd, PushButton *input):
-      CtrlItem(cmd, input){
+    CtrlItemPb(uint8_t (*BTN_CMD_MAP) (uint8_t, CtrlQueueData &), PushButton *input):
+      CtrlItem(EEMC_NONE, input){        
+      _BTN_CMD_MAP = BTN_CMD_MAP;  
     }
 
   protected:
     bool triggered() const{
-      return ((PushButton *)getInput())->value(CTRL);
+      return ((PushButton *)getInput())->value(PB_CONTROL_ANY);
     }
-    void getData(CtrlQueueData &data){
-      data.flag  = FLAG;
-      data.value = VALUE;
-      data.min   = 0;
-      data.max   = 0;
+    void getData(CtrlQueueData &data){      
+      //Check what triggered      
+      PushButton *btn = (PushButton *)getInput();
+      uint8_t ctrl    = btn->clickedShort() ? PB_CONTROL_CLICK_SHORT : (btn->clickedLong() ? PB_CONTROL_CLICK_LONG : (btn->pushedLong() ? PB_CONTROL_PUSH_LONG : PB_CONTROL_ANY));  
+
+      //default flags
+      data.flag = CTF_VAL_NEXT;
+
+      //Retrieve data      
+      _cmd = _BTN_CMD_MAP(ctrl, data);
     }
+
+  protected:  
+    uint8_t (*_BTN_CMD_MAP) (uint8_t, CtrlQueueData &);  
 };
 
 ////////////////////////////////

@@ -101,7 +101,6 @@ void PushButton::read(){
         _state = BUTTON_STATE_PUSHED_SHORT;
         //Set timer
         SET_MILLIS(_millis); 
-        DBG_OUTLN("pushed - button D%d", (int)_pin);
       }
     break;
     case BUTTON_STATE_PUSHED_SHORT: //Short push
@@ -179,6 +178,9 @@ bool PushButton::value(uint8_t ctrl) const{
     break;
     case PB_CONTROL_PUSH_LONG:
       return pushedLong();
+    break;
+    case PB_CONTROL_ANY:
+      return clickedShort() || clickedLong() || pushedLong();
     break;
   };
   
