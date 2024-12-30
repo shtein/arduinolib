@@ -93,6 +93,30 @@ void setup() {
   delay(500);
   DBG_OUTLN("Started");
 
+/******************/
+  
+  CHSV hsvBase(random8(), 0xFF, 0xFF);
+  
+  
+  while(hsvBase.value != 0){    
+
+    CHSV hsv = hsvBase;
+    hsv.value = triwave8(hsvBase.value);
+    CRGB rgb1 = hsv;
+
+    CRGB rgb2;    
+
+    rgb2.setHSV(hsv.h, hsv.s, hsv.v);
+
+
+    DBG_OUTLN("c1:%d %d %d  c2:%d %d %d", rgb1.red, rgb1.blue, rgb1.green, rgb2.red, rgb2.blue, rgb2.green);
+
+    hsvBase.value -= 5;
+  }
+  
+/******************/
+
+
   CtrlPanel panel;
 
   SerialInput serial;
@@ -110,7 +134,7 @@ void setup() {
     switch(ctrl){
       //case PB_CONTROL_CLICK_SHORT:                                    
       //return 1;
-      case PB_CONTROL_PUSH_LONG:
+      case PB_CONTROL_CLICK:
         data.flag = CTF_VAL_ABS;
         data.value = 22;
       return 2;    

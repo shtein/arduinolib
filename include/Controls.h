@@ -161,22 +161,28 @@ class CtrlItemPb: public CtrlItem{
 ////////////////////////////////
 // CtrlItemPtmtr - analog input is Potentiometer - AnalogInput
 
-template <const uint16_t NOISE_THRESHOLD = POT_NOISE_THRESHOLD, 
-         const uint16_t LOWER_MARGIN = POT_LOWER_MARGIN,
-         const uint16_t UPPER_MARGIN = POT_UPPER_MARGIN >
+////////////////////////////////
+// CtrlItemPtmtr - analog input is Potentiometer - AnalogInput
 class CtrlItemPtmtr: public CtrlItem{
   public:
-    CtrlItemPtmtr(uint8_t cmd, AnalogInput *ptn):
+    CtrlItemPtmtr(uint8_t cmd, 
+                  AnalogInput *ptn, 
+                  uint8_t noise = POT_NOISE_THRESHOLD,
+                  uint8_t lowerMargin = POT_LOWER_MARGIN, 
+                  uint8_t upperMargin = POT_UPPER_MARGIN ):
       CtrlItem(cmd, ptn){
-     _value          = POT_MAX; //just to make sure it is different from what we read
+     _value       = POT_MAX; //just to make sure it is different from what we read
+     _noise       = noise;
+     _lowerMargin = lowerMargin;
+     _upperMargin = upperMargin;
     }
 
   protected:
     bool triggered() const{
       int16_t value = (int16_t)getValue(); 
       
-      return (abs(value - (int16_t)_value) >  min(NOISE_THRESHOLD, 
-                                                  (uint16_t)min(value - POT_MIN + LOWER_MARGIN, POT_MAX - UPPER_MARGIN - value)
+      return (abs(value - (int16_t)_value) >  min(_noise, 
+                                                  (uint16_t)min(value - POT_MIN + _lowerMargin, POT_MAX - _upperMargin - value)
                                                 )
              );     
     }
@@ -185,8 +191,8 @@ class CtrlItemPtmtr: public CtrlItem{
       _value  = getValue();
       
       data.flag  = CTF_VAL_ABS;
-      data.min   = POT_MIN + LOWER_MARGIN;
-      data.max   = POT_MAX - UPPER_MARGIN;
+      data.min   = getLower();
+      data.max   = getUpper();
       data.value = _value;
     }
 
@@ -199,14 +205,23 @@ class CtrlItemPtmtr: public CtrlItem{
         value += 1;
 
 
-      return value < POT_MIN + LOWER_MARGIN ? 
-                       POT_MIN + LOWER_MARGIN : value > POT_MAX - UPPER_MARGIN ? 
-                        POT_MAX - UPPER_MARGIN : value;
-
+      return value < getLower() ? getLower() : value > getUpper() ? getUpper() : value;
     }
 
+    uint16_t getLower() const{
+      return POT_MIN + _lowerMargin;
+    }
+
+    uint16_t getUpper() const{
+      return POT_MAX - _upperMargin;
+    }
+    
+
   protected:
-    uint16_t  _value;
+    uint32_t  _value:11;
+    uint32_t  _noise:5;
+    uint32_t  _lowerMargin:8;
+    uint32_t  _upperMargin:8;
 };
 
 ///////////////////////////////
