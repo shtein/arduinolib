@@ -216,7 +216,6 @@ class CtrlItemPtmtr: public CtrlItem{
       return POT_MAX - _upperMargin;
     }
     
-
   protected:
     uint32_t  _value:11;
     uint32_t  _noise:5;
@@ -262,6 +261,7 @@ class CtrlSwicth2Pos: public CtrlItem{
 // repeat - button repeat limit, 0 = single push, same as next or prev. 
 // It is a multi-command control
 // uint8_t (*IRCmdMap) (unsigned long, CtrlQueueData &) defines mapping of ir button to command and value
+
 class CtrlItemIR: public CtrlItem{
   public:
     CtrlItemIR(uint8_t (*IR_CMD_MAP) (unsigned long, CtrlQueueData &),  

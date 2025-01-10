@@ -42,6 +42,14 @@ uint8_t FunctionName(const char *src[], CtrlQueueData &data){ \
   return EEMC_ERROR; \
 }
 
+#define PARSE_ROUTINE(FunctionName) \
+  { \
+    uint8_t cmd = FunctionName(tokens, data); \
+    if(cmd != EEMC_ERROR){ \
+      return cmd; \
+    } \
+  }  
+
 #define _IF_TOKEN_MATCH(a, b) if(checkTokenMatch(a, b) ) \
 
 #define _BEGIN_TOKEN(token) \
