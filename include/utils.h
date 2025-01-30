@@ -18,6 +18,7 @@ bool cmpWithOverflow(T t, uint32_t c, T delta){
 //Pow for integers
 int powInt(int x, int y, int limit);
 
+
 //Macro for handndling variable number of arguments
 #define TOKEN_CONCAT(x, y) TOKEN_CONCAT_(x, y)
 #define TOKEN_CONCAT_(x, y) x ## y
@@ -83,6 +84,10 @@ typedef Progmem2Str<> Progmem2Str24;
 #define DELTA_MILLS(var) ((uint16_t)millis() - var )
 
 
+//Log2 and sqrt
+uint8_t u8Log2(uint8_t val);
+uint8_t u8MapLog2(uint8_t val);
+uint8_t u8Sqrt(uint16_t val);
 
 
 #endif //_UTILS_H

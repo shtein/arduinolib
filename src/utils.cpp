@@ -35,3 +35,47 @@ int powInt(int x, int y, int limit){
 
   return n; 
 }
+
+
+///////////////////////////////////////////
+//Mapping to logarith scale for 8bit value
+uint8_t u8Log2(uint8_t val){
+  uint8_t r = 0;
+  while(val >>= 1)
+    r++;
+  return r;
+}
+
+uint8_t u8MapLog2(uint8_t val){
+  if(val == 0)
+    return 0;
+
+  uint16_t log = u8Log2(val) * 255;
+  return (uint8_t)(log / 8);
+}
+
+///////////////////////////////////////////
+// Square root for 16 bit value
+uint8_t u8Sqrt(uint16_t val) {
+
+    if (val == 0 || val == 1) {
+        return (uint8_t)val; // Square root of 0 is 0, and square root of 1 is 1
+    }
+
+    uint16_t r = val; // Initial guess
+    uint16_t prevR = 0; // Previous guess to check for convergence
+
+    // Iterate until convergence or a maximum of 6 iterations
+    for (uint8_t i = 0; i < 6; i++) {
+        prevR = r;
+        r = (r + val / r) / 2;
+
+        // Break early if there's no change between iterations
+        if (r == prevR) {
+            break;
+        }
+    }
+
+    // Ensure the result fits within uint8_t bounds
+    return (r > 255) ? 255 : (uint8_t)r;
+}

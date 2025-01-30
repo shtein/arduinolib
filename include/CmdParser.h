@@ -42,12 +42,14 @@ uint8_t FunctionName(const char *src[], CtrlQueueData &data){ \
   return EEMC_ERROR; \
 }
 
-#define PARSE_ROUTINE(FunctionName) \
+#define PARSE_SUB_ROUTINE(FunctionName) \
   { \
+    tokens ++; \
     uint8_t cmd = FunctionName(tokens, data); \
     if(cmd != EEMC_ERROR){ \
       return cmd; \
     } \
+    tokens --; \
   }  
 
 #define _IF_TOKEN_MATCH(a, b) if(checkTokenMatch(a, b) ) \
@@ -157,6 +159,7 @@ BEGIN_PARSE_ROUTINE(YourFunctionName)
         VALUE_IS_NUMBER(cmd)
     END_GROUP_TOKEN()
     VALUE_IS_TOKEN("token_a_2_1", cmd)    
+    PARSE_SUB_ROUTINE(AnotherFunctionName)
   END_GROUP_TOKEN()
   BEGIN_GROUP_TOKEN("group_token_b", cmd)
     ...
