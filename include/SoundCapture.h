@@ -14,7 +14,7 @@ class SoundCapture{
     virtual void init()                              = 0;  //Initialization
     virtual void reset()                             = 0;  //Reset
     virtual void getData(uint8_t *bands, 
-                         uint16_t numBands) const    = 0;  //Retrieve the data
+                         size_t numBands) const    = 0;  //Retrieve the data
     virtual void idle()                              = 0;  //Do something while there is no activity
 };
 
@@ -32,7 +32,7 @@ class SoundCaptureMSGEQ7: public SoundCapture{
     void init();
     void reset();
     void getData(uint8_t *bands, 
-                 uint16_t numBands) const;
+                 size_t numBands) const;
     void idle();
 
   private:

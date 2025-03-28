@@ -48,7 +48,7 @@ void SoundCaptureMSGEQ7::reset(){
 
 
 void SoundCaptureMSGEQ7::getData(uint8_t *bands, 
-                                 uint16_t numBands) const{
+                                 size_t numBands) const{
   //Reset
   digitalWrite(_pinReset, HIGH); 
   digitalWrite(_pinReset, LOW);
