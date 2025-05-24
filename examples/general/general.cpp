@@ -4,6 +4,7 @@
 #include <AnalogInput.h>
 #include <CtrlSerial.h>
 #include <string.h>
+#include "SoundCapture.h"
 //#include <FS.h>
 
 //#define FASTLED_ESP8266_D1_PIN_ORDER

@@ -3,6 +3,9 @@
 #include "DbgTool.h"
 #include "SoundCapture.h"
 
+
+
+
 ////////////////////////////
 //SoundCapture
 SoundCapture::SoundCapture(){
@@ -12,6 +15,122 @@ SoundCapture::SoundCapture(){
 SoundCapture::~SoundCapture(){
 }
 
+
+void SoundCapture::resetStats(){
+
+  _min.reset();
+  _max.reset();
+  _mean.reset();
+  _meanBass.reset();
+  _meanMid.reset();
+  _meanTreble.reset();
+
+  _curMin = SOUND_UPPER_MAX;
+  _curMax = SOUND_LOWER_MIN;
+  _count  = 0;
+
+  for(size_t i = 0; i < SC_MAX_BANDS; i++){
+    _noiseFloor[i] = 0xFFFF;
+  }
+}
+
+
+const RunningStats& SoundCapture::get(SoundStatGet ssg) const{
+  
+  switch(ssg){
+    case ssgMin:
+    return _min;
+
+    case ssgMax:
+    return _max;
+
+    case ssgAverage:
+    return _mean;
+
+    case ssgAverageBass:
+    return _meanBass;
+
+    case ssgAverageMid:
+    return _meanMid;
+
+    case ssgAverageTreble:
+    return _meanTreble;
+  }
+
+  //Return average by default
+  return _mean;
+}
+
+#define SOUNDSTAT_MAX_COUNT 70
+#define NOISE_FALL_ALPHA 25
+#define NOISE_RAISE_ALPHA 6
+
+
+void SoundCapture::getProcessedData(sc_band8_t &bands){ 
+
+  //Get data
+  getData(bands);
+
+  //Process data
+
+  for(size_t i = 0; i < SC_MAX_BANDS; i++){
+
+    //Check for noise floor    
+    _noiseFloor[i] = u16Smooth(_noiseFloor[i], (uint16_t)bands[i] << 8, (uint16_t)bands[i] << 8 > _noiseFloor[i]  ? NOISE_RAISE_ALPHA : NOISE_FALL_ALPHA);
+    //Check for noise floor  
+    
+    //DBG_OUT(" %d %d", _noiseFloor[i] >> 8, (uint16_t)vals[i]);
+    
+    uint8_t noiseFloor = _noiseFloor[i] >> 8;
+    //Check for noise floo
+    bands[i] = noiseFloor > bands[i] ? 0 : bands[i] - noiseFloor;
+
+    //Bass, mid and treble
+
+    if(i < 2){ //add bass
+      _meanBass.add(bands[i]);  
+    }
+    else if(i < 4){ //Add mid
+      _meanMid.add(bands[i]);
+    }
+    else{ //Add treble
+      _meanTreble.add(bands[i]);
+    }
+    
+
+    //Mean
+    _mean.add(bands[i]);
+    
+    
+    //Min
+    if(_curMin > bands[i] && bands[i] != 0){
+      _curMin = bands[i];
+    }
+
+    //Max
+    if(_curMax < bands[i]){
+      _curMax = bands[i];
+    }   
+
+    //Min and max collection counter
+    _count++;
+
+  }     
+
+  //Update min and max statistics if its time
+  if(_count >= SOUNDSTAT_MAX_COUNT){
+    _min.add(_curMin);
+    _max.add(_curMax);
+
+    //DBG_OUTLN("%d %d %d %d", _min.getAverage(), _min.getStdDev(), _mean.getAverage(), _mean.getStdDev());
+
+    _curMin  = 255;      
+    _curMax  = 0;
+
+    _count = 0;
+  }
+
+}
 
 
 ///////////////////////////////////////////
@@ -47,15 +166,13 @@ void SoundCaptureMSGEQ7::reset(){
 }
 
 
-void SoundCaptureMSGEQ7::getData(uint8_t *bands, 
-                                 size_t numBands) const{
+void SoundCaptureMSGEQ7::getData(sc_band8_t &bands) const{
   //Reset
   digitalWrite(_pinReset, HIGH); 
   digitalWrite(_pinReset, LOW);
 
-  numBands = min(numBands, (uint16_t)MSGEQ7_BANDS);
-
-  for(uint8_t i = 0; i < numBands; i++){
+  //Get each band value
+  for(size_t i = 0; i < SC_MAX_BANDS; i++){
     //Prepare
     digitalWrite(_pinStrobe, HIGH);
     digitalWrite(_pinStrobe, LOW);
@@ -63,9 +180,9 @@ void SoundCaptureMSGEQ7::getData(uint8_t *bands,
     //Allow output to settle
     delayMicroseconds(36);
 
-    //Read data    
-    bands[i] = analogRead(_pinAnalog);
-    bands[i] =  ((uint16_t)bands[i] * 255 + 511) / 1023;
+    //Read data and convert to 8-bit value
+    bands[i] =  (analogRead(_pinAnalog) * 255 + 511) / 1023;
+
     //DBG_OUT("%u ", data.bands[i]);
   }
 
