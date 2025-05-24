@@ -67,6 +67,14 @@ class SoundCapture{
 };
 
 
+
+void scaleSound(sc_band8_t &bands, uint8_t flags,
+                uint8_t lower, uint8_t upper, 
+                uint8_t min, uint8_t max, uint8_t average, uint8_t stdDev
+              );
+
+
+
 ////////////////////////////
 // MSGEQ7 sound captupre
 
@@ -92,6 +100,8 @@ class SoundCaptureMSGEQ7: public SoundCapture{
     uint8_t _pinStrobe:4;
     uint8_t _pinReset:4;
 };
+
+
 
 
 

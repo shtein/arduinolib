@@ -4,6 +4,48 @@
 #include "SoundCapture.h"
 
 
+//////////////////////////////////////////////
+// Sound capture visualization
+void scaleSound(sc_band8_t &bands, uint8_t flags,
+                uint8_t lower, uint8_t upper, 
+                uint8_t min, uint8_t max, uint8_t average, uint8_t stdDev
+              ){
+
+
+  uint8_t mx  = (flags & SC_MAP_USE_MAX) ? max : upper;
+  uint8_t mn  = (flags & SC_MAP_USE_MIN) ? min : lower < upper ? lower : upper;  
+
+  for(uint8_t i = 0; i < SC_MAX_BANDS; i++){
+
+    uint8_t &val = bands[i];
+
+    /*
+
+    //if noise threshold is set and value is below noise threshold
+    if((flags & SC_MAP_ABOVE_NOISE) && (val < average + stdDev )){
+      val = 0;
+    }
+    else{
+      if(flags & SC_MAP_LOG){
+        //TODO - implement logarithmic scale
+
+        //mx  = (uint8_t)((uint16_t)mx * mx / 255);
+        //mn  = (uint8_t)((uint16_t)mn * mn / 255);
+        //val = (uint8_t)((uint16_t)val * val / 255);
+
+        //mx = log10(mx) / log10(255) * 255;
+        //mn = log10(mn) / log10(255) * 255;
+        //val = val == 0 ? 0 : log10(val) / log10(255) * 255;
+      }  
+
+      */
+      
+      
+  
+    val =  mapEx(val > mx ? mx : val < mn ? mn : val, mn, mx, SOUND_LOWER_MIN, SOUND_UPPER_MAX);
+
+  }
+} 
 
 
 ////////////////////////////
