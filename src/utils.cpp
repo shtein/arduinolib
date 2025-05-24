@@ -1,4 +1,5 @@
 #include "arduinolib.h"
+#include "utils.h"
 
 
 long mapEx( long x, long in_min, long in_max, long out_min, long out_max ){
@@ -79,3 +80,52 @@ uint8_t u8Sqrt(uint16_t val) {
     // Ensure the result fits within uint8_t bounds
     return (r > 255) ? 255 : (uint8_t)r;
 }
+
+////////////////////////////////////////
+// Smooth value for 16 bit value
+uint16_t u16Smooth(uint16_t old, uint32_t val, uint8_t smoothFactor){
+
+  int32_t delta = (int32_t)val - old;
+  return old + (int16_t)((delta * smoothFactor + 127) >> 8);
+}
+
+
+/////////////////////////////////////
+// RunningStats
+RunningStats::RunningStats(uint8_t smoothFactor){
+  _smoothFactor = smoothFactor;
+
+  reset();
+} 
+
+void RunningStats::reset(){
+  _mean     = 0;
+  _variance = 0;
+}
+
+
+void RunningStats::add(uint8_t val){
+
+  //Convert value to Q8 
+  uint16_t val_q8 = (uint16_t)val << 8;
+
+  //Mean
+  _mean = u16Smooth(_mean, val_q8, _smoothFactor);
+
+
+    // Recalculate delta after mean update
+  int32_t delta = (int32_t)val_q8 - _mean;
+
+    // Variance
+  _variance = u16Smooth(_variance, (uint32_t)((delta * delta) >> 8), _smoothFactor);
+
+}
+
+uint8_t RunningStats::getAverage() const{
+  return _mean >> 8;
+}
+
+uint8_t RunningStats::getStdDev() const{
+  return u8Sqrt(_variance >> 8);
+}
+

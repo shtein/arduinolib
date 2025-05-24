@@ -89,5 +89,29 @@ uint8_t u8Log2(uint8_t val);
 uint8_t u8MapLog2(uint8_t val);
 uint8_t u8Sqrt(uint16_t val);
 
+// Smooth value for 16 bit value
+uint16_t u16Smooth(uint16_t old, uint32_t val, uint8_t smoothFactor);
+
+
+/////////////////////////////////////////////
+// Running statistics
+class RunningStats{ 
+  public:
+    RunningStats(uint8_t smoothFactor = 25);
+
+    void reset();
+    void add(uint8_t val);
+
+    uint8_t getAverage() const;
+    uint8_t getStdDev() const;
+  
+  private:
+    uint16_t  _mean;
+    uint16_t  _variance;
+    
+    uint8_t   _smoothFactor;
+};
+
+
 
 #endif //_UTILS_H

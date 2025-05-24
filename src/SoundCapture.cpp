@@ -64,7 +64,8 @@ void SoundCaptureMSGEQ7::getData(uint8_t *bands,
     delayMicroseconds(36);
 
     //Read data    
-    bands[i] = analogRead(_pinAnalog) >> 2;
+    bands[i] = analogRead(_pinAnalog);
+    bands[i] =  ((uint16_t)bands[i] * 255 + 511) / 1023;
     //DBG_OUT("%u ", data.bands[i]);
   }
 
