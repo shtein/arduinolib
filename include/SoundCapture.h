@@ -48,7 +48,7 @@ class SoundCapture{
     
     //Statistics functions
     void resetStats();                               //Reset statistics              
-    const RunningStats& get(SoundStatGet ssg) const; //Get statistics
+    const RunningStats& getStats(SoundStatGet ssg) const; //Get statistics
 
 
   private:

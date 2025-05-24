@@ -77,7 +77,7 @@ void SoundCapture::resetStats(){
 }
 
 
-const RunningStats& SoundCapture::get(SoundStatGet ssg) const{
+const RunningStats& SoundCapture::getStats(SoundStatGet ssg) const{
   
   switch(ssg){
     case ssgMin:
