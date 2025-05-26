@@ -6,13 +6,13 @@
 //Constants and flags
 #define SC_MAX_BANDS        7    //Number of bands
 
-#define SOUND_LOWER_MIN     0    //Deault minimum in scale from 0 to 255
-#define SOUND_UPPER_MAX     255  //Default maximum in scale from 0 to 255
+#define SOUND_LOWER_MIN     0     //Deault minimum in scale from 0 to 255
+#define SOUND_UPPER_MAX     1023  //Default maximum in scale from 0 to 255
 
-#define SC_MAP_USE_MIN      0x01 //Use running min for lower boundary
-#define SC_MAP_USE_MAX      0x02 //Use running max for upper boundary
-#define SC_MAP_ABOVE_NOISE  0x04 //Make 0 everything below noise threshold
-#define SC_MAP_LOG          0x10 //Logarithmic scale
+#define SC_MAP_USE_MIN      0x01  //Use running min for lower boundary
+#define SC_MAP_USE_MAX      0x02  //Use running max for upper boundary
+#define SC_MAP_ABOVE_NOISE  0x04  //Make 0 everything below noise threshold
+#define SC_MAP_LOG          0x10  //Logarithmic scale
 
 
 //Get statistics from 
@@ -29,7 +29,7 @@ enum SoundStatGet {
 ////////////////////////////
 // Sound capture base interface
 
-typedef uint8_t sc_band8_t[SC_MAX_BANDS];
+typedef uint16_t sc_band_t[SC_MAX_BANDS];
 
   
 class SoundCapture{
@@ -41,10 +41,10 @@ class SoundCapture{
     virtual void init()                              = 0;  //Initialization
     virtual void reset()                             = 0;  //Reset    
     virtual void idle()                              = 0;  //Do something while there is no activity
-    virtual void getData(sc_band8_t &bands) const    = 0;  //Retrieve the data
+    virtual void getData(sc_band_t &bands) const    = 0;  //Retrieve the data
 
     //Main processing function
-    void getProcessedData(sc_band8_t &bands);
+    void getProcessedData(sc_band_t &bands);
     
     //Statistics functions
     void resetStats();                                    //Reset statistics              
@@ -52,14 +52,14 @@ class SoundCapture{
 
     //State functions
     bool isSound() const; //Is sound detected
-    void scaleSound(sc_band8_t &bands, uint8_t flags, uint8_t lower = SOUND_LOWER_MIN, uint8_t upper = SOUND_UPPER_MAX) const;
+    void scaleSound(sc_band_t &bands, uint8_t flags, uint16_t lower = SOUND_LOWER_MIN, uint16_t upper = SOUND_UPPER_MAX) const;
 
     bool isSoundBass() const;    //Is sound in bass range
     bool isSoundMid() const ;    //Is sound in mid range
     bool isSoundTreble() const;  //Is sound in treble range
 
-    uint8_t getMax() const { return u8Add(_max.getAverage(), _max.getStdDev() * 2); } //Get current maximum value
-    uint8_t getMin() const { return u8Add(_min.getAverage(), _min.getStdDev() * 2); } //Get current minimum value
+    uint16_t getMax() const { return _max.getAverage() + _max.getStdDev() * 2; } //Get current maximum value
+    uint16_t getMin() const { return _min.getAverage() + _min.getStdDev() * 2; } //Get current minimum value
 
 
   private:
@@ -70,19 +70,12 @@ class SoundCapture{
     RunningStats _meanMid;    //Running statistics for mid mean, second 2 bands
     RunningStats _meanTreble; //Running statistics for treble mean, last 3 bands
   
-    uint8_t  _curMin; //Current minimum value
-    uint8_t  _curMax; //Current maximum value
-    uint8_t  _count;  //Counter for min/max calculations
+    uint16_t _curMin;         //Current minimum value
+    uint16_t _curMax;         //Current maximum value
+    uint8_t  _count;          //Counter for min/max calculations
 
     uint16_t _noiseFloor[SC_MAX_BANDS]; //Noise floor for each band
 };
-
-
-
-void scaleSound(sc_band8_t &bands, uint8_t flags,
-                uint8_t lower, uint8_t upper, 
-                uint8_t min, uint8_t max, uint8_t average, uint8_t stdDev
-              );
 
 
 
@@ -99,7 +92,7 @@ class SoundCaptureMSGEQ7: public SoundCapture{
     void init();
     void reset();    
     void idle();
-    void getData(sc_band8_t &bands) const;
+    void getData(sc_band_t &bands) const;
 
     //Getters
     uint8_t getPinAnalog() const { return _pinAnalog; }

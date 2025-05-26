@@ -81,6 +81,32 @@ uint8_t u8Sqrt(uint16_t val) {
     return (r > 255) ? 255 : (uint8_t)r;
 }
 
+///////////////////////////////////////////
+// Square root for 32 bit value
+uint16_t u16Sqrt(uint32_t val){
+    
+    if (val == 0 || val == 1) {
+        return (uint16_t)val; // Square root of 0 is 0, and square root of 1 is 1
+    }
+
+    uint32_t r = val; // Initial guess
+    uint32_t prevR = 0; // Previous guess to check for convergence
+
+    // Iterate until convergence or a maximum of 6 iterations
+    for (uint8_t i = 0; i < 6; i++) {
+        prevR = r;
+        r = (r + val / r) / 2;
+
+        // Break early if there's no change between iterations
+        if (r == prevR) {
+            break;
+        }
+    }
+
+    // Ensure the result fits within uint16_t bounds
+    return (r > 65535) ? 65535 : (uint16_t)r;
+}
+
 ////////////////////////////////////////
 // Smooth value for 16 bit value
 uint16_t u16Smooth(uint16_t old, uint32_t val, uint8_t smoothFactor){
@@ -90,10 +116,6 @@ uint16_t u16Smooth(uint16_t old, uint32_t val, uint8_t smoothFactor){
 }
 
 
-uint8_t u8Add(uint8_t a, uint8_t b){
-  uint16_t res = (uint16_t)a + (uint16_t)b;
-  return res > 255 ? 255 : (uint8_t)res;
-}
 
 /////////////////////////////////////
 // RunningStats
@@ -109,28 +131,25 @@ void RunningStats::reset(){
 }
 
 
-void RunningStats::add(uint8_t val){
-
-  //Convert value to Q8 
-  uint16_t val_q8 = (uint16_t)val << 8;
+void RunningStats::add(uint16_t val){
 
   //Mean
-  _mean = u16Smooth(_mean, val_q8, _smoothFactor);
+  _mean = u16Smooth(_mean, val, _smoothFactor);
 
 
     // Recalculate delta after mean update
-  int32_t delta = (int32_t)val_q8 - _mean;
+  int32_t delta = (int32_t)val - _mean;
 
     // Variance
   _variance = u16Smooth(_variance, (uint32_t)((delta * delta) >> 8), _smoothFactor);
 
 }
 
-uint8_t RunningStats::getAverage() const{
-  return _mean >> 8;
+uint16_t RunningStats::getAverage() const{
+  return _mean;
 }
 
-uint8_t RunningStats::getStdDev() const{
-  return u8Sqrt(_variance >> 8);
+uint16_t RunningStats::getStdDev() const{
+  return u16Sqrt(_variance);
 }
 

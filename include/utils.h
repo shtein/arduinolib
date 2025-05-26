@@ -88,11 +88,10 @@ typedef Progmem2Str<> Progmem2Str24;
 uint8_t u8Log2(uint8_t val);
 uint8_t u8MapLog2(uint8_t val);
 uint8_t u8Sqrt(uint16_t val);
+uint16_t u16Sqrt(uint32_t val);
 
 // Smooth value for 16 bit value
 uint16_t u16Smooth(uint16_t old, uint32_t val, uint8_t smoothFactor);
-
-uint8_t u8Add(uint8_t a, uint8_t b);
 
 
 /////////////////////////////////////////////
@@ -102,10 +101,10 @@ class RunningStats{
     RunningStats(uint8_t smoothFactor = 25);
 
     void reset();
-    void add(uint8_t val);
+    void add(uint16_t val);
 
-    uint8_t getAverage() const;
-    uint8_t getStdDev() const;
+    uint16_t getAverage() const;
+    uint16_t getStdDev() const;
   
   private:
     uint16_t  _mean;
