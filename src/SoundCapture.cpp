@@ -30,7 +30,7 @@ void SoundCapture::resetStats(){
   _count  = 0;
 
   for(size_t i = 0; i < SC_MAX_BANDS; i++){
-    _noiseFloor[i] = 0xFFFF;
+    _noiseFloor[i] = SOUND_UPPER_MAX;
   }
 }
 
@@ -130,21 +130,32 @@ void SoundCapture::getProcessedData(sc_band_t &bands){
 
 
 #define SC_AUDIO_MIN 4
+
 bool SoundCapture::isSound() const{
   return (uint16_t)_mean.getAverage() + _mean.getStdDev() > SC_AUDIO_MIN;
 }
 
-bool SoundCapture::isSoundBass() const { 
-  return _meanBass.getAverage() + _meanBass.getStdDev() > SC_AUDIO_MIN; 
-} 
+bool SoundCapture::isBassPeak(uint16_t value, uint8_t sens) const{
+  if(_meanBass.getAverage() + _meanBass.getStdDev() <= SC_AUDIO_MIN)
+    return false;
 
-bool SoundCapture::isSoundMid() const { 
-  return _meanMid.getAverage() + _meanMid.getStdDev() > SC_AUDIO_MIN; 
+  return value > _meanBass.getAverage() + _meanBass.getStdDev() * sens / 255;
 }
 
-bool SoundCapture::isSoundTreble() const { 
-  return _meanTreble.getAverage() + _meanTreble.getStdDev() > SC_AUDIO_MIN; 
-} 
+bool SoundCapture::isMidPeak(uint16_t value, uint8_t sens) const{
+  if(_meanMid.getAverage() + _meanMid.getStdDev() <= SC_AUDIO_MIN)
+    return false;
+
+  return value > _meanMid.getAverage() + _meanMid.getStdDev() * sens / 255;
+}
+
+bool SoundCapture::isTreblePeak(uint16_t value, uint8_t sens) const{
+  if(_meanTreble.getAverage() + _meanTreble.getStdDev() <= SC_AUDIO_MIN)
+    return false;
+
+  return value > _meanTreble.getAverage() + _meanTreble.getStdDev() * sens / 255;
+}
+
 
 void SoundCapture::scaleSound(sc_band_t &bands, uint8_t flags, uint16_t lower, uint16_t upper) const{
 

@@ -54,12 +54,13 @@ class SoundCapture{
     bool isSound() const; //Is sound detected
     void scaleSound(sc_band_t &bands, uint8_t flags, uint16_t lower = SOUND_LOWER_MIN, uint16_t upper = SOUND_UPPER_MAX) const;
 
-    bool isSoundBass() const;    //Is sound in bass range
-    bool isSoundMid() const ;    //Is sound in mid range
-    bool isSoundTreble() const;  //Is sound in treble range
+    bool isBassPeak(uint16_t value, uint8_t sens = 190) const; //Base peak detection
+    bool isMidPeak(uint16_t value, uint8_t sens = 128) const;  //Medium peak detection
+    bool isTreblePeak(uint16_t value, uint8_t sens = 32) const; //Treble peak detection
+    
 
-    uint16_t getMax() const { return _max.getAverage() + _max.getStdDev() * 2; } //Get current maximum value
-    uint16_t getMin() const { return _min.getAverage() + _min.getStdDev() * 2; } //Get current minimum value
+    uint16_t getMax() const { return _max.getAverage() + _max.getStdDev() ; } //Get current maximum value
+    uint16_t getMin() const { return _min.getAverage() + _min.getStdDev() ; } //Get current minimum value
 
 
   private:

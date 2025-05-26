@@ -141,7 +141,7 @@ void RunningStats::add(uint16_t val){
   int32_t delta = (int32_t)val - _mean;
 
     // Variance
-  _variance = u16Smooth(_variance, (uint32_t)((delta * delta) >> 8), _smoothFactor);
+  _variance = u16Smooth(_variance, (uint32_t)((delta * delta)), _smoothFactor);
 
 }
 
