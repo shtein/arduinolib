@@ -137,6 +137,19 @@ bool SoundCapture::isSound() const{
   return (uint16_t)_mean.getAverage() + _mean.getStdDev() > SC_AUDIO_MIN;
 }
 
+bool SoundCapture::isSoundBass() const { 
+  return _meanBass.getAverage() + _meanBass.getStdDev() > SC_AUDIO_MIN; 
+} 
+
+bool SoundCapture::isSoundMid() const { 
+  return _meanMid.getAverage() + _meanMid.getStdDev() > SC_AUDIO_MIN; 
+}
+
+bool SoundCapture::isSoundTreble() const { 
+  return _meanTreble.getAverage() + _meanTreble.getStdDev() > SC_AUDIO_MIN; 
+} 
+
+
 
 void SoundCapture::scaleSound(sc_band8_t &bands, uint8_t flags, uint8_t lower, uint8_t upper) const{
 
@@ -166,7 +179,6 @@ void SoundCapture::scaleSound(sc_band8_t &bands, uint8_t flags, uint8_t lower, u
     }  
   */
 
-  
     val =  mapEx(val > mx ? mx : val < mn ? mn : val, mn, mx, SOUND_LOWER_MIN, SOUND_UPPER_MAX);
   }
 } 
