@@ -92,6 +92,8 @@ uint8_t u8Sqrt(uint16_t val);
 // Smooth value for 16 bit value
 uint16_t u16Smooth(uint16_t old, uint32_t val, uint8_t smoothFactor);
 
+uint8_t u8Add(uint8_t a, uint8_t b);
+
 
 /////////////////////////////////////////////
 // Running statistics

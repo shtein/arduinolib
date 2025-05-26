@@ -90,6 +90,11 @@ uint16_t u16Smooth(uint16_t old, uint32_t val, uint8_t smoothFactor){
 }
 
 
+uint8_t u8Add(uint8_t a, uint8_t b){
+  uint16_t res = (uint16_t)a + (uint16_t)b;
+  return res > 255 ? 255 : (uint8_t)res;
+}
+
 /////////////////////////////////////
 // RunningStats
 RunningStats::RunningStats(uint8_t smoothFactor){

@@ -47,8 +47,15 @@ class SoundCapture{
     void getProcessedData(sc_band8_t &bands);
     
     //Statistics functions
-    void resetStats();                               //Reset statistics              
+    void resetStats();                                    //Reset statistics              
     const RunningStats& getStats(SoundStatGet ssg) const; //Get statistics
+
+    //State functions
+    bool isSound() const;
+    void scaleSound(sc_band8_t &bands, uint8_t flags, uint8_t lower = SOUND_LOWER_MIN, uint8_t upper = SOUND_UPPER_MAX) const;
+
+    uint8_t getMax() const { return u8Add(_max.getAverage(), _max.getStdDev() * 2); } //Get current maximum value
+    uint8_t getMin() const { return u8Add(_min.getAverage(), _min.getStdDev() * 2); } //Get current minimum value
 
 
   private:
