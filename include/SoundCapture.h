@@ -15,6 +15,13 @@
 #define SC_MAP_LOG          0x10  //Logarithmic scale
 
 
+inline uint16_t soundMax(uint16_t a, uint16_t b) {
+  return a + b > SOUND_UPPER_MAX ? SOUND_UPPER_MAX : a + b; 
+}
+
+#define SOUND_MAX(a, b) soundMax(a, b) //Maximum value for sound
+
+
 //Get statistics from 
 enum SoundStatGet {
   ssgMin = 0,
@@ -54,13 +61,15 @@ class SoundCapture{
     bool isSound() const; //Is sound detected
     void scaleSound(sc_band_t &bands, uint8_t flags, uint16_t lower = SOUND_LOWER_MIN, uint16_t upper = SOUND_UPPER_MAX) const;
 
-    bool isBassPeak(uint16_t value, uint8_t sens = 190) const; //Base peak detection
-    bool isMidPeak(uint16_t value, uint8_t sens = 128) const;  //Medium peak detection
-    bool isTreblePeak(uint16_t value, uint8_t sens = 32) const; //Treble peak detection
+    bool isPeak(SoundStatGet ssg, uint16_t value, uint8_t sens = 128) const;                                     //Generic peak detection
+    bool isBassPeak(uint16_t value, uint8_t sens = 190) const {return isPeak(ssgAverageBass, value, sens); }     //Base peak detection
+    bool isMidPeak(uint16_t value, uint8_t sens = 128) const {return isPeak(ssgAverageMid, value, sens); }       //Medium peak detection
+    bool isTreblePeak(uint16_t value, uint8_t sens = 32) const {return isPeak(ssgAverageTreble, value, sens); }  //Treble peak detection
     
 
-    uint16_t getMax() const { return _max.getAverage() + _max.getStdDev() ; } //Get current maximum value
-    uint16_t getMin() const { return _min.getAverage() + _min.getStdDev() ; } //Get current minimum value
+
+    uint16_t getMax() const { return SOUND_MAX(_max.getAverage(), _max.getStdDev()) ; } //Get current maximum value
+    uint16_t getMin() const { return SOUND_MAX(_min.getAverage(), _min.getStdDev()) ; } //Get current minimum value
 
 
   private:

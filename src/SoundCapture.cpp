@@ -132,28 +132,18 @@ void SoundCapture::getProcessedData(sc_band_t &bands){
 #define SC_AUDIO_MIN 4
 
 bool SoundCapture::isSound() const{
-  return (uint16_t)_mean.getAverage() + _mean.getStdDev() > SC_AUDIO_MIN;
+   return _mean.getAverage()  > getMin();
 }
 
-bool SoundCapture::isBassPeak(uint16_t value, uint8_t sens) const{
-  if(_meanBass.getAverage() + _meanBass.getStdDev() <= SC_AUDIO_MIN)
+bool SoundCapture::isPeak(SoundStatGet ssg, uint16_t value, uint8_t sens) const{
+  const RunningStats &stat = getStats(ssg);
+  
+  uint16_t threshold = SOUND_MAX(stat.getAverage(), stat.getStdDev() * sens / 255);
+  
+  if(threshold <= getMin())
     return false;
-
-  return value > _meanBass.getAverage() + _meanBass.getStdDev() * sens / 255;
-}
-
-bool SoundCapture::isMidPeak(uint16_t value, uint8_t sens) const{
-  if(_meanMid.getAverage() + _meanMid.getStdDev() <= SC_AUDIO_MIN)
-    return false;
-
-  return value > _meanMid.getAverage() + _meanMid.getStdDev() * sens / 255;
-}
-
-bool SoundCapture::isTreblePeak(uint16_t value, uint8_t sens) const{
-  if(_meanTreble.getAverage() + _meanTreble.getStdDev() <= SC_AUDIO_MIN)
-    return false;
-
-  return value > _meanTreble.getAverage() + _meanTreble.getStdDev() * sens / 255;
+  
+  return value > threshold;
 }
 
 
