@@ -8,7 +8,7 @@
 
 ////////////////////////////
 //SoundCapture
-SoundCapture::SoundCapture(){
+SoundCapture::SoundCapture() :_meanBass(25){
 }
 
 
@@ -60,46 +60,86 @@ const RunningStats& SoundCapture::getStats(SoundStatGet ssg) const{
   return _mean;
 }
 
-#define SOUNDSTAT_MAX_COUNT 70
-#define NOISE_FALL_ALPHA 25
-#define NOISE_RAISE_ALPHA 6
 
+#define NOISE_FALL_ALPHA  35
+#define NOISE_RAISE_ALPHA 10
+#define NOISE_RAISE_HOLD  10
+
+struct NoiseFloor{
+  union 
+  {
+    struct {
+      uint16_t value:10;       //Noise floor value
+      uint16_t raiseCnt:6;     //Counter for noise raise
+    };
+    uint16_t raw;              //Raw value
+  };
+
+  void reCalculate(uint16_t newValue){
+
+    if(newValue > value){
+
+      //Increas raise counter
+      raiseCnt += 1;
+
+      //If hold time is reached, raise noise floor
+      if(raiseCnt >= NOISE_RAISE_HOLD){
+        
+        raiseCnt = 0;
+          
+        uint16_t old = value;
+        value = u16Smooth(value, newValue, NOISE_RAISE_ALPHA);
+
+        //If no change, increase counter        
+        if(old == value){                  
+          value = value + 1;
+        }    
+      }
+    }
+    else{
+      //Reset raise counter
+      raiseCnt = 0;
+
+      //Fall noise floor      
+      value = u16Smooth(value, newValue, NOISE_FALL_ALPHA);      
+    }
+
+  }
+
+};
+
+#define SOUNDSTAT_MAX_COUNT 70
 
 void SoundCapture::getProcessedData(sc_band_t &bands){ 
 
   //Get data
   getData(bands);
 
+  uint16_t average = 0;
+  uint16_t averageBass = 0;
+  uint16_t averageMid = 0;
+  uint16_t averageTreble = 0;
+
+
   //Process data
   for(size_t i = 0; i < SC_MAX_BANDS; i++){
 
-    //Check for noise floor    
-    _noiseFloor[i] = u16Smooth(_noiseFloor[i], bands[i], bands[i] > _noiseFloor[i]  ? NOISE_RAISE_ALPHA : NOISE_FALL_ALPHA);
-    //Check for noise floor  
+    //Update noise floor and band
     
+    NoiseFloor &noiseFloor = (NoiseFloor &)_noiseFloor[i];
+    noiseFloor.reCalculate(bands[i]);
+    bands[i] = noiseFloor.value > bands[i] ? 0 : bands[i] - noiseFloor.value;
     
-    //Check for noise floor
-    bands[i] = _noiseFloor[i] > bands[i] ? 0 : bands[i] - _noiseFloor[i];
+    //Averages
+    average += bands[i];
+    if(i < 2) averageBass += bands[i]; //First two bands are bass
+    else if(i < 4) averageMid += bands[i]; //Next two bands are mid
+    else averageTreble += bands[i]; //Last three bands are treble
 
-    //Bass, mid and treble
 
-    if(i < 2){ //add bass
-      _meanBass.add(bands[i]);  
-    }
-    else if(i < 4){ //Add mid
-      _meanMid.add(bands[i]);
-    }
-    else{ //Add treble
-      _meanTreble.add(bands[i]);
-    }
-    
-
-    //Mean
-    _mean.add(bands[i]);
-    
-    
     //Min
-    if(_curMin > bands[i] && bands[i] != 0){
+    if(_curMin > bands[i] ){
+      //_curMin = bands[i] != 0 ? bands[i] : _curMin; //u16Smooth(_curMin, 0, NOISE_FALL_ALPHA);      
       _curMin = bands[i];
     }
 
@@ -109,41 +149,94 @@ void SoundCapture::getProcessedData(sc_band_t &bands){
     }   
 
     //Min and max collection counter
-    _count++;
+    _count++;    
 
   }     
 
-  //Update min and max statistics if its time
-  if(_count >= SOUNDSTAT_MAX_COUNT){
-    _min.add(_curMin);
-    _max.add(_curMax);
+  //DBG_OUTLN("");
+  
+  //Mean
+  _mean.add(average / SC_MAX_BANDS); //Add mean, first
+  //Bass
+  _meanBass.add(averageBass / 2); //Add bass mean, first
+  //Mid 
+  _meanMid.add(averageMid / 2);  //Add mid mean, second
+  //Treble
+  _meanTreble.add(averageTreble / 3); //Add treble mean, last three
 
-    //DBG_OUTLN("%d %d %d %d", _min.getAverage(), _min.getStdDev(), _mean.getAverage(), _mean.getStdDev());
+  //Min and Max
+  if(_count >= SOUNDSTAT_MAX_COUNT){
+
+    _min.add(_curMin);
+    _max.add(_curMax);    
 
     _curMin  = SOUND_UPPER_MAX;      
-    _curMax  = 0;
+    _curMax  = SOUND_LOWER_MIN;
 
     _count = 0;
+
+    //DBG_OUTLN("%d %d, %d %d, %d %d, %d %d, %d %d", _min.getAverage(), _min.getStdDev(), _mean.getAverage(), _mean.getStdDev(), _meanBass.getAverage(), _meanBass.getStdDev(), _meanMid.getAverage(), _meanMid.getStdDev(), _meanTreble.getAverage(), _meanTreble.getStdDev());       
   }
 
+  
 }
 
-
-#define SC_AUDIO_MIN 4
 
 bool SoundCapture::isSound() const{
-   return _mean.getAverage()  > getMin();
+   //return _mean.getAverage() > getMin();
+
+  uint16_t avg    = _mean.getAverage();
+  uint16_t stddev = _mean.getStdDev();
+  uint16_t min    = _min.getAverage();
+  
+
+  // Auto-tune thresholds based on recent signal stats
+  uint16_t dynamicMinLevel = min + stddev / 2;     // floor rises if noise increases
+  uint16_t dynamicMinGap   = stddev / 3;           // larger variance demands a bigger gap
+
+  // Clamp minimums
+  if (dynamicMinLevel < 3) dynamicMinLevel = 3;
+  if (dynamicMinGap < 2)   dynamicMinGap   = 2;
+
+  return (avg >= dynamicMinLevel) && (avg > min + dynamicMinGap);
 }
 
-bool SoundCapture::isPeak(SoundStatGet ssg, uint16_t value, uint8_t sens) const{
-  const RunningStats &stat = getStats(ssg);
-  
-  uint16_t threshold = SOUND_MAX(stat.getAverage(), stat.getStdDev() * sens / 255);
-  
-  if(threshold <= getMin())
+
+#define U16_SCALE(val, sens) ((uint16_t)(val * sens + 127) / 255) //Scale value by sensitivity, with rounding
+
+bool SoundCapture::isPeak(SoundStatGet ssg, uint16_t value, uint16_t sensForBandAvg, uint16_t sensForOvrlAvg) const{
+ 
+  if (!isSound())
     return false;
+
+ 
+  const RunningStats &stat = getStats(ssg);
+
+  //Band and overall statistics
+  uint16_t avgBand    = stat.getAverage();
+  uint16_t stddevBand = stat.getStdDev();      
+  uint16_t avg        = _mean.getAverage();
+  uint16_t stddev     = _mean.getStdDev();  //Scale stddev by sensitivity, with rounding
+
   
-  return value > threshold;
+
+  //Is value a peak for this band?
+  if(value < max(SOUND_MAX(avgBand, U16_SCALE(stddevBand, sensForBandAvg)), getMin()))
+    return false;
+
+
+  //See if there enough signal to consider a peak, avgBand < avg - stddev  
+  if (avgBand + U16_SCALE(stddev, sensForOvrlAvg) < avg)
+    return false; 
+  
+/*
+  //Is value a peak for the overall sound?
+  dynThreshold = max(SOUND_MAX(avg, stddev), getMin());
+  if(value < dynThreshold)
+    return false;
+*/    
+
+  return true;
 }
 
 
@@ -177,6 +270,8 @@ void SoundCapture::scaleSound(sc_band_t &bands, uint8_t flags, uint16_t lower, u
 
     val =  mapEx(val > mx ? mx : val < mn ? mn : val, mn, mx, SOUND_LOWER_MIN, SOUND_UPPER_MAX);
   }
+
+  //DBG_OUTLN("%d %d, %d %d, %d %d", _mean.getAverage(), _mean.getStdDev(), _min.getAverage(), _min.getStdDev(), _max.getAverage(), _max.getStdDev()); 
 } 
 
 

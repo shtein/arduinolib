@@ -109,10 +109,20 @@ uint16_t u16Sqrt(uint32_t val){
 
 ////////////////////////////////////////
 // Smooth value for 16 bit value
-uint16_t u16Smooth(uint16_t old, uint32_t val, uint8_t smoothFactor){
+uint16_t u16Smooth(uint16_t old, uint16_t val, uint8_t smoothFactor){
+  
+     // Convert old and val to Q8.8 fixed-point
+    uint32_t old_q8 = ((uint32_t)old) << 8;
+    uint32_t val_q8 = ((uint32_t)val) << 8;
 
-  int32_t delta = (int32_t)val - old;
-  return old + (int16_t)((delta * smoothFactor + 127) >> 8);
+    int32_t delta = (int32_t)val_q8 - (int32_t)old_q8;
+
+    // Apply smoothing factor in Q8.8 domain with rounding
+    old_q8 += ((delta * smoothFactor + 127) / 255);
+
+    // Convert back to uint16_t by discarding fractional part
+    return (uint16_t)(old_q8 >> 8);
+
 }
 
 
@@ -141,8 +151,7 @@ void RunningStats::add(uint16_t val){
   int32_t delta = (int32_t)val - _mean;
 
     // Variance
-  _variance = u16Smooth(_variance, (uint32_t)((delta * delta)), _smoothFactor);
-
+  _variance = u16Smooth(_variance, (delta * delta), _smoothFactor);
 }
 
 uint16_t RunningStats::getAverage() const{

@@ -48,7 +48,7 @@ class SoundCapture{
     virtual void init()                              = 0;  //Initialization
     virtual void reset()                             = 0;  //Reset    
     virtual void idle()                              = 0;  //Do something while there is no activity
-    virtual void getData(sc_band_t &bands) const    = 0;  //Retrieve the data
+    virtual void getData(sc_band_t &bands) const     = 0;  //Retrieve the data
 
     //Main processing function
     void getProcessedData(sc_band_t &bands);
@@ -61,15 +61,13 @@ class SoundCapture{
     bool isSound() const; //Is sound detected
     void scaleSound(sc_band_t &bands, uint8_t flags, uint16_t lower = SOUND_LOWER_MIN, uint16_t upper = SOUND_UPPER_MAX) const;
 
-    bool isPeak(SoundStatGet ssg, uint16_t value, uint8_t sens = 128) const;                                     //Generic peak detection
-    bool isBassPeak(uint16_t value, uint8_t sens = 190) const {return isPeak(ssgAverageBass, value, sens); }     //Base peak detection
-    bool isMidPeak(uint16_t value, uint8_t sens = 128) const {return isPeak(ssgAverageMid, value, sens); }       //Medium peak detection
-    bool isTreblePeak(uint16_t value, uint8_t sens = 32) const {return isPeak(ssgAverageTreble, value, sens); }  //Treble peak detection
+    bool isPeak(SoundStatGet ssg, uint16_t value, uint16_t sensForBanAg = 127, uint16_t sensForOvrlAvg = 510) const;                                     //Generic peak detection
+    bool isBassPeak(uint16_t value, uint16_t sens = 192) const {return isPeak(ssgAverageBass, value, sens, 255); }     //Base peak detection
+    bool isMidPeak(uint16_t value, uint16_t sens = 128) const {return isPeak(ssgAverageMid, value, sens, 255); }       //Medium peak detection
+    bool isTreblePeak(uint16_t value, uint16_t sens = 96) const {return isPeak(ssgAverageTreble, value, sens, 255); }  //Treble peak detection
     
-
-
     uint16_t getMax() const { return SOUND_MAX(_max.getAverage(), _max.getStdDev()) ; } //Get current maximum value
-    uint16_t getMin() const { return SOUND_MAX(_min.getAverage(), _min.getStdDev()) ; } //Get current minimum value
+    uint16_t getMin() const { return SOUND_MAX(_min.getAverage(), max(_min.getStdDev(), 3)) ; } //Get current minimum value
 
 
   private:
@@ -114,9 +112,6 @@ class SoundCaptureMSGEQ7: public SoundCapture{
     uint8_t _pinStrobe:4;
     uint8_t _pinReset:4;
 };
-
-
-
 
 
 #endif //__SOUNDCAPTURE_H
