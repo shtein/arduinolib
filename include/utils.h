@@ -93,7 +93,6 @@ uint16_t u16Sqrt(uint32_t val);
 // Smooth value for 16 bit value
 uint16_t u16Smooth(uint16_t old, uint16_t val, uint8_t smoothFactor);
 
-
 /////////////////////////////////////////////
 // Running statistics
 class RunningStats{ 
@@ -107,8 +106,8 @@ class RunningStats{
     uint16_t getStdDev() const;
   
   private:
-    uint16_t  _mean;
-    uint16_t  _variance;
+    uint16_t  _mean;     //Mean value
+    uint16_t  _variance; //Variance value
     
     uint8_t   _smoothFactor;
 };

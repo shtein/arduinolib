@@ -61,14 +61,17 @@ class SoundCapture{
     bool isSound() const; //Is sound detected
     void scaleSound(sc_band_t &bands, uint8_t flags, uint16_t lower = SOUND_LOWER_MIN, uint16_t upper = SOUND_UPPER_MAX) const;
 
-    bool isPeak(SoundStatGet ssg, uint16_t value, uint16_t sensForBanAg = 127, uint16_t sensForOvrlAvg = 510) const;                                     //Generic peak detection
-    bool isBassPeak(uint16_t value, uint16_t sens = 192) const {return isPeak(ssgAverageBass, value, sens, 255); }     //Base peak detection
-    bool isMidPeak(uint16_t value, uint16_t sens = 128) const {return isPeak(ssgAverageMid, value, sens, 255); }       //Medium peak detection
-    bool isTreblePeak(uint16_t value, uint16_t sens = 96) const {return isPeak(ssgAverageTreble, value, sens, 255); }  //Treble peak detection
+    bool isPeak(SoundStatGet ssg, uint16_t value, uint8_t sensForBanAg = 128, uint8_t sensForAvg = 255) const;                                     //Generic peak detection
+    bool isBassPeak(uint8_t sens = 96) const {return isPeak(ssgAverageBass, getBass(), sens, 48); }     //Base peak detection
+    bool isMidPeak(uint8_t sens = 128) const {return isPeak(ssgAverageMid, getMid(), sens, 176); }       //Medium peak detection
+    bool isTreblePeak(uint8_t sens = 192) const {return isPeak(ssgAverageTreble, getTreble(), sens, 232); }  //Treble peak detection
+
+    uint16_t getBass() const { return _bass; }     //Get current bass value
+    uint16_t getMid() const { return _mid; }       //Get current mid value
+    uint16_t getTreble() const { return _treble; } //Get current treble value
     
     uint16_t getMax() const { return SOUND_MAX(_max.getAverage(), _max.getStdDev()) ; } //Get current maximum value
     uint16_t getMin() const { return SOUND_MAX(_min.getAverage(), max(_min.getStdDev(), 3)) ; } //Get current minimum value
-
 
   private:
     RunningStats _min;        //Running statistics for min
@@ -77,6 +80,10 @@ class SoundCapture{
     RunningStats _meanBass;   //Running statistics for bass mean, first 2 bands
     RunningStats _meanMid;    //Running statistics for mid mean, second 2 bands
     RunningStats _meanTreble; //Running statistics for treble mean, last 3 bands
+
+    uint16_t _bass;      //Fast bass value
+    uint16_t _mid;       //Fast mid value
+    uint16_t _treble;    //Fast treble value
   
     uint16_t _curMin;         //Current minimum value
     uint16_t _curMax;         //Current maximum value

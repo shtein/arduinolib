@@ -25,6 +25,10 @@ void SoundCapture::resetStats(){
   _meanMid.reset();
   _meanTreble.reset();
 
+  _bass = SOUND_LOWER_MIN;
+  _mid  = SOUND_LOWER_MIN;
+  _treble = SOUND_LOWER_MIN;
+
   _curMin = SOUND_UPPER_MAX;
   _curMax = SOUND_LOWER_MIN;
   _count  = 0;
@@ -61,7 +65,7 @@ const RunningStats& SoundCapture::getStats(SoundStatGet ssg) const{
 }
 
 
-#define NOISE_FALL_ALPHA  35
+#define NOISE_FALL_ALPHA  25
 #define NOISE_RAISE_ALPHA 10
 #define NOISE_RAISE_HOLD  10
 
@@ -115,12 +119,8 @@ void SoundCapture::getProcessedData(sc_band_t &bands){
   //Get data
   getData(bands);
 
-  uint16_t average = 0;
-  uint16_t averageBass = 0;
-  uint16_t averageMid = 0;
-  uint16_t averageTreble = 0;
-
-
+  //_treble = 0; //Reset treble value
+  
   //Process data
   for(size_t i = 0; i < SC_MAX_BANDS; i++){
 
@@ -131,15 +131,23 @@ void SoundCapture::getProcessedData(sc_band_t &bands){
     bands[i] = noiseFloor.value > bands[i] ? 0 : bands[i] - noiseFloor.value;
     
     //Averages
-    average += bands[i];
-    if(i < 2) averageBass += bands[i]; //First two bands are bass
-    else if(i < 4) averageMid += bands[i]; //Next two bands are mid
-    else averageTreble += bands[i]; //Last three bands are treble
-
-
+    _mean.add(bands[i]); //Add mean, first
+    if(i < 2){
+       _meanBass.add(bands[i]); //Add bass mean, first
+       _bass = u16Smooth(_bass, bands[i],  bands[i] > _bass ? 128 : 192); //Fast bass value
+    }
+    else if(i < 4){ 
+      _meanMid.add(bands[i]);  //Add mid mean, second
+      _mid = u16Smooth(_mid, bands[i], bands[i] < _mid ? 128 : 192); //Fast mid value
+    }
+    else {
+      _meanTreble.add(bands[i]); //Add treble mean, last three        
+      _treble = u16Smooth(_treble, bands[i], bands[i] < _treble ? 96 : 192); //Fast treble value    
+    } 
+    
+  
     //Min
     if(_curMin > bands[i] ){
-      //_curMin = bands[i] != 0 ? bands[i] : _curMin; //u16Smooth(_curMin, 0, NOISE_FALL_ALPHA);      
       _curMin = bands[i];
     }
 
@@ -152,17 +160,6 @@ void SoundCapture::getProcessedData(sc_band_t &bands){
     _count++;    
 
   }     
-
-  //DBG_OUTLN("");
-  
-  //Mean
-  _mean.add(average / SC_MAX_BANDS); //Add mean, first
-  //Bass
-  _meanBass.add(averageBass / 2); //Add bass mean, first
-  //Mid 
-  _meanMid.add(averageMid / 2);  //Add mid mean, second
-  //Treble
-  _meanTreble.add(averageTreble / 3); //Add treble mean, last three
 
   //Min and Max
   if(_count >= SOUNDSTAT_MAX_COUNT){
@@ -204,11 +201,10 @@ bool SoundCapture::isSound() const{
 
 #define U16_SCALE(val, sens) ((uint16_t)(val * sens + 127) / 255) //Scale value by sensitivity, with rounding
 
-bool SoundCapture::isPeak(SoundStatGet ssg, uint16_t value, uint16_t sensForBandAvg, uint16_t sensForOvrlAvg) const{
+bool SoundCapture::isPeak(SoundStatGet ssg, uint16_t value, uint8_t sensForBandAvg, uint8_t sensForAvg) const{
  
   if (!isSound())
     return false;
-
  
   const RunningStats &stat = getStats(ssg);
 
@@ -216,25 +212,22 @@ bool SoundCapture::isPeak(SoundStatGet ssg, uint16_t value, uint16_t sensForBand
   uint16_t avgBand    = stat.getAverage();
   uint16_t stddevBand = stat.getStdDev();      
   uint16_t avg        = _mean.getAverage();
-  uint16_t stddev     = _mean.getStdDev();  //Scale stddev by sensitivity, with rounding
-
+  uint16_t stddev     = _mean.getStdDev();  
+  uint16_t minBand    = max(SOUND_MAX(avgBand, U16_SCALE(stddevBand, sensForBandAvg)), getMin());
   
-
-  //Is value a peak for this band?
-  if(value < max(SOUND_MAX(avgBand, U16_SCALE(stddevBand, sensForBandAvg)), getMin()))
-    return false;
-
-
-  //See if there enough signal to consider a peak, avgBand < avg - stddev  
-  if (avgBand + U16_SCALE(stddev, sensForOvrlAvg) < avg)
+  
+  //Check if value is above thresholds
+  if(value < minBand)
     return false; 
   
-/*
-  //Is value a peak for the overall sound?
-  dynThreshold = max(SOUND_MAX(avg, stddev), getMin());
-  if(value < dynThreshold)
-    return false;
-*/    
+  //Check if value is above average
+  if(value + U16_SCALE(stddev, sensForAvg) < avg )
+    return false; 
+  
+
+  //Check if value is above average
+  if(minBand + U16_SCALE(stddev, sensForAvg) < avg )
+    return false; 
 
   return true;
 }

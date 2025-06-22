@@ -1,5 +1,6 @@
 #include "arduinolib.h"
 #include "utils.h"
+#include "DBGTool.h"
 
 
 long mapEx( long x, long in_min, long in_max, long out_min, long out_max ){
@@ -122,7 +123,6 @@ uint16_t u16Smooth(uint16_t old, uint16_t val, uint8_t smoothFactor){
 
     // Convert back to uint16_t by discarding fractional part
     return (uint16_t)(old_q8 >> 8);
-
 }
 
 
@@ -142,16 +142,15 @@ void RunningStats::reset(){
 
 
 void RunningStats::add(uint16_t val){
-
   //Mean
   _mean = u16Smooth(_mean, val, _smoothFactor);
 
-
-    // Recalculate delta after mean update
-  int32_t delta = (int32_t)val - _mean;
-
-    // Variance
-  _variance = u16Smooth(_variance, (delta * delta), _smoothFactor);
+  //Varience
+  int32_t delta = (int32_t)val - (int32_t)_mean;
+  // Calculate the square of the delta
+  uint32_t deltaSq = (uint32_t)(delta * delta);
+  
+  _variance = ((_variance * (255 - _smoothFactor)) + (deltaSq * _smoothFactor) + 127) >> 8;
 }
 
 uint16_t RunningStats::getAverage() const{
@@ -159,6 +158,6 @@ uint16_t RunningStats::getAverage() const{
 }
 
 uint16_t RunningStats::getStdDev() const{
-  return u16Sqrt(_variance);
+  return u16Sqrt(_variance); // Return the square root of variance as standard deviation
 }
 
