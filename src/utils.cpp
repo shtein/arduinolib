@@ -130,10 +130,19 @@ uint16_t u16Smooth(uint16_t old, uint16_t val, uint8_t smoothFactor){
 /////////////////////////////////////
 // RunningStats
 RunningStats::RunningStats(uint8_t smoothFactor){
-  _smoothFactor = smoothFactor;
+  _smoothFactorRise = smoothFactor;
+  _smoothFactorFall = smoothFactor;
 
   reset();
 } 
+
+RunningStats::RunningStats(uint8_t smoothFactorFall, uint8_t smoothFactorRise ){
+  _smoothFactorFall = smoothFactorFall;
+  _smoothFactorRise = smoothFactorRise;
+
+  reset();
+} 
+
 
 void RunningStats::reset(){
   _mean     = 0;
@@ -143,14 +152,16 @@ void RunningStats::reset(){
 
 void RunningStats::add(uint16_t val){
   //Mean
-  _mean = u16Smooth(_mean, val, _smoothFactor);
+  uint8_t smoothFactor = (_mean > val) ? _smoothFactorFall : _smoothFactorRise;
+  _mean = u16Smooth(_mean, val, smoothFactor);
 
   //Varience
   int32_t delta = (int32_t)val - (int32_t)_mean;
   // Calculate the square of the delta
   uint32_t deltaSq = (uint32_t)(delta * delta);
+
   
-  _variance = ((_variance * (255 - _smoothFactor)) + (deltaSq * _smoothFactor) + 127) >> 8;
+  _variance = ((_variance * (255 - smoothFactor)) + (deltaSq * smoothFactor) + 127) >> 8;
 }
 
 uint16_t RunningStats::getAverage() const{

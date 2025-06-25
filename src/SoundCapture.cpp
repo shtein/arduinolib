@@ -8,7 +8,7 @@
 
 ////////////////////////////
 //SoundCapture
-SoundCapture::SoundCapture() :_meanBass(25){
+SoundCapture::SoundCapture():_max(15, 55){
 }
 
 
@@ -105,7 +105,7 @@ struct NoiseFloor{
       raiseCnt = 0;
 
       //Fall noise floor      
-      value = u16Smooth(value, newValue, NOISE_FALL_ALPHA);      
+      value = u16Smooth(value, newValue, NOISE_FALL_ALPHA);  
     }
 
   }
@@ -119,8 +119,8 @@ void SoundCapture::getProcessedData(sc_band_t &bands){
   //Get data
   getData(bands);
 
-  //_treble = 0; //Reset treble value
-  
+  uint16_t avg = 0;
+
   //Process data
   for(size_t i = 0; i < SC_MAX_BANDS; i++){
 
@@ -130,21 +130,7 @@ void SoundCapture::getProcessedData(sc_band_t &bands){
     noiseFloor.reCalculate(bands[i]);
     bands[i] = noiseFloor.value > bands[i] ? 0 : bands[i] - noiseFloor.value;
     
-    //Averages
-    _mean.add(bands[i]); //Add mean, first
-    if(i < 2){
-       _meanBass.add(bands[i]); //Add bass mean, first
-       _bass = u16Smooth(_bass, bands[i],  bands[i] > _bass ? 128 : 192); //Fast bass value
-    }
-    else if(i < 4){ 
-      _meanMid.add(bands[i]);  //Add mid mean, second
-      _mid = u16Smooth(_mid, bands[i], bands[i] < _mid ? 128 : 192); //Fast mid value
-    }
-    else {
-      _meanTreble.add(bands[i]); //Add treble mean, last three        
-      _treble = u16Smooth(_treble, bands[i], bands[i] < _treble ? 96 : 192); //Fast treble value    
-    } 
-    
+    avg += bands[i];
   
     //Min
     if(_curMin > bands[i] ){
@@ -161,45 +147,64 @@ void SoundCapture::getProcessedData(sc_band_t &bands){
 
   }     
 
+  //Average
+  _mean.add(avg/SC_MAX_BANDS); //Add mean, first
+    
+  //Bass
+   uint16_t tmp = (bands[0] + bands[1]) / 2;
+   _meanBass.add(tmp); //Add bass mean, first
+   _bass = u16Smooth(_bass, tmp,  tmp > _bass ? 128 : 192); //Fast bass value
+  
+    //Mid
+  tmp = (bands[2] + bands[3]) / 2;
+  _meanMid.add(tmp);  //Add mid mean, second
+  _mid = u16Smooth(_mid, tmp, tmp < _mid ? 128 : 192); //Fast mid value
+    
+    //Treble
+  tmp = (bands[4] + bands[5] + bands[6]) / 3;
+  _meanTreble.add(tmp); //Add treble mean, last three        
+  _treble = u16Smooth(_treble, tmp, tmp < _treble ? 96 : 192); //Fast treble value    
+  
+
   //Min and Max
   if(_count >= SOUNDSTAT_MAX_COUNT){
 
     _min.add(_curMin);
     _max.add(_curMax);    
 
+    //DBG_OUTLN("%d %d, %d %d, %d %d - %d", _min.getAverage(), _min.getStdDev(), _mean.getAverage(), _mean.getStdDev(), _max.getAverage(), _max.getStdDev(), _curMax);       
+
     _curMin  = SOUND_UPPER_MAX;      
     _curMax  = SOUND_LOWER_MIN;
 
     _count = 0;
 
-    //DBG_OUTLN("%d %d, %d %d, %d %d, %d %d, %d %d", _min.getAverage(), _min.getStdDev(), _mean.getAverage(), _mean.getStdDev(), _meanBass.getAverage(), _meanBass.getStdDev(), _meanMid.getAverage(), _meanMid.getStdDev(), _meanTreble.getAverage(), _meanTreble.getStdDev());       
   }
 
   
 }
 
+#define U16_SCALE(val, sens) ((uint16_t)(val * sens + 127) / 255) //Scale value by sensitivity, with rounding
 
 bool SoundCapture::isSound() const{
-   //return _mean.getAverage() > getMin();
-
+ 
   uint16_t avg    = _mean.getAverage();
   uint16_t stddev = _mean.getStdDev();
   uint16_t min    = _min.getAverage();
   
 
   // Auto-tune thresholds based on recent signal stats
-  uint16_t dynamicMinLevel = min + stddev / 2;     // floor rises if noise increases
-  uint16_t dynamicMinGap   = stddev / 3;           // larger variance demands a bigger gap
+  uint16_t dynamicMinLevel = min + U16_SCALE(stddev, 128) ;     // floor rises if noise increases
+  uint16_t dynamicMinGap   = U16_SCALE(stddev, 85);
 
   // Clamp minimums
   if (dynamicMinLevel < 3) dynamicMinLevel = 3;
   if (dynamicMinGap < 2)   dynamicMinGap   = 2;
 
   return (avg >= dynamicMinLevel) && (avg > min + dynamicMinGap);
+
 }
 
-
-#define U16_SCALE(val, sens) ((uint16_t)(val * sens + 127) / 255) //Scale value by sensitivity, with rounding
 
 bool SoundCapture::isPeak(SoundStatGet ssg, uint16_t value, uint8_t sensForBandAvg, uint8_t sensForAvg) const{
  

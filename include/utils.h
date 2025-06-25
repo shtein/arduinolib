@@ -98,6 +98,7 @@ uint16_t u16Smooth(uint16_t old, uint16_t val, uint8_t smoothFactor);
 class RunningStats{ 
   public:
     RunningStats(uint8_t smoothFactor = 25);
+    RunningStats(uint8_t smoothFactorFall, uint8_t smoothFactorRise);
 
     void reset();
     void add(uint16_t val);
@@ -109,7 +110,8 @@ class RunningStats{
     uint16_t  _mean;     //Mean value
     uint16_t  _variance; //Variance value
     
-    uint8_t   _smoothFactor;
+    uint8_t   _smoothFactorFall; //Smoothing factor for falling values
+    uint8_t   _smoothFactorRise; //Smoothing factor for rising values
 };
 
 
