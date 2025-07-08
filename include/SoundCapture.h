@@ -58,7 +58,9 @@ class SoundCapture{
     const RunningStats& getStats(SoundStatGet ssg) const; //Get statistics
 
     //State functions
-    bool isSound() const; //Is sound detected
+    bool isSound(uint16_t delta = 0) const { return _sound && DELTA_MILLS(_ssTime) > delta; };   //Is sound detected
+    bool isSilence(uint16_t delta = 0) const { return !_sound && DELTA_MILLS(_ssTime) > delta; }; //Is silence detected
+
     void scaleSound(sc_band_t &bands, uint8_t flags, uint16_t lower = SOUND_LOWER_MIN, uint16_t upper = SOUND_UPPER_MAX) const;
 
     bool isPeak(SoundStatGet ssg, uint16_t value, uint8_t sensForBanAg = 128, uint8_t sensForAvg = 255) const;                                     //Generic peak detection
@@ -81,15 +83,18 @@ class SoundCapture{
     RunningStats _meanMid;    //Running statistics for mid mean, second 2 bands
     RunningStats _meanTreble; //Running statistics for treble mean, last 3 bands
 
-    uint16_t _bass;      //Fast bass value
-    uint16_t _mid;       //Fast mid value
-    uint16_t _treble;    //Fast treble value
+    uint16_t _bass;           //Fast bass value
+    uint16_t _mid;            //Fast mid value
+    uint16_t _treble;         //Fast treble value
   
     uint16_t _curMin;         //Current minimum value
     uint16_t _curMax;         //Current maximum value
-    uint8_t  _count;          //Counter for min/max calculations
+    uint8_t _countMM;        //Counter for min/max calculations
 
     uint16_t _noiseFloor[SC_MAX_BANDS]; //Noise floor for each band
+
+    bool     _sound;          //Silence or sound
+    uint16_t _ssTime;         //Silence or sound time
 };
 
 

@@ -8,7 +8,7 @@
 
 ////////////////////////////
 //SoundCapture
-SoundCapture::SoundCapture():_max(15, 55){
+SoundCapture::SoundCapture():_max(15, 100){
 }
 
 
@@ -29,13 +29,16 @@ void SoundCapture::resetStats(){
   _mid  = SOUND_LOWER_MIN;
   _treble = SOUND_LOWER_MIN;
 
-  _curMin = SOUND_UPPER_MAX;
-  _curMax = SOUND_LOWER_MIN;
-  _count  = 0;
+  _curMin  = SOUND_UPPER_MAX;
+  _curMax  = SOUND_LOWER_MIN;
+  _countMM = 0;
 
   for(size_t i = 0; i < SC_MAX_BANDS; i++){
     _noiseFloor[i] = SOUND_UPPER_MAX;
   }
+
+  _sound  = true;
+  _ssTime = 0;
 }
 
 const RunningStats& SoundCapture::getStats(SoundStatGet ssg) const{
@@ -143,8 +146,7 @@ void SoundCapture::getProcessedData(sc_band_t &bands){
     }   
 
     //Min and max collection counter
-    _count++;    
-
+    _countMM++;    
   }     
 
   //Average
@@ -167,28 +169,21 @@ void SoundCapture::getProcessedData(sc_band_t &bands){
   
 
   //Min and Max
-  if(_count >= SOUNDSTAT_MAX_COUNT){
+  if(_countMM >= SOUNDSTAT_MAX_COUNT){
 
     _min.add(_curMin);
     _max.add(_curMax);    
 
-    //DBG_OUTLN("%d %d, %d %d, %d %d - %d", _min.getAverage(), _min.getStdDev(), _mean.getAverage(), _mean.getStdDev(), _max.getAverage(), _max.getStdDev(), _curMax);       
+    DBG_OUTLN("%d %d, %d %d, %d %d - %d", _min.getAverage(), _min.getStdDev(), _mean.getAverage(), _mean.getStdDev(), _max.getAverage(), _max.getStdDev(), _curMax);       
 
     _curMin  = SOUND_UPPER_MAX;      
     _curMax  = SOUND_LOWER_MIN;
 
-    _count = 0;
-
+    _countMM = 0;
   }
 
-  
-}
-
-#define U16_SCALE(val, sens) ((uint16_t)(val * sens + 127) / 255) //Scale value by sensitivity, with rounding
-
-bool SoundCapture::isSound() const{
- 
-  uint16_t avg    = _mean.getAverage();
+  //Silence detection
+  avg             = _mean.getAverage();
   uint16_t stddev = _mean.getStdDev();
   uint16_t min    = _min.getAverage();
   
@@ -198,17 +193,24 @@ bool SoundCapture::isSound() const{
   uint16_t dynamicMinGap   = U16_SCALE(stddev, 85);
 
   // Clamp minimums
-  if (dynamicMinLevel < 3) dynamicMinLevel = 3;
-  if (dynamicMinGap < 2)   dynamicMinGap   = 2;
+  if (dynamicMinLevel < 5) dynamicMinLevel = 5;
+  if (dynamicMinGap < 3)   dynamicMinGap   = 3;
 
-  return (avg >= dynamicMinLevel) && (avg > min + dynamicMinGap);
+  bool sound = ((avg >= dynamicMinLevel) && (avg > min + dynamicMinGap));
 
+  //Check if silence changed
+  if(_sound != sound){
+    _sound = sound;
+    SET_MILLIS(_ssTime);
+  }
+  
 }
+
 
 
 bool SoundCapture::isPeak(SoundStatGet ssg, uint16_t value, uint8_t sensForBandAvg, uint8_t sensForAvg) const{
  
-  if (!isSound())
+  if (isSilence(50))
     return false;
  
   const RunningStats &stat = getStats(ssg);
@@ -249,7 +251,7 @@ void SoundCapture::scaleSound(sc_band_t &bands, uint8_t flags, uint16_t lower, u
     
 
     //if no signal, set to 0
-    if((flags & SC_MAP_ABOVE_NOISE) && !isSound()){
+    if((flags & SC_MAP_ABOVE_NOISE) && isSilence(50)){
       val = 0;
     }
 /*

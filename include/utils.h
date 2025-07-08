@@ -93,6 +93,8 @@ uint16_t u16Sqrt(uint32_t val);
 // Smooth value for 16 bit value
 uint16_t u16Smooth(uint16_t old, uint16_t val, uint8_t smoothFactor);
 
+#define U16_SCALE(val, sens) ((uint16_t)(val * sens + 127) / 255) //Scale value by sensitivity, with rounding
+
 /////////////////////////////////////////////
 // Running statistics
 class RunningStats{ 
