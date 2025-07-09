@@ -185,12 +185,12 @@ void SoundCapture::getProcessedData(sc_band_t &bands){
   //Silence detection
   avg             = _mean.getAverage();
   uint16_t stddev = _mean.getStdDev();
-  uint16_t min    = _min.getAverage();
+  uint16_t min    = getMin(); //_min.getAverage();
   
 
   // Auto-tune thresholds based on recent signal stats
-  uint16_t dynamicMinLevel = min + U16_SCALE(stddev, 128) ;     // floor rises if noise increases
-  uint16_t dynamicMinGap   = U16_SCALE(stddev, 85);
+  uint16_t dynamicMinLevel = min + U16_SCALE(stddev, 128) ;
+  uint16_t dynamicMinGap   = U16_SCALE(stddev, 128);
 
   // Clamp minimums
   if (dynamicMinLevel < 5) dynamicMinLevel = 5;
