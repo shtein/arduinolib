@@ -58,43 +58,56 @@ class SoundCapture{
     const RunningStats& getStats(SoundStatGet ssg) const; //Get statistics
 
     //State functions
-    bool isSound(uint16_t delta = 0) const { return _sound && DELTA_MILLS(_ssTime) > delta; };   //Is sound detected
-    bool isSilence(uint16_t delta = 0) const { return !_sound && DELTA_MILLS(_ssTime) > delta; }; //Is silence detected
+    bool isBassSound(bool sound, uint16_t delta) const { return _soundBass == sound && DELTA_MILLS(_ssTimeBass) > delta; };              //Is sound detected for bass
+    bool isMidSound(bool sound, uint16_t delta) const { return _soundMid == sound && DELTA_MILLS(_ssTimeMid) > delta; };                 //Is sound detected for mid
+    bool isTrebleSound(bool sound, uint16_t delta) const { return _soundTreble == sound && DELTA_MILLS(_ssTimeTreble) > delta; };        //Is sound detected for treble
+
+    bool isSound(bool sound, uint16_t delta) const{ return isBassSound(sound, delta) || isMidSound(sound, delta) || isTrebleSound(sound, delta);}            //Is sound detected in any band
 
     void scaleSound(sc_band_t &bands, uint8_t flags, uint16_t lower = SOUND_LOWER_MIN, uint16_t upper = SOUND_UPPER_MAX) const;
 
-    bool isPeak(SoundStatGet ssg, uint16_t value, uint8_t sensForBanAg = 128, uint8_t sensForAvg = 255) const;                                     //Generic peak detection
-    bool isBassPeak(uint8_t sens = 128) const {return isPeak(ssgAverageBass, getBass(), sens, 158); }     //Base peak detection
-    bool isMidPeak(uint8_t sens = 92) const {return isPeak(ssgAverageMid, getMid(), sens, 176); }       //Medium peak detection
-    bool isTreblePeak(uint8_t sens = 32) const {return isPeak(ssgAverageTreble, getTreble(), sens, 192); }  //Treble peak detection
+    bool isPeak(SoundStatGet ssg, uint16_t value, uint8_t sensForBanAg = 128, uint8_t sensForAvg = 255) const;   //Generic peak detection
+    bool isBassPeak() const {return isBassSound(true, 50) && isPeak(ssgAverageBass, _bass, 64, 158); }           //Base peak detection
+    bool isMidPeak() const {return isMidSound(true, 50) && isPeak(ssgAverageMid, _mid, 158, 176); }              //Medium peak detection
+    bool isTreblePeak() const {return isTrebleSound(true, 50) && isPeak(ssgAverageTreble, _treble, 192, 192); }  //Treble peak detection
 
     uint16_t getBass() const { return _bass; }     //Get current bass value
     uint16_t getMid() const { return _mid; }       //Get current mid value
     uint16_t getTreble() const { return _treble; } //Get current treble value
     
     uint16_t getMax() const { return SOUND_MAX(_max.getAverage(), 3 * _max.getStdDev()) ; } //Get current maximum value
-    uint16_t getMin() const { return SOUND_MAX(_min.getAverage(), max(_min.getStdDev(), 3)) ; } //Get current minimum value
+    uint16_t getMin() const { return SOUND_MAX(_min.getAverage(), _min.getStdDev()) ; } //Get current minimum value
 
   private:
+    //Min and Max
     RunningStats _min;        //Running statistics for min
     RunningStats _max;        //Running statistics for max
-    RunningStats _mean;       //Running statistics for mean
-    RunningStats _meanBass;   //Running statistics for bass mean, first 2 bands
-    RunningStats _meanMid;    //Running statistics for mid mean, second 2 bands
-    RunningStats _meanTreble; //Running statistics for treble mean, last 3 bands
-
-    uint16_t _bass;           //Fast bass value
-    uint16_t _mid;            //Fast mid value
-    uint16_t _treble;         //Fast treble value
-  
     uint16_t _curMin;         //Current minimum value
     uint16_t _curMax;         //Current maximum value
-    uint8_t _countMM;        //Counter for min/max calculations
+    uint8_t _countMM;         //Counter for min/max calculations
+
+    //Average
+    RunningStats _mean;       //Running statistics for mean
+
+    //Bass
+    RunningStats _meanBass;    //Running statistics for bass mean, first 2 bands
+    uint16_t     _bass;        //Fast bass value
+    bool         _soundBass;   //Bass silence or sound
+    uint16_t     _ssTimeBass;  //Bass silence or sound time
+
+    //Mid
+    RunningStats _meanMid;    //Running statistics for mid mean, second 2 bands
+    uint16_t     _mid;        //Fast mid value
+    bool         _soundMid;   //Mid silence or sound
+    uint16_t     _ssTimeMid;  //Mid silence or sound time
+
+    //Treble
+    RunningStats _meanTreble;   //Running statistics for treble mean, last 3 bands
+    uint16_t     _treble;       //Fast treble value
+    bool         _soundTreble;  //Treble silence or sound
+    uint16_t     _ssTimeTreble; //Treble silence or sound time
 
     uint16_t _noiseFloor[SC_MAX_BANDS]; //Noise floor for each band
-
-    bool     _sound;          //Silence or sound
-    uint16_t _ssTime;         //Silence or sound time
 };
 
 

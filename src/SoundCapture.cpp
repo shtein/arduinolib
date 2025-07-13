@@ -26,8 +26,16 @@ void SoundCapture::resetStats(){
   _meanTreble.reset();
 
   _bass = SOUND_LOWER_MIN;
+  _soundBass  = true;
+  _ssTimeBass = 0;
+
   _mid  = SOUND_LOWER_MIN;
+  _soundTreble  = true;
+  _ssTimeMid = 0; 
+
   _treble = SOUND_LOWER_MIN;
+  _soundTreble  = true;
+  _ssTimeTreble = 0;  
 
   _curMin  = SOUND_UPPER_MAX;
   _curMax  = SOUND_LOWER_MIN;
@@ -37,8 +45,7 @@ void SoundCapture::resetStats(){
     _noiseFloor[i] = SOUND_UPPER_MAX;
   }
 
-  _sound  = true;
-  _ssTime = 0;
+  
 }
 
 const RunningStats& SoundCapture::getStats(SoundStatGet ssg) const{
@@ -69,7 +76,7 @@ const RunningStats& SoundCapture::getStats(SoundStatGet ssg) const{
 
 
 #define NOISE_FALL_ALPHA  25
-#define NOISE_RAISE_ALPHA 10
+#define NOISE_RAISE_ALPHA 15
 #define NOISE_RAISE_HOLD  10
 
 struct NoiseFloor{
@@ -114,6 +121,26 @@ struct NoiseFloor{
   }
 
 };
+
+
+bool detectSound(uint16_t min, const RunningStats &stat){
+
+  uint16_t avg     = stat.getAverage();
+  uint16_t stddev  = stat.getStdDev(); 
+
+  // Auto-tune thresholds based on recent signal stats
+  uint16_t dynamicMinLevel = min + U16_SCALE(stddev, 128);
+  uint16_t dynamicMinGap   = U16_SCALE(stddev, 128);
+
+  // Clamp minimums
+  if (dynamicMinLevel < 3) dynamicMinLevel = 3;
+  if (dynamicMinGap < 2)   dynamicMinGap   = 2;
+
+  bool sound = ((avg >= dynamicMinLevel) && (avg > min + dynamicMinGap));
+
+  return sound;
+}
+
 
 #define SOUNDSTAT_MAX_COUNT 70
 
@@ -174,7 +201,14 @@ void SoundCapture::getProcessedData(sc_band_t &bands){
     _min.add(_curMin);
     _max.add(_curMax);    
 
-    DBG_OUTLN("%d %d, %d %d, %d %d - %d", _min.getAverage(), _min.getStdDev(), _mean.getAverage(), _mean.getStdDev(), _max.getAverage(), _max.getStdDev(), _curMax);       
+    DBG_OUTLN("%d %d, %d %d, %d %d, %d %d - %d", _mean.getAverage(), _mean.getStdDev(), _meanBass.getAverage(), _meanBass.getStdDev(), _meanMid.getAverage(), _meanMid.getStdDev(), _meanTreble.getAverage(), _meanTreble.getStdDev(), isSound(true, 50));       
+/*
+    for(size_t i = 0; i < SC_MAX_BANDS; i++){
+      DBG_OUT("%d ", bands[i]);  
+    }
+
+    DBG_OUTLN(" - %d", _sound);
+*/    
 
     _curMin  = SOUND_UPPER_MAX;      
     _curMax  = SOUND_LOWER_MIN;
@@ -182,37 +216,25 @@ void SoundCapture::getProcessedData(sc_band_t &bands){
     _countMM = 0;
   }
 
-  //Silence detection
-  avg             = _mean.getAverage();
-  uint16_t stddev = _mean.getStdDev();
-  uint16_t min    = getMin(); //_min.getAverage();
-  
-
-  // Auto-tune thresholds based on recent signal stats
-  uint16_t dynamicMinLevel = min + U16_SCALE(stddev, 128) ;
-  uint16_t dynamicMinGap   = U16_SCALE(stddev, 128);
-
-  // Clamp minimums
-  if (dynamicMinLevel < 5) dynamicMinLevel = 5;
-  if (dynamicMinGap < 3)   dynamicMinGap   = 3;
-
-  bool sound = ((avg >= dynamicMinLevel) && (avg > min + dynamicMinGap));
-
   //Check if silence changed
-  if(_sound != sound){
-    _sound = sound;
-    SET_MILLIS(_ssTime);
+  if(_soundBass != detectSound(_min.getAverage(), _meanBass )){
+    _soundBass = !_soundBass;
+    SET_MILLIS(_ssTimeBass);
+  }
+
+  if(_soundMid != detectSound(_min.getAverage(), _meanMid)){
+    _soundMid = !_soundMid;
+    SET_MILLIS(_ssTimeMid);
   }
   
+  if(_soundTreble != detectSound(_min.getAverage(), _meanTreble)){
+    _soundTreble = !_soundTreble;
+    SET_MILLIS(_ssTimeTreble);
+  }
 }
 
-
-
 bool SoundCapture::isPeak(SoundStatGet ssg, uint16_t value, uint8_t sensForBandAvg, uint8_t sensForAvg) const{
- 
-  if (isSilence(50))
-    return false;
- 
+
   const RunningStats &stat = getStats(ssg);
 
   //Band and overall statistics
@@ -220,20 +242,15 @@ bool SoundCapture::isPeak(SoundStatGet ssg, uint16_t value, uint8_t sensForBandA
   uint16_t stddevBand = stat.getStdDev();      
   uint16_t avg        = _mean.getAverage();
   uint16_t stddev     = _mean.getStdDev();  
-  uint16_t minBand    = max(SOUND_MAX(avgBand, U16_SCALE(stddevBand, sensForBandAvg)), getMin());
-  
-  
+  uint16_t minBand    = SOUND_MAX(avgBand, U16_SCALE(stddevBand, sensForBandAvg));
+
+
   //Check if value is above thresholds
   if(value < minBand)
     return false; 
-  
-  //Check if value is above average
+ 
+  //Check if value is above average - threashold
   if(value + U16_SCALE(stddev, sensForAvg) < avg )
-    return false; 
-  
-
-  //Check if value is above average
-  if(minBand + U16_SCALE(stddev, sensForAvg) < avg )
     return false; 
 
   return true;
@@ -248,10 +265,21 @@ void SoundCapture::scaleSound(sc_band_t &bands, uint8_t flags, uint16_t lower, u
   for(size_t i = 0; i < SC_MAX_BANDS; i++){
 
     uint16_t &val = bands[i];
+
+    bool sound = false;
+    if(i < 2){
+      sound = isBassSound(true, 50);
+    }
+    else if(i < 4){
+      sound = isMidSound(true, 50);
+    }
+    else{
+      sound = isTrebleSound(true, 50);
+    }
     
 
     //if no signal, set to 0
-    if((flags & SC_MAP_ABOVE_NOISE) && isSilence(50)){
+    if((flags & SC_MAP_ABOVE_NOISE) && !sound){
       val = 0;
     }
 /*
