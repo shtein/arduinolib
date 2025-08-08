@@ -1,6 +1,3 @@
-#include "arduinolib.h"
-
-#include <Arduino.h>
 #include "CtrlSerial.h"
 #include "DbgTool.h"
 

@@ -1,7 +1,9 @@
 #ifndef __CTRL_WEB_SRV_H
 #define __CTRL_WEB_SRV_H
 
-#if defined(ESP8266) || defined(ESP32)
+#include "arduinolib.h"
+
+#ifdef WIFI_ENABLED
 
 #include "AnalogInput.h"
 #include "Controls.h"

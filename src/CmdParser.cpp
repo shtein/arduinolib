@@ -1,6 +1,3 @@
-#include "arduinolib.h"
-
-#include <Arduino.h>
 #include "CmdParser.h"
 #include "DbgTool.h"
 

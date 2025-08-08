@@ -1,6 +1,7 @@
 #ifndef __CMD_PARSER_H
 #define __CMD_PARSER_H
 
+#include "arduinolib.h"
 #include "utils.h"
 
 
@@ -33,6 +34,8 @@ inline void setValue(const T1 &src, T2 &dst){
 
 //Parameter sequence is cmd, data.value, data.flag, data.min, data.max
 #define _CQD_SET_DATA(data, ...) ARG_NUM( NUM_ARGS(data, ##__VA_ARGS__), _CQD_SET_NONE, _CQD_SET_CMD, _CQD_SET_VAL, _CQD_SET_FLG, _CQD_SET_MIN, _CQD_SET_MAX) (data, __VA_ARGS__)
+
+#define DECLARE_PARSE_ROUTINE(FunctionName) uint8_t FunctionName(const char *src[], CtrlQueueData &data);
 
 #define BEGIN_PARSE_ROUTINE(FunctionName) \
 uint8_t FunctionName(const char *src[], CtrlQueueData &data){ \

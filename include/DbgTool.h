@@ -1,6 +1,7 @@
 #ifndef __DBGTOOL_H
 #define __DBGTOOL_H
 
+#include "arduinolib.h"
 
 #ifdef DBG_TO_SERIAL
 

@@ -1,6 +1,3 @@
-#include "arduinolib.h"
-#include <Arduino.h>
-
 #include "DbgTool.h"
 #include "AnalogInput.h"
 #include "utils.h"

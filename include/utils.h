@@ -1,6 +1,8 @@
 #ifndef __UTILS_H
 #define __UTILS_H
 
+#include "arduinolib.h"
+
 //Map function
 long mapEx( long x, long in_min, long in_max, long out_min, long out_max ); 
 
@@ -70,6 +72,8 @@ private:
 
 
 typedef Progmem2Str<> Progmem2Str24;
+
+#define PROGMEM_TO_STR(s) (const char *)Progmem2Str24(s)
 
 //String resources
 #define DEFINE_STR_PROGMEM(k, v) const char k[] PROGMEM = v;

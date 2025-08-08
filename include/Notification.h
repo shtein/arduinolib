@@ -1,6 +1,8 @@
 #ifndef __NOTIFICATION_H
 #define __NOTIFICATION_H
 
+#include "arduinolib.h"
+
 /////////////////////////////
 // Base interface to send notifications
 
@@ -38,6 +40,7 @@ public:
   virtual void put(const char *key, int16_t v) = 0;  
   virtual void put(const char *key, int32_t v) = 0;  
   virtual void put(const char *key, const char *v) = 0;
+  void put_F(const char *key, const char *v);
   void put_P(const char *key, const char *v);
   void put(const char *key, const __FlashStringHelper *v);
   void put_FP(const char *key, const char *v);
@@ -80,6 +83,10 @@ inline void NtfBase::put_F(const char *key, const T &t){
   put((const char *)Progmem2Str24(key), t);
 }
 
+inline void NtfBase::put_F(const char *key, const char *v){
+  put((const char *)Progmem2Str24(key), v);
+}
+
 template<class T>
 inline void NtfBase::put_F(const char *key, const T *t, size_t size){
   put((const char *)Progmem2Str24(key), t, size);
@@ -88,7 +95,6 @@ inline void NtfBase::put_F(const char *key, const T *t, size_t size){
 inline void NtfBase::begin_F(const char *key){
   begin((const char *)Progmem2Str24(key));
 }
-
 
 inline void NtfBase::beginArray_F(const char *key){
   beginArray((const char *)Progmem2Str24(key));
@@ -219,6 +225,11 @@ void NtfBaseSet<N>::put(const T *t, size_t size){
   }  
 }
 
+#ifndef MAX_NTF
+  #define MAX_NTF 2
+#endif //MAX_NTF
+
+typedef NtfBaseSet<MAX_NTF> NtfSet;
 
 //////////////////////////////////
 // Structure for command response

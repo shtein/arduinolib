@@ -1,6 +1,8 @@
 #ifndef __ANALOGINPUT_H
 #define __ANALOGINPUT_H
 
+#include "arduinolib.h"
+
 //////////////////////////
 // Input constants
 #define PB_CONTROL_CLICK_SHORT 0x01

@@ -1,14 +1,10 @@
-#include <Arduino.h>
-
 #include "DbgTool.h"
 #include "SoundCapture.h"
 
 
-
-
 ////////////////////////////
 //SoundCapture
-SoundCapture::SoundCapture():_max(15, 100){
+SoundCapture::SoundCapture(){
 }
 
 
@@ -17,7 +13,6 @@ SoundCapture::~SoundCapture(){
 
 
 void SoundCapture::resetStats(){
-
   _min.reset();
   _max.reset();
   _mean.reset();

@@ -1,6 +1,7 @@
 #ifndef __CONTROLS_H
 #define __CONTROLS_H
 
+#include "arduinolib.h"
 #include "AnalogInput.h"
 #include "utils.h"
 #include "DbgTool.h"
@@ -9,6 +10,12 @@
 //Change commands
 #define EEMC_NONE        0x00   //Nothing changed
 #define EEMC_ERROR       0xFF   //Input error
+
+//Errors
+#define EEER_SUCCESS    0x00 //No error
+#define EEER_INVALID    0x01 //Invalid input
+#define EEER_UNHANDLED  0x02 //Unhandled command
+#define EEER_DELAYED    0x03 //Delayed response
 
 
 ///////////////////////////////////
@@ -22,10 +29,10 @@
 #define CTF_VAL_STRING  0x06  //Value is string
 #define CTF_VAL_OBJECT  0x07  //Value is object
 
-#if defined(ESP8266) || defined(ESP32)
-#define MAX_STR_VALUE 256
+#ifdef WIFI_ENABLED
+  #define MAX_STR_VALUE 256
 #else
-#define MAX_STR_VALUE 16
+  #define MAX_STR_VALUE 16
 #endif
 
 ////////////////////////////////////
@@ -181,7 +188,7 @@ class CtrlItemPtmtr: public CtrlItem{
     bool triggered() const{
       int16_t value = (int16_t)getValue(); 
       
-      return (abs(value - (int16_t)_value) >  min(_noise, 
+      return (abs(value - (int16_t)_value) >  min((uint16_t)_noise, 
                                                   (uint16_t)min(value - POT_MIN + _lowerMargin, POT_MAX - _upperMargin - value)
                                                 )
              );     
@@ -339,7 +346,7 @@ class CtrlItemRotEnc: public CtrlItem{
 /////////////////////////////////////////
 // Multi-command interface
 
-#if defined(ESP8266) || defined(ESP32)
+#ifdef WIFI_ENABLED
   #define MAX_TOKENS         16
   #define MAX_COMMAND_LEN    128
 #else

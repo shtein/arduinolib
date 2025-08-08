@@ -1,6 +1,3 @@
-#include "arduinolib.h"
-
-#include <Arduino.h>
 
 #ifdef __AVR__
 #include <avr/io.h>

@@ -1,6 +1,7 @@
 #ifndef __CTRL_SERIAL_H
 #define __CTRL_SERIAL_H
 
+#include "arduinolib.h"
 #include "Utils.h"
 #include "AnalogInput.h"
 #include "Controls.h"
@@ -16,7 +17,7 @@
 #define SI_NULLCHAR    '\0'
 #define SI_SPACE       ' '
 
-#if defined(ESP8266) || defined(ESP32)
+#ifdef WIFI_ENABLED
   #define SI_BUFF_LEN     128
 #else
   #define SI_BUFF_LEN     32

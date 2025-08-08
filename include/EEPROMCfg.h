@@ -1,9 +1,11 @@
 #ifndef __EEPROMCFG_H
 #define __EEPROMCFG_H
 
+#include "arduinolib.h"
+
 //A workaround for including EEPROM Library 
 #if defined(ESP8266) || defined(ESP32)
-#include <EEPROM.h>
+  #include <EEPROM.h>
 #endif 
 
 ////////////////////////////////

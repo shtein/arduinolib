@@ -1,11 +1,7 @@
-//Support for ESP8266, ESP32 etc
-#if defined(ESP8266) || defined(ESP32)
-
-#include "arduinolib.h"
-
-#include <Arduino.h>
 #include "CtrlWebSrv.h"
 #include "DbgTool.h"
+
+#ifdef WIFI_ENABLED
 
 DNSServer    dnsServer;
 ESPWebServer webServer;

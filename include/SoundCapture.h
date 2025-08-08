@@ -1,6 +1,7 @@
 #ifndef __SOUNDCAPTURE_H
 #define __SOUNDCAPTURE_H
 
+#include "arduinolib.h"
 #include "Utils.h"
 
 //Constants and flags
@@ -77,7 +78,7 @@ class SoundCapture{
   private:
     //Min and Max
     RunningStats _min;        //Running statistics for min
-    RunningStats _max;        //Running statistics for max
+    RunningStats _max {15, 100};  //Running statistics for max
     uint16_t _curMin;         //Current minimum value
     uint16_t _curMax;         //Current maximum value
     uint8_t _countMM;         //Counter for min/max calculations
