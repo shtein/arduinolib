@@ -1,5 +1,8 @@
 #include "JSONCfg.h"
 #include "DbgTool.h"
+
+#ifdef WIFI_ENABLED
+
 #include <LittleFS.h>
 
 void writeJsonConfig(const char *filename, JsonDocument &jsDoc){
@@ -36,3 +39,5 @@ void readJsonConfig(const char *filename, JsonDocument &jsDoc){
 
   file.close();
 }
+
+#endif //WIFI_ENABLED

@@ -2,6 +2,8 @@
 #define __JSON_CFG_H
 
 #include "arduinolib.h"
+
+#ifdef WIFI_ENABLED
 #include <ArduinoJson.h>
 
 
@@ -12,5 +14,6 @@
 void readJsonConfig(const char *filename, JsonDocument &jsDoc);
 void writeJsonConfig(const char *filename, JsonDocument &jsDoc);
 
+#endif //WIFI_ENABLED
 
 #endif //__JSON_CFG_H
