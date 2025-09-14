@@ -7,7 +7,6 @@
 
 #include "Controls.h"
 #include "Notification.h"
-#include <ArduinoJson.h>
 
 #if defined(ESP8266) 
   #include <ESP8266WiFi.h>
@@ -15,28 +14,6 @@
   #include <WiFi.h>
 #endif
 
-
-////////////////////////////////////
-// CtrlWifiStatus - wifi status change
-class CtrlWifiStatus: public CtrlItem{
-  public:
-    CtrlWifiStatus(uint8_t cmd): CtrlItem(cmd, NULL) {
-      _status = WiFi.status();        
-    }
-
-  protected:  
-    bool triggered() const{     
-      return _status != WiFi.status();
-    }
-
-    void getData(CtrlQueueData &data){                       
-      _status = WiFi.status();
-      data.setValue(_status);            
-    }    
-
-  private:
-    wl_status_t  _status;    
-};
 
 /////////////////////////////
 // Helpers
@@ -56,11 +33,21 @@ String getSTAHostDefaultName(const char *prefix);
 /////////////////////////////
 // Wifi configs and status
 
+//Network configuration
+#define MAX_HOST_NAME 33
+#define MAX_DATA_SIZE 28
+
+struct WIFI_NETWORK{
+  char host[MAX_HOST_NAME];      //Host name
+  uint16_t webPort;              //Web port 
+  uint8_t spare[MAX_DATA_SIZE];  //Custom data
+};
+
+
 class NtfBase;
 
 #define SSID_LENGHT 33
 #define PWD_LENGHT  65
-
 
 //Connect to WiFi
 struct WIFI_CONNECT{
@@ -76,23 +63,40 @@ struct WIFI_CONNECT{
 //AP 
 struct WIFI_AP_CONNECT{
   char ssid[SSID_LENGHT];
+  char pwd[PWD_LENGHT];
   uint32_t ipaddress;
   uint32_t gateway;
   uint32_t subnetMask;
 };
 
-//Use to store wifi configuration
-struct WIFI_CONFIG_ALL{
-  WIFI_CONNECT    wifiConnect;
-  WIFI_AP_CONNECT wifiAP;
-};
 
 
 ///////////////////////////////////////
 //Main standalone functions
-void initWiFi(const char *hostName, const char *apName);
+void initWiFi(const char *hostName = NULL, const char *apName = NULL );
+
 void connectWiFi(const WIFI_CONNECT &wcn);
+void disconnectWiFi();
+
 void connectWiFiAP(const WIFI_AP_CONNECT &wcn);
+void disconnectWiFiAP();
+
+//Config read/write
+bool readWiFiNetworkConfig(WIFI_NETWORK &dst);
+bool writeWiFiNetworkConfig(const WIFI_NETWORK &src);
+bool clearWiFiNetworkConfig();
+
+bool readWiFiConfig(WIFI_CONNECT &dst);
+bool writeWiFiConfig(const WIFI_CONNECT &src);
+bool clearWiFiConfig();
+
+bool readWiFiAPConfig(WIFI_AP_CONNECT &dst);
+bool writeWiFiAPConfig(const WIFI_AP_CONNECT &src);
+bool clearWiFiApConfig();
+
+
+
+
 
 ////////////////////////////////
 // Notifiations
@@ -105,30 +109,30 @@ struct WIFI_STATUS_STATION{
 struct WIFI_STATUS_AP{  
 };
 
-//Wifi status - for notification 
-struct WIFI_STATUS{
-  WIFI_STATUS_STATION station;
-  WIFI_STATUS_AP      ap;
-};
-
 //WiFi scan
 struct WIFI_SCAN{
 };
 
 
-
-
 //Wifi control
 #define EEMC_WIFI                 0x40    //Wifi commands
-#define EEMC_WIFI_STATUS          0x40    //WIFI status
-#define EEMC_WIFI_STATUS_CHANGE   0x41    //WIFI status
-#define EEMC_WIFI_SCAN            0x42    //WIFI scan networks
-#define EEMC_WIFI_AP_ON           0x43    //Enable AP
-#define EEMC_WIFI_AP_OFF          0x44    //Disable AP
-#define EEMC_WIFI_CONNECT         0x45    //Connect WIFI
-#define EEMC_WIFI_DISCONNECT      0x46    //Diconnect WIFI
-#define EEMC_WIFI_CFG_GET         0x47    //Get WIFI configuration
-#define EEMC_WIFI_CFG_CLEAR       0x48    //Clear config
+
+#define EEMC_WIFI_AP_STATUS       0x40    //WIFI status
+#define EEMC_WIFI_AP_CONNECT      0x41    //Enable AP
+#define EEMC_WIFI_AP_DISCONNECT   0x42    //Disable AP
+#define EEMC_WIFI_AP_CFG_GET      0x43    //Get AP configuration
+#define EEMC_WIFI_AP_CFG_SET      0x44    //Set AP configuration
+#define EEMC_WIFI_AP_CFG_CLEAR    0x45    //Clear AP configuration
+
+#define EEMC_WIFI_STATUS_CHANGE   0x46    //WIFI status change
+#define EEMC_WIFI_STATUS          0x47    //WIFI status
+#define EEMC_WIFI_SCAN            0x48    //WIFI scan networks
+#define EEMC_WIFI_CONNECT         0x49    //Connect WIFI
+#define EEMC_WIFI_DISCONNECT      0x4A    //Diconnect WIFI
+#define EEMC_WIFI_CFG_GET         0x4B    //Get Station configuration
+#define EEMC_WIFI_CFG_SET         0x4C    //Set Station configuration
+#define EEMC_WIFI_CFG_CLEAR       0x4D    //Clear Station configuration
+
 
 DECLARE_PARSE_ROUTINE(parseWiFiCmd)
 
@@ -137,31 +141,31 @@ DECLARE_PARSE_ROUTINE(parseWiFiCmd)
 // Wifi connection with config and auto functions
 // Needs to be instanciated 
 
-#define CFG_FILE_NAME_MAX 32
+bool onWiFiCmd(struct CtrlQueueItem &itm, NtfSet &ntf);
 
-class WiFiConnection{
+
+
+////////////////////////////////////
+// CtrlWifiStatus - wifi status change
+class CtrlWifiStatus: public CtrlItem{
   public:
-    WiFiConnection();
+    CtrlWifiStatus(): CtrlItem(EEMC_WIFI_STATUS_CHANGE, NULL) {
+      _status = WiFi.status();        
+    }
 
-    void init(const char *cfgFileName, const char *hostName, const char *apName);
-    bool onCmd(struct CtrlQueueItem &itm, NtfSet &ntf);
+  protected:  
+    bool triggered() const{     
+      return _status != WiFi.status();
+    }
 
-  protected:
-    void readAPConfig(WIFI_AP_CONNECT &dst);
-    void writeAPConfig(const WIFI_AP_CONNECT &src);
+    void getData(CtrlQueueData &data){                       
+      _status = WiFi.status();
+      data.setValue(_status);            
+    }    
 
-    void readWifiConfig(WIFI_CONNECT &dst);
-    void writeWifiConfig(const WIFI_CONNECT &src);
-    
   private:
-    char _cfgFileName[CFG_FILE_NAME_MAX];  //Name of config file    
-}; 
-
-
-//Configuration in JSON file - and all nested structure
-void convertFromJson(JsonVariantConst src, WIFI_CONNECT& dst);
-bool convertToJson(const WIFI_CONNECT& src, JsonVariant dst);
-
+    wl_status_t  _status;    
+};
 
 
 #endif //WIFI_ENABLED

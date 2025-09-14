@@ -1,7 +1,6 @@
 #ifndef __SOUNDCAPTURE_H
 #define __SOUNDCAPTURE_H
 
-#include "arduinolib.h"
 #include "Utils.h"
 
 //Constants and flags
@@ -22,16 +21,6 @@ inline uint16_t soundMax(uint16_t a, uint16_t b) {
 
 #define SOUND_MAX(a, b) soundMax(a, b) //Maximum value for sound
 
-
-//Get statistics from 
-enum SoundStatGet {
-  ssgMin = 0,
-  ssgMax,  
-  ssgAverage,
-  ssgAverageBass,
-  ssgAverageMid,
-  ssgAverageTreble,
-};
 
 
 ////////////////////////////
@@ -63,22 +52,21 @@ class SoundCapture{
 
     void scaleSound(sc_band_t &bands, uint8_t flags, uint16_t lower = SOUND_LOWER_MIN, uint16_t upper = SOUND_UPPER_MAX) const;
     
-    bool isBassPeak() const {return isBassSound(true, 50) && isPeak(ssgAverageBass, _bass, 64, 158); }           //Base peak detection
-    bool isMidPeak() const {return isMidSound(true, 50) && isPeak(ssgAverageMid, _mid, 158, 176); }              //Medium peak detection
-    bool isTreblePeak() const {return isTrebleSound(true, 50) && isPeak(ssgAverageTreble, _treble, 192, 176); }  //Treble peak detection
+    bool isBassPeak() const {return isBassSound(true, 50) && isPeak(_meanBass, _bass, 64, 158); }           //Base peak detection
+    bool isMidPeak() const {return isMidSound(true, 50) && isPeak(_meanMid, _mid, 158, 176); }              //Medium peak detection
+    bool isTreblePeak() const {return isTrebleSound(true, 50) && isPeak(_meanTreble, _treble, 192, 176); }  //Treble peak detection
 
-    uint16_t getMax() const { return SOUND_MAX(_max.getAverage(), 3 * _max.getStdDev()) ; } //Get current maximum value
-    uint16_t getMin() const { return SOUND_MAX(_min.getAverage(), _min.getStdDev()) ; }     //Get current minimum value
+    uint16_t getMax() const { return SOUND_MAX(_maxRaw.getAverage(), 3 * _maxRaw.getStdDev()) ; } //Get current maximum value
+    uint16_t getMin() const { return SOUND_MAX(_minRaw.getAverage(), _minRaw.getStdDev()) ; }     //Get current minimum value
 
   private:
-    bool isPeak(SoundStatGet ssg, uint16_t value, uint8_t sensForBanAg = 128, uint8_t sensForAvg = 255) const;   //Generic peak detection
-    const RunningStats& getStats(SoundStatGet ssg) const; //Get statistics by type    
+    bool isPeak(const RunningStats &stat, uint16_t value, uint8_t sensForBanAg = 128, uint8_t sensForAvg = 255) const;   //Generic peak detection
     void resetStats();                                    //Reset statistics                  
 
   private:
     //Min and Max
-    RunningStats _min;        //Running statistics for min
-    RunningStats _max {15, 100};  //Running statistics for max
+    RunningStats _minRaw;        //Running statistics for min
+    RunningStats _maxRaw;        //Running statistics for max
     uint16_t _curMin;         //Current minimum value
     uint16_t _curMax;         //Current maximum value
     uint8_t _countMM;         //Counter for min/max calculations

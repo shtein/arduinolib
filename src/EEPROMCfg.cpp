@@ -6,6 +6,7 @@
 #include "EEPROMCfg.h"
 #include "DbgTool.h"
 
+
 //EEPROM init/flushread/write
 
 #if defined (__AVR__)
@@ -18,9 +19,9 @@
       eeprom_write_byte( (uint8_t*) addr, byte); \
     }    
 
-#elif defined(ESP8266) ||  defined(ESP32) 
+#elif defined(ESP8266) || defined(ESP32) 
 //EEPROM routines ESP8266
-  #define EEPROM_INIT() EEPROM.begin(512);
+  #define EEPROM_INIT() EEPROM.begin(1536);
   #define EEPROM_FLUSH() EEPROM.commit();  
   #define EEPROM_READ_BYTE(addr, byte) byte = EEPROM.read(addr);
   #define EEPROM_WRITE_BYTE(addr, byte) EEPROM.write(addr, byte);
@@ -31,7 +32,6 @@
 // EEPROMConf
 EEPROMCfg::EEPROMCfg(size_t index){  
   EEPROM_INIT();
-
   _index = index;  
 }
 

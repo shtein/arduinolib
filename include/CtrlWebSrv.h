@@ -47,9 +47,9 @@ public:
   void send(); 
   
   void begin(const char *key = NULL);
-  void end(const char *key = NULL);
+  void end();
   void beginArray(const char *key = NULL);
-  void endArray(const char *key = NULL);
+  void endArray();
   
   void put(const char *key, bool v);
   void put(const char *key, uint8_t v);

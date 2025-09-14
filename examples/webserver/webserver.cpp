@@ -9,8 +9,6 @@
 
 CtrlPanel cp;
 NtfSet ntf;
-WiFiConnection wifi;
-
 
 
 void setup() {
@@ -22,15 +20,18 @@ void setup() {
 
   LittleFS.begin();
 
-  wifi.init("/wifi.json", DEFAULT_HOST("TEST"), DEFAULT_AP("TEST"));
+  //initWiFi(DEFAULT_HOST("TEST"), DEFAULT_AP("TEST"));
+  initWiFi(); 
+  static CtrlWifiStatus wifiStatus;
+  cp.addControl(&wifiStatus);
 
- /*
+ 
   webServer.begin(80);
 
   ADD_API_REQUEST_HANDLER(HTTP_GET, "/api");
 
   webServer.serveStatic("/", LittleFS, "/wifi_settings.html");
-  webServer.serveStatic("/favicon.ico", LittleFS, "/favicon.ico");
+  //webServer.serveStatic("/favicon.ico", LittleFS, "/favicon.ico");
 
   webServer.onNotFound([](){
     DBG_OUTLN("URI %s, method %d", webServer.uri().c_str(), (int)webServer.method());
@@ -40,22 +41,17 @@ void setup() {
     }
   });
   
+  //Wev
   static WebApiInput webIn;
-  static CtrlItemWebApi<TestParse> webCtrl(&webIn);
-
-
+  static CtrlItemWebApi<parseWiFiCmd> webCtrl(&webIn);
   cp.addControl(&webCtrl);
   ntf.addNtf(&webCtrl);
-*/   
-
-
+   
+  //Serial
   static SerialInput serIn;
   static CtrlItemSerial<parseWiFiCmd> serCtrl(&serIn);
   cp.addControl(&serCtrl);
   ntf.addNtf(&serCtrl);
-
-  static CtrlWifiStatus wifiStatus(EEMC_WIFI_STATUS);
-  cp.addControl(&wifiStatus);
 
   DBG_OUTLN("Started");
 }
@@ -68,7 +64,7 @@ void loop(){
 
   if(itm.cmd != EEMC_NONE){
     if(itm.cmd && EEMC_WIFI){
-      if(!wifi.onCmd(itm, ntf)){
+      if(!onWiFiCmd(itm, ntf)){
         ntf.put(CmdResponse<>{ itm.cmd, EEER_UNHANDLED } );
       }
     }
