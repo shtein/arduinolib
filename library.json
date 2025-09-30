@@ -15,8 +15,7 @@
   },
   "dependencies":
   {
-      "z3t0/IRremote": "*",
-      "ArduinoJson": "*"
+      "z3t0/IRremote": "*"
   },
   "version": "1.0.4",
   "license": "MIT",
