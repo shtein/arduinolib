@@ -43,7 +43,6 @@ struct WIFI_NETWORK{
   uint8_t spare[MAX_DATA_SIZE];  //Custom data
 };
 
-
 class NtfBase;
 
 #define SSID_LENGHT 33
@@ -73,7 +72,9 @@ struct WIFI_AP_CONNECT{
 
 ///////////////////////////////////////
 //Main standalone functions
-void initWiFi(const char *hostName = NULL, const char *apName = NULL );
+void initWiFi(const char *hostName = NULL, 
+              const char *apName = NULL, 
+              uint16_t webPort = 0);
 
 void connectWiFi(const WIFI_CONNECT &wcn);
 void disconnectWiFi();
@@ -115,23 +116,34 @@ struct WIFI_SCAN{
 
 
 //Wifi control
-#define EEMC_WIFI                 0x40    //Wifi commands
+#define WFMC_WIFI                 0x40    //Wifi commands
 
-#define EEMC_WIFI_AP_STATUS       0x40    //WIFI status
-#define EEMC_WIFI_AP_CONNECT      0x41    //Enable AP
-#define EEMC_WIFI_AP_DISCONNECT   0x42    //Disable AP
-#define EEMC_WIFI_AP_CFG_GET      0x43    //Get AP configuration
-#define EEMC_WIFI_AP_CFG_SET      0x44    //Set AP configuration
-#define EEMC_WIFI_AP_CFG_CLEAR    0x45    //Clear AP configuration
+//AP
+#define WFMC_WIFI_AP_STATUS       0x40    //WIFI status
+#define WFMC_WIFI_AP_CONNECT      0x41    //Enable AP
+#define WFMC_WIFI_AP_DISCONNECT   0x42    //Disable AP
+#define WFMC_WIFI_AP_CFG_GET      0x43    //Get AP configuration
+#define WFMC_WIFI_AP_CFG_SET      0x44    //Set AP configuration
+#define WFMC_WIFI_AP_CFG_CLEAR    0x45    //Clear AP configuration
 
-#define EEMC_WIFI_STATUS_CHANGE   0x46    //WIFI status change
-#define EEMC_WIFI_STATUS          0x47    //WIFI status
-#define EEMC_WIFI_SCAN            0x48    //WIFI scan networks
-#define EEMC_WIFI_CONNECT         0x49    //Connect WIFI
-#define EEMC_WIFI_DISCONNECT      0x4A    //Diconnect WIFI
-#define EEMC_WIFI_CFG_GET         0x4B    //Get Station configuration
-#define EEMC_WIFI_CFG_SET         0x4C    //Set Station configuration
-#define EEMC_WIFI_CFG_CLEAR       0x4D    //Clear Station configuration
+//Station
+#define WFMC_WIFI_STATUS_CHANGE   0x46    //WIFI status change
+#define WFMC_WIFI_STATUS          0x47    //WIFI status
+#define WFMC_WIFI_SCAN            0x48    //WIFI scan networks
+#define WFMC_WIFI_CONNECT         0x49    //Connect WIFI
+#define WFMC_WIFI_DISCONNECT      0x4A    //Diconnect WIFI
+#define WFMC_WIFI_CFG_GET         0x4B    //Get Station configuration
+#define WFMC_WIFI_CFG_SET         0x4C    //Set Station configuration
+#define WFMC_WIFI_CFG_CLEAR       0x4D    //Clear Station configuration
+
+//Network
+#define WFMC_WIFI_NET_CFG_GET     0x4E    //Set network configuration
+#define WFMC_WIFI_NET_CFG_SET     0x4F    //Get network configuration
+#define WFMC_WIFI_NET_CFG_CLEAR   0x50    //Clear network configuration
+
+//Reboot ESP
+#define WFMC_WIFI_REBOOT          0x5F
+
 
 
 DECLARE_PARSE_ROUTINE(parseWiFiCmd)
@@ -140,16 +152,13 @@ DECLARE_PARSE_ROUTINE(parseWiFiCmd)
 ////////////////////////////////////////////////////////
 // Wifi connection with config and auto functions
 // Needs to be instanciated 
-
 bool onWiFiCmd(struct CtrlQueueItem &itm, NtfSet &ntf);
-
-
 
 ////////////////////////////////////
 // CtrlWifiStatus - wifi status change
 class CtrlWifiStatus: public CtrlItem{
   public:
-    CtrlWifiStatus(): CtrlItem(EEMC_WIFI_STATUS_CHANGE, NULL) {
+    CtrlWifiStatus(): CtrlItem(WFMC_WIFI_STATUS_CHANGE, NULL) {
       _status = WiFi.status();        
     }
 

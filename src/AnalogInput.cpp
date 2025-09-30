@@ -64,7 +64,7 @@ PushButton::PushButton(uint8_t pin){
    pinMode(_pin, INPUT_PULLUP);
    digitalWrite(_pin, HIGH);  
   _value          = digitalRead(_pin); 
-  _valueOff       = digitalRead(_pin); //Remember initial state
+  _valueOff       = LOW; 
   _state          = BUTTON_STATE_OFF; 
   _millis         = 0;
   _millisDebounce = 0;

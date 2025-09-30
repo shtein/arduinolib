@@ -18,19 +18,18 @@ void setup() {
 
   //ESP.eraseConfig();
 
-  LittleFS.begin();
+  
 
   //initWiFi(DEFAULT_HOST("TEST"), DEFAULT_AP("TEST"));
-  initWiFi(); 
+  initWiFi(NULL, NULL, 8080); 
   static CtrlWifiStatus wifiStatus;
   cp.addControl(&wifiStatus);
-
- 
-  webServer.begin(80);
+  
 
   ADD_API_REQUEST_HANDLER(HTTP_GET, "/api");
 
-  webServer.serveStatic("/", LittleFS, "/wifi_settings.html");
+  //LittleFS.begin(); 
+  //webServer.serveStatic("/", LittleFS, "/wifi_settings.html");
   //webServer.serveStatic("/favicon.ico", LittleFS, "/favicon.ico");
 
   webServer.onNotFound([](){
@@ -63,7 +62,7 @@ void loop(){
 
 
   if(itm.cmd != EEMC_NONE){
-    if(itm.cmd && EEMC_WIFI){
+    if(itm.cmd && WFMC_WIFI){
       if(!onWiFiCmd(itm, ntf)){
         ntf.put(CmdResponse<>{ itm.cmd, EEER_UNHANDLED } );
       }

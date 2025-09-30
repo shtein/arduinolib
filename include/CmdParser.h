@@ -10,6 +10,7 @@ bool getTokens(char *str, const char *tokens[], size_t maxTokens, char separator
 bool checkTokenMatch(const char *token, const char *match);
 const char *getValueAfterToken(const char * tokens[], const char *match);
 bool strTo(const char *str, int &n);
+bool strTo(const char *str, uint16_t &n);
 bool strTo(const char *str, char *dest); 
 
 inline void setValue(const char *src, char *dst){
@@ -45,10 +46,10 @@ uint8_t FunctionName(const char *src[], CtrlQueueData &data){ \
   return EEMC_ERROR; \
 }
 
-#define PARSE_SUB_ROUTINE(FunctionName) \
+#define PARSE_SUB_ROUTINE(FunctionName, ...) \
   { \
     tokens ++; \
-    uint8_t cmd = FunctionName(tokens, data); \
+    uint8_t cmd = FunctionName(tokens, data, ##__VA_ARGS__); \
     if(cmd != EEMC_ERROR){ \
       return cmd; \
     } \
@@ -140,7 +141,7 @@ uint8_t FunctionName(const char *src[], CtrlQueueData &data){ \
     const char *v = getValueAfterToken(&tokens[1], token); \
     if(!format(v, obj.member)){  \
       _DM_MANDATORY(__VA_ARGS__) \
-      _DM_DEFAULT(obj.member, ##__VA_ARGS__); \
+      _DM_DEFAULT(obj.member, ##__VA_ARGS__) \
     } \
   }
 

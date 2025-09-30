@@ -2,6 +2,7 @@
 #define __NOTIFICATION_H
 
 #include "arduinolib.h"
+#include "Utils.h"
 
 /////////////////////////////
 // Base interface to send notifications

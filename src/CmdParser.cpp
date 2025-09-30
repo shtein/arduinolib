@@ -95,6 +95,15 @@ bool strTo(const char *str, int &n){
   return true;
 }
 
+bool strTo(const char *str, uint16_t &n){
+  if(!str)
+    return false;  
+
+  n = (uint16_t)strtoul(str, NULL, 10);
+  
+  return true;
+}
+
 bool strTo(const char *str, char *dest){
   if(!str)
     return false;

@@ -231,15 +231,23 @@ void checkWifiConfigAP(const char *apName){
   WiFi.softAPdisconnect(true);
 }
 
-void checkWifiConfig(const char *hostName){
+void checkWifiConfig(){ 
+  //Connect to WiFi if configured
+  WIFI_CONNECT wcn;
+  readWiFiConfig(wcn);
+  connectWiFi(wcn);
+}
+
+void checkNetworkConfig(const char *hostName, uint16_t webPort){
+
   //Wifi Network 
   WIFI_NETWORK wn;
   readWiFiNetworkConfig(wn);
 
+  //Init host name
   if(wn.host[0] == 0 && hostName){      
     //Set default host name from parameter
-    strncpy(wn.host, hostName, MAX_HOST_NAME);
-    writeWiFiNetworkConfig(wn);
+    strncpy(wn.host, hostName, MAX_HOST_NAME);    
   }
 
   WiFi.mode(WIFI_STA);
@@ -250,20 +258,27 @@ void checkWifiConfig(const char *hostName){
   WiFi.persistent(false);
 
   //Turn wifi off after initialization
-  WiFi.mode(WIFI_OFF); 
+  WiFi.mode(WIFI_OFF);
+  
+  //Web Server - non-zero webPort enables web server
+  if(wn.webPort == 0 && webPort){
+    wn.webPort = webPort;
+  }
 
+  if(wn.webPort){
+    webServer.begin(wn.webPort);
+  }
 
-  //Connect to WiFi if configured
-  WIFI_CONNECT wcn;
-  readWiFiConfig(wcn);
-  connectWiFi(wcn);
+  //Save configuration
+  writeWiFiNetworkConfig(wn);
 }
 
 //Init all
-void initWiFi(const char *hostName, const char *apName){
+void initWiFi(const char *hostName, const char *apName, uint16_t webPort){
   checkWifiConfigVersion();
+  checkNetworkConfig(hostName ? hostName : apName ? apName :  WiFi.softAPSSID().c_str(), webPort);
   checkWifiConfigAP(apName ? apName : WiFi.softAPSSID().c_str());
-  checkWifiConfig(hostName ? hostName : apName ? apName :  WiFi.softAPSSID().c_str());
+  checkWifiConfig();
 }
 
 
@@ -472,44 +487,54 @@ DEFINE_STR_PROGMEM(rs_CmdParam_DNS1,       "dns1")
 DEFINE_STR_PROGMEM(rs_CmdParam_DNS2,       "dns2")
 
 
+
+
 BEGIN_PARSE_ROUTINE(parseWiFiCmd)
   BEGIN_GROUP_TOKEN(rs_CmdParam_WiFi) 
     
-  
+    BEGIN_GROUP_TOKEN(rs_CmdParam_Network)                               //Network configuration
+      VALUE_IS_TOKEN(rs_CmdParam_Get, WFMC_WIFI_NET_CFG_GET)             //Get network configuration
+      BEGIN_OBJECT(rs_CmdParam_Set, WIFI_NETWORK, WFMC_WIFI_NET_CFG_SET) //Set network configuration
+        DATA_MEMBER(rs_CmdParam_Host, host, "")                          //Host name
+        DATA_MEMBER(rs_CmdParam_WepPort, webPort, 0)                     //Web port
+      END_OBJECT()
+      VALUE_IS_TOKEN(rs_CmdParam_Clear, WFMC_WIFI_NET_CFG_CLEAR) //Clear network configuration
+    END_GROUP_TOKEN()
+
     BEGIN_GROUP_TOKEN(rs_CmdParam_AP)                             //AP control
-      VALUE_IS_TOKEN(rs_CmdParam_Status, EEMC_WIFI_AP_STATUS)            //Get AP status
-      VALUE_IS_TOKEN(rs_CmdParam_Connect, EEMC_WIFI_AP_CONNECT)          //AP off               
-      VALUE_IS_TOKEN(rs_CmdParam_Disconnect, EEMC_WIFI_AP_DISCONNECT)     //AP off 
+      VALUE_IS_TOKEN(rs_CmdParam_Status, WFMC_WIFI_AP_STATUS)            //Get AP status
+      VALUE_IS_TOKEN(rs_CmdParam_Connect, WFMC_WIFI_AP_CONNECT)          //AP off               
+      VALUE_IS_TOKEN(rs_CmdParam_Disconnect, WFMC_WIFI_AP_DISCONNECT)     //AP off 
       BEGIN_GROUP_TOKEN(rs_CmdParam_Config)                               //AP configuration
         
-        VALUE_IS_TOKEN(rs_CmdParam_Get, EEMC_WIFI_AP_CFG_GET)                //Get AP configuration        
-        BEGIN_OBJECT(rs_CmdParam_Set, WIFI_AP_CONNECT, EEMC_WIFI_AP_CFG_SET) //Set AP configuration
+        VALUE_IS_TOKEN(rs_CmdParam_Get, WFMC_WIFI_AP_CFG_GET)                //Get AP configuration        
+        BEGIN_OBJECT(rs_CmdParam_Set, WIFI_AP_CONNECT, WFMC_WIFI_AP_CFG_SET) //Set AP configuration
           DATA_MEMBER(rs_CmdParam_SSID, ssid)                                   //SSID
           DATA_MEMBER(rs_CmdParam_Password, pwd, "")                            //Password
           DATA_MEMBER_AS_IP(rs_CmdParam_IP, ipaddress, 0)                       //IP address
           DATA_MEMBER_AS_IP(rs_CmdParam_Gateway, gateway, 0)                    //Gateway
           DATA_MEMBER_AS_IP(rs_CmdParam_SubnetMask, subnetMask, 0)              //Subnet mask
         END_OBJECT() 
-        VALUE_IS_TOKEN(rs_CmdParam_Clear, EEMC_WIFI_AP_CFG_CLEAR)             //Clear AP configuration
+        VALUE_IS_TOKEN(rs_CmdParam_Clear, WFMC_WIFI_AP_CFG_CLEAR)             //Clear AP configuration
       END_GROUP_TOKEN()      
     END_GROUP_TOKEN()
         
     BEGIN_GROUP_TOKEN(rs_CmdParam_Station)                          //Station control
-      VALUE_IS_TOKEN(rs_CmdParam_Status, EEMC_WIFI_STATUS)          //Get station status
-      VALUE_IS_TOKEN(rs_CmdParam_Scan, EEMC_WIFI_SCAN)              //Scan networks
-  
-      BEGIN_OBJECT(rs_CmdParam_Connect, WIFI_CONNECT, EEMC_WIFI_CONNECT)  //Connect
+      VALUE_IS_TOKEN(rs_CmdParam_Status, WFMC_WIFI_STATUS)          //Get station status
+      VALUE_IS_TOKEN(rs_CmdParam_Scan, WFMC_WIFI_SCAN)              //Scan networks
+      BEGIN_OBJECT(rs_CmdParam_Connect, WIFI_CONNECT, WFMC_WIFI_CONNECT)  //Connect
         DATA_MEMBER(rs_CmdParam_SSID, ssid)                                  //SSID
         DATA_MEMBER(rs_CmdParam_Password, pwd, "")                           //Password
+        DATA_MEMBER_AS_IP(rs_CmdParam_IP, ipaddress, 0)                       //IP address
         DATA_MEMBER_AS_IP(rs_CmdParam_Gateway, gateway, 0)                   //Gateway
         DATA_MEMBER_AS_IP(rs_CmdParam_SubnetMask, subnetMask, 0)             //Subnet mask
         DATA_MEMBER_AS_IP(rs_CmdParam_DNS1, dns1, 0)                         //DNS 1
         DATA_MEMBER_AS_IP(rs_CmdParam_DNS2, dns2, 0)                         //DNS 2
       END_OBJECT()    
-    VALUE_IS_TOKEN(rs_CmdParam_Disconnect, EEMC_WIFI_DISCONNECT)        //Disconnect from WiFi network
+    VALUE_IS_TOKEN(rs_CmdParam_Disconnect, WFMC_WIFI_DISCONNECT)        //Disconnect from WiFi network
       BEGIN_GROUP_TOKEN(rs_CmdParam_Config)                                 //Station configuration
-        VALUE_IS_TOKEN(rs_CmdParam_Get, EEMC_WIFI_CFG_GET)                     //Get station configuration
-        BEGIN_OBJECT(rs_CmdParam_Set, WIFI_CONNECT, EEMC_WIFI_CFG_SET)         //Set station configuration
+        VALUE_IS_TOKEN(rs_CmdParam_Get, WFMC_WIFI_CFG_GET)                     //Get station configuration
+        BEGIN_OBJECT(rs_CmdParam_Set, WIFI_CONNECT, WFMC_WIFI_CFG_SET)         //Set station configuration
           DATA_MEMBER(rs_CmdParam_SSID, ssid)                                   //SSID
           DATA_MEMBER(rs_CmdParam_Password, pwd, "")                            //Password
           DATA_MEMBER_AS_IP(rs_CmdParam_IP, ipaddress, 0)                       //IP address
@@ -518,7 +543,7 @@ BEGIN_PARSE_ROUTINE(parseWiFiCmd)
           DATA_MEMBER_AS_IP(rs_CmdParam_DNS1, dns1, 0)                          //DNS 1
           DATA_MEMBER_AS_IP(rs_CmdParam_DNS2, dns2, 0)                          //DNS 2
         END_OBJECT()
-        VALUE_IS_TOKEN(rs_CmdParam_Clear, EEMC_WIFI_CFG_CLEAR)              //Clear station configuration
+        VALUE_IS_TOKEN(rs_CmdParam_Clear, WFMC_WIFI_CFG_CLEAR)              //Clear station configuration
       END_GROUP_TOKEN()      
     
     END_GROUP_TOKEN()
@@ -536,11 +561,11 @@ bool isDNS2     = false; //DNS2 is set
 
 bool onWiFiCmd(struct CtrlQueueItem &itm, NtfSet &ntf){
   switch(itm.cmd){
-    case EEMC_WIFI_STATUS: // Retreieve current wifi status
+    case WFMC_WIFI_STATUS: // Retreieve current wifi status
       ntf.put(CmdResponse<WIFI_STATUS_STATION>{itm.cmd});      
     break;
 
-    case EEMC_WIFI_STATUS_CHANGE: { //Change of WiFi status       
+    case WFMC_WIFI_STATUS_CHANGE: { //Change of WiFi status       
       if(WiFi.status() == WL_CONNECTED){
         //Save last known configutation
         WIFI_CONNECT wc;
@@ -555,7 +580,6 @@ bool onWiFiCmd(struct CtrlQueueItem &itm, NtfSet &ntf){
         
         
         //Save configuration
-        DBG_OUTLN("Wifi Write Config");
         writeWiFiConfig(wc);
       }
 
@@ -563,9 +587,10 @@ bool onWiFiCmd(struct CtrlQueueItem &itm, NtfSet &ntf){
     }
     break;
 
-    case EEMC_WIFI_CONNECT:{ //Connect to WiFi network      
+    case WFMC_WIFI_CONNECT:{ //Connect to WiFi network      
 
-      WIFI_CONNECT *wc = (WIFI_CONNECT *)itm.data.str;          
+      WIFI_CONNECT *wc = (WIFI_CONNECT *)itm.data.str; 
+
       connectWiFi(*wc);
       ntf.put(CmdResponse<>{itm.cmd, EEER_DELAYED});  
       
@@ -576,12 +601,12 @@ bool onWiFiCmd(struct CtrlQueueItem &itm, NtfSet &ntf){
     }    
     break;
 
-    case EEMC_WIFI_DISCONNECT: //Disconnect 
+    case WFMC_WIFI_DISCONNECT: //Disconnect 
       disconnectWiFi();
       ntf.put(CmdResponse<>{itm.cmd, EEER_DELAYED});        
     break;
 
-    case EEMC_WIFI_CFG_GET:{ //Get WiFi configuration
+    case WFMC_WIFI_CFG_GET:{ //Get WiFi configuration
       WIFI_CONNECT wc;
       readWiFiConfig(wc);
 
@@ -589,7 +614,7 @@ bool onWiFiCmd(struct CtrlQueueItem &itm, NtfSet &ntf){
     }
     break;
 
-    case EEMC_WIFI_CFG_SET:{ //Set WiFi configuration
+    case WFMC_WIFI_CFG_SET:{ //Set WiFi configuration
       WIFI_CONNECT *wc = (WIFI_CONNECT *)itm.data.str;     
       writeWiFiConfig(*wc);
       readWiFiConfig(*wc);
@@ -598,7 +623,7 @@ bool onWiFiCmd(struct CtrlQueueItem &itm, NtfSet &ntf){
     }
     break;
 
-    case EEMC_WIFI_CFG_CLEAR: { //Clear WiFi configuration
+    case WFMC_WIFI_CFG_CLEAR: { //Clear WiFi configuration
       WIFI_CONNECT wc;
       clearWiFiConfig();      
       readWiFiConfig(wc);
@@ -606,12 +631,12 @@ bool onWiFiCmd(struct CtrlQueueItem &itm, NtfSet &ntf){
     }
     break;
 
-    case EEMC_WIFI_AP_STATUS: { //Get AP status
+    case WFMC_WIFI_AP_STATUS: { //Get AP status
       ntf.put(CmdResponse<WIFI_STATUS_AP>{itm.cmd}); 
     }
     break;
     
-    case EEMC_WIFI_AP_CONNECT:{ //Connect AP     
+    case WFMC_WIFI_AP_CONNECT:{ //Connect AP     
       WIFI_AP_CONNECT wcAp;
       
       readWiFiAPConfig(wcAp);
@@ -621,13 +646,13 @@ bool onWiFiCmd(struct CtrlQueueItem &itm, NtfSet &ntf){
     }
     break;
 
-    case EEMC_WIFI_AP_DISCONNECT: { //Disconnect AP 
+    case WFMC_WIFI_AP_DISCONNECT: { //Disconnect AP 
       disconnectWiFiAP();
       ntf.put(CmdResponse<WIFI_STATUS_AP>{itm.cmd});       
     }
     break;
 
-    case EEMC_WIFI_AP_CFG_GET:{ //Get AP configuration
+    case WFMC_WIFI_AP_CFG_GET:{ //Get AP configuration
       WIFI_AP_CONNECT wcAp;
       readWiFiAPConfig(wcAp);
 
@@ -635,7 +660,7 @@ bool onWiFiCmd(struct CtrlQueueItem &itm, NtfSet &ntf){
     }
     break;
 
-    case EEMC_WIFI_AP_CFG_SET:{ //Set AP configuration
+    case WFMC_WIFI_AP_CFG_SET:{ //Set AP configuration
       WIFI_AP_CONNECT *wcAp = (WIFI_AP_CONNECT *)itm.data.str;     
       writeWiFiAPConfig(*wcAp);
       readWiFiAPConfig(*wcAp);
@@ -644,7 +669,7 @@ bool onWiFiCmd(struct CtrlQueueItem &itm, NtfSet &ntf){
     }
     break;
   
-    case EEMC_WIFI_AP_CFG_CLEAR: { //Clear AP configuration
+    case WFMC_WIFI_AP_CFG_CLEAR: { //Clear AP configuration
       WIFI_AP_CONNECT wcAp;
       clearWiFiApConfig();
       readWiFiAPConfig(wcAp);
@@ -652,7 +677,45 @@ bool onWiFiCmd(struct CtrlQueueItem &itm, NtfSet &ntf){
     }
     break;
 
-    case EEMC_WIFI_SCAN:{
+    case WFMC_WIFI_NET_CFG_GET:{ //Get network configuration
+      WIFI_NETWORK wn;
+      readWiFiNetworkConfig(wn);
+
+      ntf.put(CmdResponse<WIFI_NETWORK>{itm.cmd, wn}); 
+    }
+    break;
+
+    case WFMC_WIFI_NET_CFG_SET:{ //Set network configuration
+      WIFI_NETWORK *wn = (WIFI_NETWORK *)itm.data.str;     
+
+      //Copy only what is specified
+      WIFI_NETWORK wnOld;
+      readWiFiNetworkConfig(wnOld);
+
+      //Host
+      if(wn->host[0] != 0){
+        strcpy(wnOld.host, wn->host);
+      }
+
+      if(wn->webPort != 0){
+        wnOld.webPort = wn->webPort;
+      }
+
+      writeWiFiNetworkConfig(wnOld);
+      
+
+      ntf.put(CmdResponse<WIFI_NETWORK>{itm.cmd, wnOld}); 
+    }
+
+    case WFMC_WIFI_NET_CFG_CLEAR: { //Clear network configuration
+      WIFI_NETWORK wn;
+      clearWiFiNetworkConfig();
+      readWiFiNetworkConfig(wn);
+      ntf.put(CmdResponse<WIFI_NETWORK>{itm.cmd, wn}); 
+    }
+    break;
+
+    case WFMC_WIFI_SCAN:{
       switch(WiFi.scanComplete()){
         case WIFI_SCAN_FAILED:
           WiFi.scanNetworks(true, true);
@@ -668,8 +731,10 @@ bool onWiFiCmd(struct CtrlQueueItem &itm, NtfSet &ntf){
       }
     }
     break;
-
-
+    
+    case WFMC_WIFI_REBOOT:
+      ESP.restart();
+    break;
 
     default: 
     return false;
