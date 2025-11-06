@@ -11,7 +11,7 @@ SerialInput::SerialInput(){
 
   //Init serial
   Serial.begin(57600);
-    while (!Serial);  
+  while (!Serial);  
 
   //Reset data
   reset();
@@ -200,3 +200,104 @@ void NtfSerial::put(const char *key, const char *v){
   STR_PRN_VAL("%s", key, v);
 }
 
+///////////////////////////////////////////////////
+// SerailInputBinary - binary protocol input from serial port
+
+SerialInputBinary::SerialInputBinary(){  
+  //In case it was already initialized
+  Serial.end(); 
+
+  //Init serial
+  Serial.begin(57600);
+  while (!Serial);  
+
+  //Reset data
+  reset();
+}
+
+void SerialInputBinary::reset(){  
+  _state       = SI_STATE_WAIT;
+  _lenRead     = 0;
+  _lenExpected = 0;
+  memset(_bufRead, 0, sizeof(_bufRead));
+}
+
+//Define protocol bytes
+#define SI_START_1   0x55
+#define SI_START_2   0xAA
+
+#define SI_END_1     0x5A
+#define SI_END_2     0xA5
+
+//Protocol - SI_START_1, SI_START_2, LEN, DATA..., SI_END_1, SI_END_2
+//LEN - length of DATA only, max SI_BUFF_LEN
+
+//Examlple: CtrlQueueItem
+//55AA16010000000000000000000000000000000000000000005AA5
+//55 AA - Start
+//16 - datalength (22 bytes)
+//01 - cmd
+//00... - CtrlQueueData
+//5A A5 - finish
+
+void SerialInputBinary::read(){  
+  
+  //If already ready, reset first
+  if(_state == SI_STATE_READY){
+    reset();
+  }
+
+  while (Serial.available()){
+    uint8_t c = Serial.read();  
+  
+    switch (_state){      
+      case SI_STATE_WAIT:
+        if(c == SI_START_1){ //First start byte received
+          _state = SI_STATE_SB;
+        }
+      break;
+      case SI_STATE_SB:
+        if(c == SI_START_2){ //Second start byte received
+          _state = SI_STATE_LEN;
+        }
+        else{ //Invalid
+          reset();
+        }
+      break;
+      case SI_STATE_LEN:         
+        if(c > 0 && c <= SI_BUFF_LEN){ //Length byte       
+          _lenExpected = c;
+          _lenRead     = 0;
+          _state       = SI_STATE_DATA;
+        }
+        else{ //Invalid
+          reset();
+        }
+      break;
+      case SI_STATE_DATA:        
+        if(_lenRead < _lenExpected){ //Data byte
+          _bufRead[_lenRead++] = c;          
+        }
+        else if(c == SI_END_1){ //First end byte received
+          _state = SI_STATE_SE;
+        }
+        else{ //Invalid
+          reset();
+        }        
+      break;
+      case SI_STATE_SE:
+        if(c == SI_END_2){ //Second end byte received
+          _state = SI_STATE_READY;
+        }
+        else{ //Invalid
+          reset();
+        }        
+      break;        
+    }
+
+    //If ready, stop reading
+    if(isReady()){
+      break; 
+    }
+  }
+}

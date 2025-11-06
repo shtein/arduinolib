@@ -10,7 +10,7 @@
 
 
 //////////////////////////////
-//Input from serial port
+//Input from serial port - reading from terminal
 #define SI_CR          '\r'
 #define SI_LF          '\n'
 #define SI_BS          '\b'
@@ -70,13 +70,70 @@ private:
 };
 
 
-
-
-
 /////////////////////////////////////////
 // Control from serial buffer
 // Multi-command interface
 template <uint8_t (*PARSER) (const char *tokens[], CtrlQueueData &data)>
 using CtrlItemSerial = CtrlItemMultiCommand<SerialInput, NtfSerial, PARSER>;
+
+////////////////////////////////////////
+// Input from serial port - binary protocol
+
+#define SI_STATE_WAIT     0x00
+#define SI_STATE_SB       0x01
+#define SI_STATE_LEN      0x02
+#define SI_STATE_DATA     0x03
+#define SI_STATE_SE       0x04
+#define SI_STATE_READY    0x05
+
+
+
+class SerialInputBinary: public BaseInput{
+  public:
+    SerialInputBinary();  
+
+    void read();
+    bool isReady() const { return _state == SI_STATE_READY; }
+    void reset();
+
+    const uint8_t * getData() const{ return _bufRead; }
+    uint8_t   getDataLen() const { return _lenRead; }
+
+  protected:
+    protected:   
+    uint8_t  _bufRead[SI_BUFF_LEN]; 
+    uint8_t _lenRead;
+    uint8_t _lenExpected;
+    uint8_t _state;
+};
+
+
+///////////////////////////////////////////////
+// CtrlItemSerialBinary - control item for binary serial input
+class CtrlItemSerialBinary: public CtrlItem{
+  public:
+    CtrlItemSerialBinary(SerialInputBinary *input):
+      CtrlItem(EEMC_NONE, input){
+    }
+
+  protected:
+    bool triggered() const{
+      return ((SerialInputBinary *)_input)->isReady();
+    }
+
+    void getData(CtrlQueueData &data){
+      SerialInputBinary *in = (SerialInputBinary *)_input;
+
+      if(in->getDataLen() != sizeof(CtrlQueueItem)){
+        _cmd = EEMC_ERROR;
+        return;
+      }
+
+      const CtrlQueueItem * ctrl = (const CtrlQueueItem *)in->getData();
+      _cmd = ctrl->cmd;
+      data = ctrl->data;
+      
+    }
+};
 
 #endif //__CTRL_SERIAL_H
