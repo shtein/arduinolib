@@ -205,7 +205,7 @@ void NtfSerial::put(const char *key, const char *v){
 
 #if defined(__AVR_ATmega32U4__)
 // Pro Micro / Leonardo / Micro, etc.
-  #define Serial Serial1
+  #define SerialBin Serial1
 #else
 // Uno, Nano, etc. (no Serial1)
   #define SerialBin Serial
