@@ -25,13 +25,10 @@ public:
   void begin_F(const char *key = NULL);
   virtual void end() = 0;
   
-
   virtual void beginArray(const char *key = NULL) = 0;
   void beginArray_F(const char *key = NULL);
   virtual void endArray() = 0;
   
-
-
   //Primitives
   virtual void put(const char *key, bool v) = 0;
   virtual void put(const char *key, uint8_t v) = 0;
@@ -46,8 +43,6 @@ public:
   void put(const char *key, const __FlashStringHelper *v);
   void put_FP(const char *key, const char *v);
 
-
-  
   template <class T>
   void put(const char *key, const T &t);
 
@@ -117,7 +112,7 @@ void NtfBase::put(const char *key, const T *t, size_t size){
   //Remeber current context
   CONTEXT ctx = getContext();
 
-  //Init context for array;
+  //Init context for array
   _context.flags      = NTF_CTX_ARRAY;
   _context.arrayIndex = 0;
 

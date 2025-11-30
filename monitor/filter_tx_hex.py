@@ -17,3 +17,5 @@ class Filter(DeviceMonitorFilterBase):
 
     def rx(self, text):
         return text                   # leave device output as text
+
+

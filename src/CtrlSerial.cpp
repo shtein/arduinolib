@@ -203,13 +203,21 @@ void NtfSerial::put(const char *key, const char *v){
 ///////////////////////////////////////////////////
 // SerailInputBinary - binary protocol input from serial port
 
+#if defined(__AVR_ATmega32U4__)
+// Pro Micro / Leonardo / Micro, etc.
+  #define Serial Serial1
+#else
+// Uno, Nano, etc. (no Serial1)
+  #define SerialBin Serial
+#endif
+
 SerialInputBinary::SerialInputBinary(){  
   //In case it was already initialized
-  Serial.end(); 
+  SerialBin.end(); 
 
   //Init serial
-  Serial.begin(57600);
-  while (!Serial);  
+  SerialBin.begin(57600);
+  //while (!SerialBin);  
 
   //Reset data
   reset();
@@ -247,8 +255,8 @@ void SerialInputBinary::read(){
     reset();
   }
 
-  while (Serial.available()){
-    uint8_t c = Serial.read();  
+  while (SerialBin.available()){
+    uint8_t c = SerialBin.read();  
   
     switch (_state){      
       case SI_STATE_WAIT:
