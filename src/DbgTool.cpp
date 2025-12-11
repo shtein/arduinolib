@@ -20,7 +20,7 @@
   #pragma message "Warning: debugging via SoftwareSerial is enabled"
 #endif
 
-
+#if defined(DBG_TO_SERIAL) || defined(DBG_TO_SW_SERIAL)
 void _dbgInit(){
   DBG_SERIAL.begin(DBG_SERIAL_SPEED);
 }
@@ -37,5 +37,5 @@ void _dbgOut(const __FlashStringHelper *fmt, ...){
   
   DBG_SERIAL.print(buf);
 }
-
+#endif // DBG_TO_SERIAL || DBG_TO_SW_SERIAL
 
