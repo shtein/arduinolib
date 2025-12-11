@@ -6,12 +6,8 @@
 // Serial input
 
 SerialInput::SerialInput(){  
-  //In case it was already initialized
-  Serial.end(); 
-
   //Init serial
   Serial.begin(57600);
-  while (!Serial);  
 
   //Reset data
   reset();
@@ -212,12 +208,8 @@ void NtfSerial::put(const char *key, const char *v){
 #endif
 
 SerialInputBinary::SerialInputBinary(){  
-  //In case it was already initialized
-  SerialBin.end(); 
-
   //Init serial
   SerialBin.begin(57600);
-  //while (!SerialBin);  
 
   //Reset data
   reset();

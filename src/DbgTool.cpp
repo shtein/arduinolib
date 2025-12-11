@@ -23,7 +23,6 @@
 
 void _dbgInit(){
   DBG_SERIAL.begin(DBG_SERIAL_SPEED);
-  //while (!Serial);  //This is needed for Arduino Leonardo
 }
 
 #define BUF_SIZE 64
