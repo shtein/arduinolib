@@ -1,7 +1,5 @@
 
-#ifdef __AVR__
-#include <avr/io.h>
-#endif 
+
 
 #include "EEPROMCfg.h"
 #include "DbgTool.h"
@@ -13,11 +11,21 @@
 //EEPROM routines for ATMEGAXXX
   #define EEPROM_INIT()
   #define EEPROM_FLUSH()
+
+#if defined(__AVR_ATmega4809__)  
+  #include <EEPROM.h>
+
+  #define EEPROM_READ_BYTE(addr, byte) byte = EEPROM.read(addr);
+  #define EEPROM_WRITE_BYTE(addr, byte) EEPROM.write(addr, byte);
+#else
+  #include <avr/io.h>
+
   #define EEPROM_READ_BYTE(addr, byte) byte = eeprom_read_byte( (uint8_t*) _index );
   #define EEPROM_WRITE_BYTE(addr, byte) \
     if(eeprom_read_byte( (uint8_t*) addr ) != byte){ \
       eeprom_write_byte( (uint8_t*) addr, byte); \
     }    
+#endif
 
 #elif defined(ESP8266) || defined(ESP32) 
 //EEPROM routines ESP8266
