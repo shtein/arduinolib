@@ -1,6 +1,3 @@
-
-
-
 #include "EEPROMCfg.h"
 #include "DbgTool.h"
 
@@ -28,7 +25,8 @@
 #endif
 
 #elif defined(ESP8266) || defined(ESP32) 
-//EEPROM routines ESP8266
+  #include <EEPROM.h>
+
   #define EEPROM_INIT() EEPROM.begin(1536);
   #define EEPROM_FLUSH() EEPROM.commit();  
   #define EEPROM_READ_BYTE(addr, byte) byte = EEPROM.read(addr);

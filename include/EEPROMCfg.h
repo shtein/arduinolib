@@ -3,10 +3,7 @@
 
 #include "arduinolib.h"
 
-//A workaround for including EEPROM Library 
-#if defined(ESP8266) || defined(ESP32)
-  #include <EEPROM.h>
-#endif 
+
 
 ////////////////////////////////
 // EEPROMConf

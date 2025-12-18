@@ -86,8 +86,6 @@ using CtrlItemSerial = CtrlItemMultiCommand<SerialInput, NtfSerial, PARSER>;
 #define SI_STATE_SE       0x04
 #define SI_STATE_READY    0x05
 
-
-
 class SerialInputBinary: public BaseInput{
   public:
     SerialInputBinary();  
