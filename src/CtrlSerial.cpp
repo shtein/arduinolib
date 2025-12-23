@@ -371,7 +371,6 @@ void CtrlQueueSerialBinary::sendCtrlCommand(const CtrlQueueItem &item){
 
 void CtrlQueueSerialBinary::sendCtrlCommand(uint8_t cmd, uint8_t flag, int value, int min, int max){
   CtrlQueueItem item;
-  memset(&item, 0, sizeof(CtrlQueueItem));
 
   item.cmd = cmd;
   item.data.flag = flag;
