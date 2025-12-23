@@ -215,89 +215,133 @@ SerialInputBinary::SerialInputBinary(){
   reset();
 }
 
-void SerialInputBinary::reset(){  
-  _state       = SI_STATE_WAIT;
-  _lenRead     = 0;
-  _lenExpected = 0;
+void SerialInputBinary::reset(){    
+  _lenRead  = 0;  
   memset(_bufRead, 0, sizeof(_bufRead));
 }
 
 //Define protocol bytes
-#define SI_START_1   0x55
-#define SI_START_2   0xAA
+#define SI_START_1       0x55
+#define SI_START_2       0xAA
 
-#define SI_END_1     0x5A
-#define SI_END_2     0xA5
+#define SI_END_1         0x5A
+#define SI_END_2         0xA5
 
-//Protocol - SI_START_1, SI_START_2, LEN, DATA..., SI_END_1, SI_END_2
+#define SI_OK_1          0x6F
+#define SI_OK_2          0x6B
+
+#define SI_MAX_WAIT_TIME 250
+
+//Protocol:
+// ==> SI_START_1, SI_START_2
+// <<== SI_OK_1, SI_OK_2
+// ==>LEN, DATA..., SI_END_1, SI_END_2
+
 //LEN - length of DATA only, max SI_BUFF_LEN
 
 //Examlple: CtrlQueueItem
 //55AA16010000000000000000000000000000000000000000005AA5
 //55 AA - Start
+//6F 6B - OK
 //16 - datalength (22 bytes)
 //01 - cmd
 //00... - CtrlQueueData
 //5A A5 - finish
 
+//Internal states
+#define SI_STATE_WAIT     0x00
+#define SI_STATE_SB       0x01
+#define SI_STATE_LEN      0x02
+#define SI_STATE_DATA     0x03
+#define SI_STATE_SE       0x04
+#define SI_STATE_READY    0x05
+
+
 void SerialInputBinary::read(){  
-  
   //If already ready, reset first
-  if(_state == SI_STATE_READY){
+  if(isReady()){
     reset();
   }
 
-  while (SerialBin.available()){
-    uint8_t c = SerialBin.read();  
+  uint8_t state = SI_STATE_WAIT;
+
+  //First - recive control header 55 AA
+  while(SerialBin.available() ){
+    uint8_t c = SerialBin.read(); 
+    
+    if(state == SI_STATE_WAIT && c == SI_START_1){    //First start byte received    
+      state = SI_STATE_SB;
+    }
+    else if(state == SI_STATE_SB && c == SI_START_2){ //Second start byte received
+      state = SI_STATE_LEN;      
+      break; //Endof cycle
+    }
+    else{ //Invalid
+      state = SI_STATE_WAIT;
+    }
+  }
+
+  //Exit if not in data state
+  if(state != SI_STATE_LEN){
+    return; 
+  }
+
+  //Second - send confirmation on receiving control header
+  SerialBin.write(SI_OK_1);
+  SerialBin.write(SI_OK_2);    
   
-    switch (_state){      
-      case SI_STATE_WAIT:
-        if(c == SI_START_1){ //First start byte received
-          _state = SI_STATE_SB;
-        }
-      break;
-      case SI_STATE_SB:
-        if(c == SI_START_2){ //Second start byte received
-          _state = SI_STATE_LEN;
-        }
-        else{ //Invalid
-          reset();
-        }
-      break;
-      case SI_STATE_LEN:         
-        if(c > 0 && c <= SI_BUFF_LEN){ //Length byte       
-          _lenExpected = c;
-          _lenRead     = 0;
-          _state       = SI_STATE_DATA;
+  //Third - recive data, within timeout
+  unsigned long startTime = millis();
+  uint8_t lenExpected = 0;
+
+  while(millis() < startTime + SI_MAX_WAIT_TIME){ //Stay within timeout
+
+    while(SerialBin.available()){
+      
+      uint8_t c = SerialBin.read(); 
+
+      if(state == SI_STATE_LEN){ //Length byte
+        if(c > 0 && c <= SI_BUFF_LEN){ 
+          lenExpected = c;
+          state       = SI_STATE_DATA;          
         }
         else{ //Invalid
-          reset();
+          state = SI_STATE_WAIT;      
+          break; //End of cycle
         }
-      break;
-      case SI_STATE_DATA:        
-        if(_lenRead < _lenExpected){ //Data byte
-          _bufRead[_lenRead++] = c;          
+      }
+      else if(state == SI_STATE_DATA){ //Data byte
+        if(_lenRead < lenExpected){ 
+          _bufRead[_lenRead++] = c;              
         }
         else if(c == SI_END_1){ //First end byte received
-          _state = SI_STATE_SE;
+          state = SI_STATE_SE;          
         }
         else{ //Invalid
-          reset();
+          state = SI_STATE_WAIT;
+          break; //End of cycle
         }        
-      break;
-      case SI_STATE_SE:
-        if(c == SI_END_2){ //Second end byte received
-          _state = SI_STATE_READY;
+      }
+      else if(state == SI_STATE_SE){ //Second end byte received
+        if(c == SI_END_2){ 
+          state = SI_STATE_READY;
+          
+          break;
         }
         else{ //Invalid
-          reset();
+          state = SI_STATE_WAIT;
+          
+          break; //End of cycle
         }        
-      break;        
+      }
     }
 
-    //If ready, stop reading
-    if(isReady()){
-      break; 
+    if(state == SI_STATE_WAIT || state == SI_STATE_READY){ //Invalid state      
+      break; //End of cycle    
     }
+  }
+
+  if(state != SI_STATE_READY){
+    reset();  
   }
 }

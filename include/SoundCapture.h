@@ -1,7 +1,7 @@
 #ifndef __SOUNDCAPTURE_H
 #define __SOUNDCAPTURE_H
 
-#include "Utils.h"
+#include "alutils.h"
 
 //Constants and flags
 #define SC_MAX_BANDS        7    //Number of bands

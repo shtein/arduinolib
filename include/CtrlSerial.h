@@ -2,7 +2,7 @@
 #define __CTRL_SERIAL_H
 
 #include "arduinolib.h"
-#include "Utils.h"
+#include "alutils.h"
 #include "AnalogInput.h"
 #include "Controls.h"
 #include "Notification.h"
@@ -79,19 +79,12 @@ using CtrlItemSerial = CtrlItemMultiCommand<SerialInput, NtfSerial, PARSER>;
 ////////////////////////////////////////
 // Input from serial port - binary protocol
 
-#define SI_STATE_WAIT     0x00
-#define SI_STATE_SB       0x01
-#define SI_STATE_LEN      0x02
-#define SI_STATE_DATA     0x03
-#define SI_STATE_SE       0x04
-#define SI_STATE_READY    0x05
-
 class SerialInputBinary: public BaseInput{
   public:
     SerialInputBinary();  
 
     void read();
-    bool isReady() const { return _state == SI_STATE_READY; }
+    bool isReady() const { return _lenRead != 0; }
     void reset();
 
     const uint8_t * getData() const{ return _bufRead; }
@@ -101,8 +94,6 @@ class SerialInputBinary: public BaseInput{
     protected:   
     uint8_t  _bufRead[SI_BUFF_LEN]; 
     uint8_t _lenRead;
-    uint8_t _lenExpected;
-    uint8_t _state;
 };
 
 
