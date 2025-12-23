@@ -3,6 +3,7 @@
 
 #include "arduinolib.h"
 
+
 #if defined(DBG_TO_SERIAL) || defined(DBG_TO_SW_SERIAL)
   void _dbgInit();
   void _dbgOut(const __FlashStringHelper *fmt, ...);
@@ -15,7 +16,7 @@
 #else
   #define DBG_INIT() 
   #define DBG_OUT(...)
-  #define DBG_OUTLN(...)
+  #define DBG_OUTLN(...)  
 #endif
 
 

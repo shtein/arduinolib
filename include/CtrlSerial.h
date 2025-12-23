@@ -78,7 +78,6 @@ using CtrlItemSerial = CtrlItemMultiCommand<SerialInput, NtfSerial, PARSER>;
 
 ////////////////////////////////////////
 // Input from serial port - binary protocol
-
 class SerialInputBinary: public BaseInput{
   public:
     SerialInputBinary();  
@@ -95,7 +94,6 @@ class SerialInputBinary: public BaseInput{
     uint8_t  _bufRead[SI_BUFF_LEN]; 
     uint8_t _lenRead;
 };
-
 
 ///////////////////////////////////////////////
 // CtrlItemSerialBinary - control item for binary serial input
@@ -124,5 +122,32 @@ class CtrlItemSerialBinary: public CtrlItem{
       
     }
 };
+
+#ifdef ESPHOME_CTRL
+/////////////////////////////////////////////////////////
+// CtrlQueueSerialBinary - queue for binary serial input
+// used with ESPHomeA
+class CtrlQueueSerialBinary {
+public:
+  CtrlQueueSerialBinary();
+
+  void sendCtrlCommand(uint8_t cmd, uint8_t flag = 0, int value = 0, int min = 0, int max = 0);
+  void loop();
+
+private:
+  void sendCtrlCommand(const CtrlQueueItem &item);
+
+  void onIdle();
+  void onWaitOk();
+  void onHeader();
+  void onData();
+
+private:
+  CtrlQueueItem _itm;
+  uint8_t       _state;
+  unsigned long _time;
+};
+#endif //ESPHOME_CTRL
+
 
 #endif //__CTRL_SERIAL_H

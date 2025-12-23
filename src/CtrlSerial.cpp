@@ -345,3 +345,121 @@ void SerialInputBinary::read(){
     reset();  
   }
 }
+
+#ifdef ESPHOME_CTRL
+/////////////////////////////////////
+// CtrlQueueSerialBinary
+
+#define CS_STATE_IDLE        0
+#define CS_STATE_HEADER      1
+#define CS_STATE_WAIT_OK     2
+#define CS_STATE_DATA        3
+
+#define CS_MAX_WAIT 1000
+
+
+CtrlQueueSerialBinary::CtrlQueueSerialBinary() {
+  _state   = CS_STATE_IDLE;
+  _time   = 0;
+}
+
+
+void CtrlQueueSerialBinary::sendCtrlCommand(const CtrlQueueItem &item){
+  _state = CS_STATE_HEADER;
+  _itm   = item;
+}
+
+void CtrlQueueSerialBinary::sendCtrlCommand(uint8_t cmd, uint8_t flag, int value, int min, int max){
+  CtrlQueueItem item;
+  memset(&item, 0, sizeof(CtrlQueueItem));
+
+  item.cmd = cmd;
+  item.data.flag = flag;
+  item.data.value = value;
+  item.data.min = min;
+  item.data.max = max;
+
+  sendCtrlCommand(item);
+}
+
+// Called when state is CS_STATE_IDLE
+void CtrlQueueSerialBinary::onIdle(){
+  //Drain serial buffer
+  while(Serial.available() > 0){
+    Serial.read();        
+  }
+}
+
+// Called when state is CS_STATE_HEADER
+void CtrlQueueSerialBinary::onHeader(){
+  // Send start control bytes
+  Serial.write(SI_START_1);
+  Serial.write(SI_START_2);
+
+  //Change state and remember time
+  _state = CS_STATE_WAIT_OK;
+  _time = millis();
+}
+
+// Called when state is CS_STATE_WAIT_OK
+void CtrlQueueSerialBinary::onWaitOk(){
+  //Nothing came during timeout
+  if(_time + CS_MAX_WAIT < millis()){
+    _state = CS_STATE_IDLE;
+    return;
+  }
+
+  //Check if we have data in serial buffer
+  if(!Serial.available()){
+    return;
+  }
+
+  //Read data
+  uint8_t ok[2] = {0, 0};
+  if(Serial.readBytes(ok, 2) != 2 || ok[0] != SI_OK_1 || ok[1] != SI_OK_2){
+    //Not ok, go back to idle
+    _state = CS_STATE_IDLE;
+    
+  }
+  else{
+  _state = CS_STATE_DATA; 
+  
+  }
+}
+
+
+// Called when state is CS_STATE_DATA
+void CtrlQueueSerialBinary::onData(){
+  //Send data length and data
+  Serial.write((uint8_t)sizeof(CtrlQueueItem));  
+  Serial.write((uint8_t*)&_itm, sizeof(CtrlQueueItem));
+
+  //Send end control bytes
+  Serial.write(SI_END_1);
+  Serial.write(SI_END_2);
+
+  _state = CS_STATE_IDLE;
+}
+
+
+void CtrlQueueSerialBinary::loop(){
+  switch(_state){
+    case CS_STATE_IDLE:
+      onIdle();
+    break;
+
+    case CS_STATE_HEADER:
+      onHeader();
+    break;
+
+    case CS_STATE_WAIT_OK:
+      onWaitOk();
+    break;
+
+    case CS_STATE_DATA:
+      onData();
+    break;
+  }
+}
+
+#endif // ESPHOME_CTRL
