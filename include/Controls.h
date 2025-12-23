@@ -37,14 +37,14 @@
 
 ////////////////////////////////////
 // Control queue data
-struct CtrlQueueData{
+struct __attribute__((packed)) CtrlQueueData{
   uint8_t flag;   //Flag that shows how to interpret the value: absolute number, inrement, etc 
   union{
-    int   value;              //integer value
-    char  str[MAX_STR_VALUE]; //string value or packed object
+    int16_t   value;              //integer value
+    char      str[MAX_STR_VALUE]; //string value or packed object
   };
-  int     min;    //Value minimum
-  int     max;    //Value maximum   
+  int16_t     min;    //Value minimum
+  int16_t     max;    //Value maximum   
   
   CtrlQueueData(){
       flag   = CTF_NONE;
@@ -105,7 +105,7 @@ struct CtrlQueueData{
 
 ////////////////////////////////////
 // Control queue element
-struct CtrlQueueItem {
+struct __attribute__((packed))CtrlQueueItem {
   uint8_t       cmd;    // Command
   CtrlQueueData data;   // Data
 

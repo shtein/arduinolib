@@ -7,7 +7,6 @@
 
 #ifdef WIFI_ENABLED
 
-
 //////////////////////////////////
 // WiFi configuration 
 
