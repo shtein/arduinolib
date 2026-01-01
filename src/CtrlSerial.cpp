@@ -356,17 +356,19 @@ void SerialInputBinary::read(){
 #define CS_STATE_DATA        3
 
 #define CS_MAX_WAIT 1000
-
+#define MAX_RETRIES 5
 
 CtrlQueueSerialBinary::CtrlQueueSerialBinary() {
   _state   = CS_STATE_IDLE;
-  _time   = 0;
+  _time    = 0;
+  _retries = 0;
 }
 
 
 void CtrlQueueSerialBinary::sendCtrlCommand(const CtrlQueueItem &item){
-  _state = CS_STATE_HEADER;
-  _itm   = item;
+  _state   = CS_STATE_HEADER;
+  _itm     = item;
+  _retries = 0;
 }
 
 void CtrlQueueSerialBinary::sendCtrlCommand(uint8_t cmd, uint8_t flag, int value, int min, int max){
@@ -404,6 +406,13 @@ void CtrlQueueSerialBinary::onHeader(){
 void CtrlQueueSerialBinary::onWaitOk(){
   //Nothing came during timeout
   if(_time + CS_MAX_WAIT < millis()){
+    //Retry a few times
+    _retries ++;
+    if(_retries < MAX_RETRIES){
+      _state = CS_STATE_HEADER;
+      return;
+    }
+    //Give up, go to idle
     _state = CS_STATE_IDLE;
     return;
   }
@@ -421,8 +430,7 @@ void CtrlQueueSerialBinary::onWaitOk(){
     
   }
   else{
-  _state = CS_STATE_DATA; 
-  
+    _state = CS_STATE_DATA; 
   }
 }
 

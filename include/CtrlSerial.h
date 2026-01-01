@@ -146,6 +146,7 @@ private:
   CtrlQueueItem _itm;
   uint8_t       _state;
   unsigned long _time;
+  uint8_t       _retries
 };
 #endif //ESPHOME_CTRL
 
