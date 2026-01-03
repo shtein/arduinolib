@@ -355,7 +355,7 @@ void SerialInputBinary::read(){
 #define CS_STATE_WAIT_OK     2
 #define CS_STATE_DATA        3
 
-#define CS_MAX_WAIT 1000
+#define CS_MAX_WAIT 100
 #define MAX_RETRIES 5
 
 CtrlQueueSerialBinary::CtrlQueueSerialBinary() {
