@@ -13,7 +13,7 @@
   #include <EEPROM.h>
 
   #define EEPROM_READ_BYTE(addr, byte) byte = EEPROM.read(addr);
-  #define EEPROM_WRITE_BYTE(addr, byte) EEPROM.write(addr, byte);
+  #define EEPROM_WRITE_BYTE(addr, byte) EEPROM.update(addr, byte);
 #else
   #include <avr/io.h>
 
