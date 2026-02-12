@@ -230,9 +230,8 @@ typedef NtfBaseSet<MAX_NTF> NtfSet;
 //////////////////////////////////
 // Structure for command response
 DECLARE_STR_PROGMEM(rs_Cmd)
-DECLARE_STR_PROGMEM(rs_Data)
 DECLARE_STR_PROGMEM(rs_Error)
-
+DECLARE_STR_PROGMEM(rs_Data)
 
 template <typename ...Ts>
 struct CmdResponse{};
@@ -258,6 +257,7 @@ inline void putNtfObject(NtfBase &resp, const CmdResponse<> &r){
 template<typename T>
 void putNtfObject(NtfBase &resp, const CmdResponse<T> &r){
   resp.put_F(rs_Cmd, r.cmd);
+  resp.put_F(rs_Error, EEMC_NONE);
   resp.put_F(rs_Data, r.data);
 }
 
