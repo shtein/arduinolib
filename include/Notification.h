@@ -234,17 +234,18 @@ DECLARE_STR_PROGMEM(rs_Error)
 DECLARE_STR_PROGMEM(rs_Data)
 
 template <typename ...Ts>
-struct CmdResponse{};
+struct __attribute__((packed))  CmdResponse{};
 
 template<>
-struct CmdResponse<>{
+struct __attribute__((packed))  CmdResponse<>{
   uint8_t cmd;
   uint8_t error;
 };
 
 template<typename T> 
-struct CmdResponse<T>{
+struct __attribute__((packed))  CmdResponse<T>{
   uint8_t cmd;
+  uint8_t error;
   T data;
 }; 
 

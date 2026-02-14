@@ -91,7 +91,7 @@ class SerialInputBinary: public BaseInput{
 
   protected:
     protected:   
-    uint8_t  _bufRead[SI_BUFF_LEN]; 
+    uint8_t _bufRead[SI_BUFF_LEN]; 
     uint8_t _lenRead;
 };
 
@@ -123,6 +123,11 @@ class CtrlItemSerialBinary: public CtrlItem{
     }
 };
 
+/////////////////////////////////////
+// Simple binary nonification message 
+bool ntfSerialBin(const uint8_t *p, uint8_t size); 
+
+
 #ifdef ESPHOME_CTRL
 /////////////////////////////////////////////////////////
 // CtrlQueueSerialBinary - queue for binary serial input
@@ -134,10 +139,12 @@ public:
   void sendCtrlCommand(uint8_t cmd, uint8_t flag = 0, int value = 0, int min = 0, int max = 0);
   void loop();
 
-private:
+protected:
   void sendCtrlCommand(const CtrlQueueItem &item);
+  bool receive(CmdResponse<> &resp, uint8_t *data, uint8_t size);
 
-  void onIdle();
+  virtual void onIdle();
+
   void onWaitOk();
   void onHeader();
   void onData();

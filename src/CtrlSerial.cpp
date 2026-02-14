@@ -1,4 +1,5 @@
 #include "CtrlSerial.h"
+#include "alutils.h"
 #include "DbgTool.h"
 
 
@@ -207,6 +208,9 @@ void NtfSerial::put(const char *key, const char *v){
   #define SerialBin Serial
 #endif
 
+
+
+
 SerialInputBinary::SerialInputBinary(){  
   //Init serial
   SerialBin.begin(57600);
@@ -256,18 +260,13 @@ void SerialInputBinary::reset(){
 #define SI_STATE_SE       0x04
 #define SI_STATE_READY    0x05
 
-
-void SerialInputBinary::read(){  
-  //If already ready, reset first
-  if(isReady()){
-    reset();
-  }
-
+//Waits for start bytes
+bool waitStartInputBinary(HardwareSerial &srl){
   uint8_t state = SI_STATE_WAIT;
 
   //First - recive control header 55 AA
-  while(SerialBin.available() ){
-    uint8_t c = SerialBin.read(); 
+  while(srl.available() ){
+    uint8_t c = srl.read(); 
     
     if(state == SI_STATE_WAIT && c == SI_START_1){    //First start byte received    
       state = SI_STATE_SB;
@@ -282,23 +281,22 @@ void SerialInputBinary::read(){
   }
 
   //Exit if not in data state
-  if(state != SI_STATE_LEN){
-    return; 
-  }
+  return state == SI_STATE_LEN;
+}
 
-  //Second - send confirmation on receiving control header
-  SerialBin.write(SI_OK_1);
-  SerialBin.write(SI_OK_2);    
-  
+
+bool getDataInputBinary(HardwareSerial &srl, uint8_t *bufRead, uint8_t &lenRead, uint16_t maxWait){
   //Third - recive data, within timeout
-  unsigned long startTime = millis();
+  uint16_t ms;
+  SET_MILLIS(ms);
+
+  uint8_t state       = SI_STATE_LEN;
   uint8_t lenExpected = 0;
 
-  while(millis() < startTime + SI_MAX_WAIT_TIME){ //Stay within timeout
+  do{ //Timeout cycle
 
-    while(SerialBin.available()){
-      
-      uint8_t c = SerialBin.read(); 
+    while(srl.available()){      
+      uint8_t c = srl.read(); 
 
       if(state == SI_STATE_LEN){ //Length byte
         if(c > 0 && c <= SI_BUFF_LEN){ 
@@ -311,8 +309,8 @@ void SerialInputBinary::read(){
         }
       }
       else if(state == SI_STATE_DATA){ //Data byte
-        if(_lenRead < lenExpected){ 
-          _bufRead[_lenRead++] = c;              
+        if(lenRead < lenExpected){ 
+          bufRead[lenRead++] = c;              
         }
         else if(c == SI_END_1){ //First end byte received
           state = SI_STATE_SE;          
@@ -329,8 +327,7 @@ void SerialInputBinary::read(){
           break;
         }
         else{ //Invalid
-          state = SI_STATE_WAIT;
-          
+          state = SI_STATE_WAIT;          
           break; //End of cycle
         }        
       }
@@ -339,12 +336,53 @@ void SerialInputBinary::read(){
     if(state == SI_STATE_WAIT || state == SI_STATE_READY){ //Invalid state      
       break; //End of cycle    
     }
+  } while(DELTA_MILLS(ms) <= maxWait); //Stay within timeout
+
+  return state == SI_STATE_READY;
+}
+
+
+void SerialInputBinary::read(){  
+  //If already ready, reset first
+  if(isReady()){
+    reset();
   }
 
-  if(state != SI_STATE_READY){
-    reset();  
+  //First - Wait for init
+  if(!waitStartInputBinary(SerialBin))
+    return;
+  
+  //Second - send confirmation on receiving control header
+  SerialBin.write(SI_OK_1);
+  SerialBin.write(SI_OK_2);    
+  
+  //Third - recive data, within timeout
+  if(!getDataInputBinary(SerialBin, _bufRead, _lenRead, SI_MAX_WAIT_TIME)){
+    reset();
   }
 }
+
+/////////////////////////////////////
+// Simple binary nonification message 
+bool ntfSerialBin(const uint8_t *p, uint8_t size){
+  //Start bytes
+  SerialBin.write(SI_START_1);
+  SerialBin.write(SI_START_2);
+
+  //Size
+  SerialBin.write(size);
+
+  //Data
+  SerialBin.write(p, size);
+
+  //End bytes
+  SerialBin.write(SI_END_1);
+  SerialBin.write(SI_END_2);
+  
+  return true;
+}
+
+
 
 #ifdef ESPHOME_CTRL
 /////////////////////////////////////
@@ -381,6 +419,18 @@ void CtrlQueueSerialBinary::sendCtrlCommand(uint8_t cmd, uint8_t flag, int value
   item.data.max = max;
 
   sendCtrlCommand(item);
+}
+
+
+bool CtrlQueueSerialBinary::receive(CmdResponse<> &resp, uint8_t *data, uint8_t size){
+
+  while(Serial.available()){
+    uint8_t c = SerialBin.read(); 
+
+
+
+  }
+
 }
 
 // Called when state is CS_STATE_IDLE

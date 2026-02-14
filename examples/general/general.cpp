@@ -217,7 +217,7 @@ void setup() {
         set.put(resp);
       }
       else {
-        CmdResponse<const CtrlQueueItem &> resp{itm.cmd, itm};
+        CmdResponse<const CtrlQueueItem &> resp{itm.cmd, 0, itm};
         set.put(resp);
       }
 
