@@ -446,10 +446,10 @@ void CtrlQueueSerialBinary::onIdle(){
   if(receiveCtlNtf(data, size, MAX_WAIT_TIMEOUT) ){            
     
     //Header with command and error
-    uint8_t sizeHeader = sizeof(sizeof(CmdResponse<>));
+    uint8_t sizeHeader = sizeof(CmdResponse<>);
 
       //Check integrity 
-    if(size >=  sizeHeader){
+    if(size >= sizeHeader){
 
       CmdResponse<> *resp = (CmdResponse<> *)data;
       size = size - sizeHeader;
