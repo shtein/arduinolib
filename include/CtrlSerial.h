@@ -131,7 +131,8 @@ bool ntfSerialBin(const uint8_t *p, uint8_t size);
 #ifdef ESPHOME_CTRL
 /////////////////////////////////////////////////////////
 // CtrlQueueSerialBinary - queue for binary serial input
-// used with ESPHomeA
+// used with ESPHome
+
 class CtrlQueueSerialBinary {
 public:
   CtrlQueueSerialBinary();
@@ -140,8 +141,8 @@ public:
   void loop();
 
 protected:
-  void sendCtrlCommand(const CtrlQueueItem &item);
-  bool receiveCtlNtf(uint8_t *data, uint8_t &size, uint16_t maxWait);
+  void processCtrlQueue();
+  bool receiveCtrlNtf(uint8_t *data, uint8_t &size, uint16_t maxWait);
 
   void onIdle();
   virtual void onNtf(uint8_t cmd, uint8_t error, uint8_t *data, uint8_t size){};
@@ -151,10 +152,15 @@ protected:
   void onData();
 
 private:
+  //Current processing
   CtrlQueueItem _itm;
   uint8_t       _state;
   unsigned long _time;
   uint8_t       _retries;
+
+  //Queue
+  CtrlCmdQueue _queue;
+
 };
 #endif //ESPHOME_CTRL
 

@@ -3,7 +3,49 @@
 #include "DbgTool.h"
 
 
+////////////////////////////
+// CtrlQueue
 
+CtrlCmdQueue::CtrlCmdQueue(){
+  clear();
+}
+
+void CtrlCmdQueue::clear(){
+  _size  = 0; 
+  _index = 0;
+}
+
+bool CtrlCmdQueue::add(const CtrlQueueItem &itm){
+  //Check size
+  if(_size == MAX_CTRL_QUEUE_SIZE)
+    return false;
+
+  //Find position
+  uint8_t pos = (_index + _size) % MAX_CTRL_QUEUE_SIZE;
+
+  //Copy item
+  _queue[pos] = itm;
+
+  //Increase size
+  _size ++;  
+
+  return true;
+}
+
+bool CtrlCmdQueue::pop(CtrlQueueItem &itm){
+  //Check if there are items in a queue
+  if(_size == 0)
+    return false;
+
+  //Retrieve item
+  itm = _queue[_index];
+
+  //Shrink size and move to the next index
+  _size --;
+  _index = (_index + 1) %  MAX_CTRL_QUEUE_SIZE;
+
+  return true;
+}
 
 ////////////////////////////
 // CtrlItem

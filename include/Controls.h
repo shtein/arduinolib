@@ -87,6 +87,28 @@ struct __attribute__((packed))CtrlQueueItem {
   }
 };
 
+//////////////////////////////////////////
+// CtrlCmdQueue 
+#define MAX_CTRL_QUEUE_SIZE 5
+
+class CtrlCmdQueue {
+public:
+  CtrlCmdQueue();
+
+  bool add(const CtrlQueueItem &itm);
+  bool pop(CtrlQueueItem &itm);
+  
+  void clear();
+  
+  uint8_t size() const {return _size; }
+
+private:
+  CtrlQueueItem _queue[MAX_CTRL_QUEUE_SIZE];
+  uint8_t       _size;
+  uint8_t       _index;
+};
+
+
 
 //////////////////////////////////////////
 // ProcessControl - base class
@@ -107,6 +129,8 @@ class CtrlItem{
     uint8_t       _cmd;     //Command
     BaseInput    *_input;   //Analog input to retrieve control data
 };
+
+
 
 ////////////////////////////////
 // Push button control, reacts on either short click, long click or long push

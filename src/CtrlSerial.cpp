@@ -403,9 +403,14 @@ CtrlQueueSerialBinary::CtrlQueueSerialBinary() {
 }
 
 
-void CtrlQueueSerialBinary::sendCtrlCommand(const CtrlQueueItem &item){
+void CtrlQueueSerialBinary::processCtrlQueue(){
+
+  //Check if there is anything in queue
+  if(_queue.size() == 0)
+    return;
+
   _state   = CS_STATE_HEADER;
-  _itm     = item;
+  _queue.pop(_itm);
   _retries = 0;
 }
 
@@ -418,10 +423,12 @@ void CtrlQueueSerialBinary::sendCtrlCommand(uint8_t cmd, uint8_t flag, int value
   item.data.min = min;
   item.data.max = max;
 
-  sendCtrlCommand(item);
+  //sendCtrlCommand(item);
+  //Queue command
+  _queue.add(item);
 }
 
-bool CtrlQueueSerialBinary::receiveCtlNtf(uint8_t *data, uint8_t &size, uint16_t maxWait){
+bool CtrlQueueSerialBinary::receiveCtrlNtf(uint8_t *data, uint8_t &size, uint16_t maxWait){
     //First - Wait for init
   if(!waitStartInputBinary(Serial))
     return false;
@@ -443,7 +450,7 @@ void CtrlQueueSerialBinary::onIdle(){
   uint8_t size = 0;
 
   //Get data if received
-  if(receiveCtlNtf(data, size, MAX_WAIT_TIMEOUT) ){            
+  if(receiveCtrlNtf(data, size, MAX_WAIT_TIMEOUT) ){            
     
     //Header with command and error
     uint8_t sizeHeader = sizeof(CmdResponse<>);
@@ -457,6 +464,10 @@ void CtrlQueueSerialBinary::onIdle(){
       onNtf(resp->cmd, resp->error, (data + sizeHeader), size);
     }
   }
+  else{
+    processCtrlQueue();
+  }
+
 
 }
 
