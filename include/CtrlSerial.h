@@ -141,9 +141,10 @@ public:
 
 protected:
   void sendCtrlCommand(const CtrlQueueItem &item);
-  bool receive(uint8_t *data, uint8_t &size, uint16_t maxWait);
+  bool receiveCtlNtf(uint8_t *data, uint8_t &size, uint16_t maxWait);
 
-  virtual void onIdle();
+  void onIdle();
+  virtual void onNtf(uint8_t cmd, uint8_t error, uint8_t *data, uint8_t size){};
 
   void onWaitOk();
   void onHeader();

@@ -421,7 +421,7 @@ void CtrlQueueSerialBinary::sendCtrlCommand(uint8_t cmd, uint8_t flag, int value
   sendCtrlCommand(item);
 }
 
-bool CtrlQueueSerialBinary::receive(uint8_t *data, uint8_t &size, uint16_t maxWait){
+bool CtrlQueueSerialBinary::receiveCtlNtf(uint8_t *data, uint8_t &size, uint16_t maxWait){
     //First - Wait for init
   if(!waitStartInputBinary(Serial))
     return false;
@@ -430,16 +430,34 @@ bool CtrlQueueSerialBinary::receive(uint8_t *data, uint8_t &size, uint16_t maxWa
   if(!getDataInputBinary(Serial, data, size, maxWait))
     return false;
 
-
   return true;
 }
 
 // Called when state is CS_STATE_IDLE
+// Receives notifications and passes down for processinf
+#define MAX_RESP_SIZE    255
+#define MAX_WAIT_TIMEOUT 10
+
 void CtrlQueueSerialBinary::onIdle(){
-  //Drain serial buffer
-  while(Serial.available() > 0){
-    Serial.read();        
+  uint8_t data[MAX_RESP_SIZE];
+  uint8_t size = 0;
+
+  //Get data if received
+  if(receiveCtlNtf(data, size, MAX_WAIT_TIMEOUT) ){            
+    
+    //Header with command and error
+    uint8_t sizeHeader = sizeof(sizeof(CmdResponse<>));
+
+      //Check integrity 
+    if(size >=  sizeHeader){
+
+      CmdResponse<> *resp = (CmdResponse<> *)data;
+      size = size - sizeHeader;
+
+      onNtf(resp->cmd, resp->error, (data + sizeHeader), size);
+    }
   }
+
 }
 
 // Called when state is CS_STATE_HEADER
