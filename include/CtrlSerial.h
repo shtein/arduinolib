@@ -141,7 +141,7 @@ public:
 
 protected:
   void sendCtrlCommand(const CtrlQueueItem &item);
-  bool receive(uint8_t *data, uint8_t &size);
+  bool receive(uint8_t *data, uint8_t &size, uint16_t maxWait);
 
   virtual void onIdle();
 

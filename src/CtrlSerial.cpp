@@ -421,14 +421,13 @@ void CtrlQueueSerialBinary::sendCtrlCommand(uint8_t cmd, uint8_t flag, int value
   sendCtrlCommand(item);
 }
 
-
-bool CtrlQueueSerialBinary::receive(uint8_t *data, uint8_t &size){
+bool CtrlQueueSerialBinary::receive(uint8_t *data, uint8_t &size, uint16_t maxWait){
     //First - Wait for init
   if(!waitStartInputBinary(Serial))
     return false;
   
   //Second - recive data, within timeout
-  if(!getDataInputBinary(Serial, data, size, 0))
+  if(!getDataInputBinary(Serial, data, size, maxWait))
     return false;
 
 
