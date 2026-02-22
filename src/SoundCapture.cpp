@@ -41,9 +41,7 @@ void SoundCapture::resetStats(){
 
   for(size_t i = 0; i < SC_MAX_BANDS; i++){
     _noiseFloor[i] = SOUND_UPPER_MAX;
-  }
-
-  
+  }  
 }
 
 

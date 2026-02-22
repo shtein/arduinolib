@@ -3,6 +3,102 @@
 
 #include "arduinolib.h"
 
+//////////////////////////////
+// Swap
+template <typename T>
+inline constexpr void swapIf(T &a, T &b) {
+    if (a > b) {
+        T c = a;
+        a = b;
+        b = c;
+    }
+}
+
+#define SWAPIF(a, b) swapIf(a, b)
+
+template <typename T>
+inline uint8_t random8_ab(T a, T b){
+  swapIf(a, b);
+  return random8(a, b + 1);
+}
+
+
+#define RANDOM8_AB(a, b) random8_ab((int8_t)(a), (int8_t)(b))
+
+/////////////////////////////////
+//Integers types
+template<typename T>
+struct upper_type;
+
+template<> struct upper_type<int8_t>  { using type = int16_t; };
+template<> struct upper_type<int16_t> { using type = int32_t; };
+template<> struct upper_type<int32_t> { using type = int64_t; };
+template<> struct upper_type<uint8_t>  { using type = uint16_t; };
+template<> struct upper_type<uint16_t> { using type = uint32_t; };
+template<> struct upper_type<uint32_t> { using type = uint64_t; };
+
+template<typename T>
+using upper_type_t = typename upper_type<T>::type;
+
+template<typename T>
+struct unsigned_type;
+
+template<> struct unsigned_type<int8_t>  { using type = uint8_t; };
+template<> struct unsigned_type<int16_t> { using type = uint16_t; };
+template<> struct unsigned_type<int32_t> { using type = uint32_t; };
+template<> struct unsigned_type<int64_t> { using type = uint64_t; };
+
+template<typename T>
+using unsigned_type_t = typename unsigned_type<T>::type;
+
+
+template<typename T>
+struct int_limits;
+
+// int8_t
+template <> struct int_limits<int8_t> {
+    static constexpr int8_t  min = INT8_MIN;
+    static constexpr int8_t  max = INT8_MAX;
+};
+
+// int16_t
+template<> struct int_limits<int16_t> {
+    static constexpr int16_t min = INT16_MIN;
+    static constexpr int16_t max = INT16_MAX;
+};
+
+// int32_t
+template<> struct int_limits<int32_t> {
+    static constexpr int32_t min = INT32_MIN;
+    static constexpr int32_t max = INT32_MAX;
+};
+
+// uint8_t
+template <> struct int_limits<uint8_t> {
+    static constexpr uint8_t  min = 0;
+    static constexpr uint8_t  max = UINT8_MAX;
+};
+
+// uint16_t
+template<> struct int_limits<uint16_t> {
+    static constexpr uint16_t min = 0;
+    static constexpr uint16_t max = UINT16_MAX;
+};
+
+// uint32_t
+template<> struct int_limits<uint32_t> {
+    static constexpr uint32_t min = 0;
+    static constexpr uint32_t max = UINT32_MAX;
+};
+
+
+template<typename T>
+T divRound(T a, T b) {
+  return (a >= 0) == (b >= 0)? (a + b / 2) / b : (a - b / 2) / b;
+}
+
+#define DIV_ROUND(a, b) divRound((a), (b))
+
 //Map function
 long mapEx( long x, long in_min, long in_max, long out_min, long out_max ); 
 
@@ -18,7 +114,7 @@ bool cmpWithOverflow(T t, uint32_t c, T delta){
 }
 
 //Pow for integers
-int powInt(int x, int y, int limit);
+int16_t powInt(int16_t x, int16_t y, int16_t limit);
 
 
 //Macro for handndling variable number of arguments
@@ -47,6 +143,8 @@ int powInt(int x, int y, int limit);
 // const char * PROGMEM to const char converter
 // usage:
 // const char *p = (const char *)(Progmem2Str<>(pProgmemStr))
+
+#ifdef ARDUINO
 
 #define PROGMEMSTR_SIZE_MAX 24
 
@@ -80,6 +178,7 @@ typedef Progmem2Str<> Progmem2Str24;
 #define DECLARE_STR_PROGMEM(k) extern const char k[] PROGMEM;
 
 
+
 //Time checks
 #define SET_MILLIS(var) \
   var = (uint16_t)millis(); \
@@ -87,6 +186,7 @@ typedef Progmem2Str<> Progmem2Str24;
 
 #define DELTA_MILLS(var) ((uint16_t)millis() - var )
 
+#endif //ARDUINO
 
 //Log2 and sqrt
 uint8_t u8Log2(uint8_t val);

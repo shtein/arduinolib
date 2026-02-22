@@ -3,6 +3,7 @@
 
 #include "arduinolib.h"
 #include "alutils.h"
+#include "Controls.h"
 
 /////////////////////////////
 // Base interface to send notifications

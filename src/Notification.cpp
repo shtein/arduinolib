@@ -1,5 +1,5 @@
-#include "alutils.h"
 #include "Notification.h"
+#include "alutils.h"
 
 //Resources
 DEFINE_STR_PROGMEM(rs_Cmd,   "cmd")

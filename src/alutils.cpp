@@ -25,8 +25,8 @@ long mapEx( long x, long in_min, long in_max, long out_min, long out_max ){
 }
 
 
-int powInt(int x, int y, int limit){
-  int n = 1;
+int16_t powInt(int16_t x, int16_t y, int16_t limit){
+  int16_t n = 1;
 
   if(y > limit)
     y = limit;
