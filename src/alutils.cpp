@@ -169,6 +169,6 @@ uint16_t RunningStats::getAverage() const{
 }
 
 uint16_t RunningStats::getStdDev() const{
-  return u16Sqrt(_variance); // Return the square root of variance as standard deviation
+  return uSqrt<uint16_t>(_variance); // Return the square root of variance as standard deviation
 }
 

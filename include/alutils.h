@@ -188,11 +188,53 @@ typedef Progmem2Str<> Progmem2Str24;
 
 #endif //ARDUINO
 
+
+///////////////////////////////////////////
+// Square root 
+template<typename T> 
+T uSqrt(upper_type_t<T> val){
+    
+    if (val == 0 || val == 1) {
+        return (T)val; // Square root of 0 is 0, and square root of 1 is 1
+    }
+
+    upper_type_t<T> r = val;   // Initial guess
+    upper_type_t<T> prevR = 0; // Previous guess to check for convergence
+
+    //Initial guess
+    uint8_t idx = 0;
+    while (r >>= 1) 
+      ++idx; // small loop: 0..(bits-1)  
+
+    r = (upper_type_t<T> )1 << ((idx + 1) / 2);
+
+    // Iterate until convergence or a maximum of 6 iterations
+    for (uint8_t i = 0; i < 6; i++) {
+        prevR = r;
+        r = (r + val / r) / 2;
+
+        // Break early if there's no change between iterations
+        if (r == prevR) {
+            break;
+        }
+    }
+
+    // Correct to floor(sqrt(val)) 
+    for (int i = 0; i < 2 && r > val / r; i++) 
+      r--;
+
+    for (int i = 0; i < 2 && (r + 1) != 0 && (r + 1) <= val / (r + 1); i++) 
+      r++;
+
+    T mx = int_limits<T>::max;
+
+    // Ensure the result fits within  bounds
+    return (r > mx ) ? mx : (T)r;
+}
+
 //Log2 and sqrt
 uint8_t u8Log2(uint8_t val);
 uint8_t u8MapLog2(uint8_t val);
-uint8_t u8Sqrt(uint16_t val);
-uint16_t u16Sqrt(uint32_t val);
 
 // Smooth value for 16 bit value
 uint16_t u16Smooth(uint16_t old, uint16_t val, uint8_t smoothFactor);
