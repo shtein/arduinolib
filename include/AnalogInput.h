@@ -39,8 +39,8 @@ class AnalogInput: public BaseInput{
     int value() const;
 
   protected:
-    uint16_t  _pin:5;  
-    uint16_t  _value:11;
+    uint8_t   _pin;  
+    uint16_t  _value;
 
 };
 
@@ -54,8 +54,8 @@ class Switch2Pos: public BaseInput{
     bool value() const;
 
   protected:
-    uint8_t _pin:4;
-    uint8_t _value:4;
+    uint8_t _pin;
+    uint8_t _value;
 };
 
 
@@ -80,10 +80,10 @@ class PushButton: public BaseInput{
     void readValue();
     
   protected:
-    uint8_t   _pin:4;
-    uint8_t   _valueOff:1;
-    uint8_t   _value:1; 
-    uint8_t   _state:2;
+    uint8_t   _pin;
+    uint8_t   _valueOff;
+    uint8_t   _value; 
+    uint8_t   _state;
     uint16_t  _millis;  
     uint16_t  _millisDebounce;  
 };
@@ -123,13 +123,13 @@ class IRRemoteRecv: public BaseInput {
 
     void read();
     uint8_t pushed(unsigned long key = R_KEY_ANY) const;
-    unsigned long pushedBtn() const;
+    uint32_t pushedBtn() const;
 
   protected: 
-    uint16_t       _millis;
-    unsigned long  _value; 
-    uint8_t       _repeat:7;
-    uint8_t       _pushed:1;
+    uint16_t      _millis;
+    uint32_t      _value; 
+    uint8_t       _repeat;
+    uint8_t       _pushed;
 };
 
 #endif //USE_IR_REMOTE
@@ -146,10 +146,10 @@ class RotaryEncoder: public BaseInput {
     int value() const;
 
   protected:
-    uint16_t  _pinData:5;  
-    uint16_t  _pinClock:5;  
-    uint16_t  _value:5;
-    uint16_t  _valClock:1;
+    uint8_t  _pinData;  
+    uint8_t  _pinClock;  
+    uint8_t  _value;
+    uint8_t  _valClock;
 };
 
 

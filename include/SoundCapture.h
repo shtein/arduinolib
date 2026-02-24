@@ -119,8 +119,8 @@ class SoundCaptureMSGEQ7: public SoundCapture{
   
   private:
     uint8_t _pinAnalog;
-    uint8_t _pinStrobe:4;
-    uint8_t _pinReset:4;
+    uint8_t _pinStrobe;
+    uint8_t _pinReset;
 };
 
 

@@ -226,9 +226,8 @@ T uSqrt(upper_type_t<T> val){
     for (int i = 0; i < 2 && (r + 1) != 0 && (r + 1) <= val / (r + 1); i++) 
       r++;
 
-    T mx = int_limits<T>::max;
-
     // Ensure the result fits within  bounds
+    T mx = int_limits<T>::max;
     return (r > mx ) ? mx : (T)r;
 }
 
@@ -256,7 +255,7 @@ class RunningStats{
   
   private:
     uint16_t  _mean;     //Mean value
-    uint16_t  _variance; //Variance value
+    uint32_t  _variance; //Variance value
     
     uint8_t   _smoothFactorFall; //Smoothing factor for falling values
     uint8_t   _smoothFactorRise; //Smoothing factor for rising values

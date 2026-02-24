@@ -159,7 +159,6 @@ void RunningStats::add(uint16_t val){
   int32_t delta = (int32_t)val - (int32_t)_mean;
   // Calculate the square of the delta
   uint32_t deltaSq = (uint32_t)(delta * delta);
-
   
   _variance = ((_variance * (255 - smoothFactor)) + (deltaSq * smoothFactor) + 127) >> 8;
 }
