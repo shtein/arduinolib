@@ -51,13 +51,13 @@ void SoundCapture::resetStats(){
 #define NOISE_RAISE_HOLD  10
 
 struct NoiseFloor{
-  union 
+  union
   {
-    struct {
+      struct {
       uint16_t value:10;       //Noise floor value
       uint16_t raiseCnt:6;     //Counter for noise raise
-    };
-    uint16_t raw;              //Raw value
+      };    
+      uint16_t raw;              //Raw value
   };
 
   void reCalculate(uint16_t newValue){
@@ -88,9 +88,7 @@ struct NoiseFloor{
       //Fall noise floor      
       value = u16Smooth(value, newValue, NOISE_FALL_ALPHA);  
     }
-
   }
-
 };
 
 

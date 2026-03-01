@@ -19,7 +19,7 @@ long mapEx( long x, long in_min, long in_max, long out_min, long out_max ){
   else if ( in_range < 0 )
     --in_range;
   else
-    return 0x7FFFFFFF;
+    return INT32_MAX;
 
   return (x - in_min) * out_range / in_range + out_min;
 }

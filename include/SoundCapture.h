@@ -111,11 +111,6 @@ class SoundCaptureMSGEQ7: public SoundCapture{
     void reset();    
     void idle();
     void getData(sc_band_t &bands) const;
-
-    //Getters
-    uint8_t getPinAnalog() const { return _pinAnalog; }
-    uint8_t getPinStrobe() const { return _pinStrobe; }
-    uint8_t getPinReset() const { return _pinReset; }
   
   private:
     uint8_t _pinAnalog;

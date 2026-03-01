@@ -4,7 +4,7 @@
 #include "arduinolib.h"
 
 //////////////////////////////
-// Swap
+// Helpers
 template <typename T>
 inline constexpr void swapIf(T &a, T &b) {
     if (a > b) {
@@ -24,6 +24,10 @@ inline uint8_t random8_ab(T a, T b){
 
 
 #define RANDOM8_AB(a, b) random8_ab((int8_t)(a), (int8_t)(b))
+
+
+#define qsuba(x, b)  ((x > b) ? x - b : 0) 
+
 
 /////////////////////////////////
 //Integers types
