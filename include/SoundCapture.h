@@ -52,9 +52,10 @@ class SoundCapture{
 
     void scaleSound(sc_band_t &bands, uint8_t flags, uint16_t lower = SOUND_LOWER_MIN, uint16_t upper = SOUND_UPPER_MAX) const;
     
-    bool isBassPeak() const {return isBassSound(true, 50) && isPeak(_meanBass, _bass, 64, 158); }           //Base peak detection
-    bool isMidPeak() const {return isMidSound(true, 50) && isPeak(_meanMid, _mid, 158, 176); }              //Medium peak detection
-    bool isTreblePeak() const {return isTrebleSound(true, 50) && isPeak(_meanTreble, _treble, 192, 176); }  //Treble peak detection
+    bool isBassPeak(uint8_t sensForBanAg = 64, uint8_t sensForAvg = 158) const {return isBassSound(true, 50) && isPeak(_meanBass, _bass, sensForBanAg, sensForAvg); }           //Base peak detection
+    bool isMidPeak(uint8_t sensForBanAg = 158, uint8_t sensForAvg = 176) const {return isMidSound(true, 50) && isPeak(_meanMid, _mid, sensForBanAg, sensForAvg); }              //Medium peak detection
+    bool isTreblePeak(uint8_t sensForBanAg = 192, uint8_t sensForAvg = 176) const {return isTrebleSound(true, 50) && isPeak(_meanTreble, _treble, sensForBanAg, sensForAvg
+    ); }  //Treble peak detection
 
     uint16_t getMax() const { return SOUND_MAX(_maxRaw.getAverage(), 3 * _maxRaw.getStdDev()) ; } //Get current maximum value
     uint16_t getMin() const { return SOUND_MAX(_minRaw.getAverage(), _minRaw.getStdDev()) ; }     //Get current minimum value
