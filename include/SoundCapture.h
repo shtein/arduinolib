@@ -26,7 +26,18 @@ inline uint16_t soundMax(uint16_t a, uint16_t b) {
 ////////////////////////////
 // Sound capture base interface
 
+//Bands
 typedef uint16_t sc_band_t[SC_MAX_BANDS];
+
+//Peak detecttion sensitivity default values
+#define BASS_PEAK_SENS_BUS 64
+#define BASS_PEAK_SENS_AVG 128
+
+#define MID_PEAK_SENS_BUS 158
+#define MID_PEAK_SENS_AVG 176
+
+#define TREBLE_PEAK_SENS_BUS 192
+#define TREBLE_PEAK_SENS_AVG 176
 
   
 class SoundCapture{
@@ -52,10 +63,9 @@ class SoundCapture{
 
     void scaleSound(sc_band_t &bands, uint8_t flags, uint16_t lower = SOUND_LOWER_MIN, uint16_t upper = SOUND_UPPER_MAX) const;
     
-    bool isBassPeak(uint8_t sensForBanAg = 64, uint8_t sensForAvg = 158) const {return isBassSound(true, 50) && isPeak(_meanBass, _bass, sensForBanAg, sensForAvg); }           //Base peak detection
-    bool isMidPeak(uint8_t sensForBanAg = 158, uint8_t sensForAvg = 176) const {return isMidSound(true, 50) && isPeak(_meanMid, _mid, sensForBanAg, sensForAvg); }              //Medium peak detection
-    bool isTreblePeak(uint8_t sensForBanAg = 192, uint8_t sensForAvg = 176) const {return isTrebleSound(true, 50) && isPeak(_meanTreble, _treble, sensForBanAg, sensForAvg
-    ); }  //Treble peak detection
+    bool isBassPeak(uint8_t sensForBanAg = BASS_PEAK_SENS_BUS, uint8_t sensForAvg = BASS_PEAK_SENS_AVG) const { return isBassSound(true, 50) && isPeak(_meanBass, _bass, sensForBanAg, sensForAvg); }             //Base peak detection
+    bool isMidPeak(uint8_t sensForBanAg = MID_PEAK_SENS_BUS, uint8_t sensForAvg = MID_PEAK_SENS_AVG) const { return isMidSound(true, 50) && isPeak(_meanMid, _mid, sensForBanAg, sensForAvg); }                   //Medium peak detection
+    bool isTreblePeak(uint8_t sensForBanAg = TREBLE_PEAK_SENS_BUS, uint8_t sensForAvg = TREBLE_PEAK_SENS_AVG) const { return isTrebleSound(true, 50) && isPeak(_meanTreble, _treble, sensForBanAg, sensForAvg); }  //Treble peak detection
 
     uint16_t getMax() const { return SOUND_MAX(_maxRaw.getAverage(), 3 * _maxRaw.getStdDev()) ; } //Get current maximum value
     uint16_t getMin() const { return SOUND_MAX(_minRaw.getAverage(), _minRaw.getStdDev()) ; }     //Get current minimum value
