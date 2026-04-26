@@ -84,8 +84,6 @@ void putNtfObject(NtfBase &resp, const CtrlQueueItem &data){
   }
   
 }
-  
-typedef NtfBaseSet<2> NtfSet;
 
 void setup() {
 
@@ -124,8 +122,7 @@ void setup() {
   CtrlItemSerial<TestParse> ctrlSr(&serial);  
   panel.addControl(&ctrlSr);
 
-  static NtfSet set;
-  set.addNtf(&ctrlSr);
+
 
   
   auto PBMAP = 
@@ -214,11 +211,11 @@ void setup() {
 
       if(itm.cmd == EEMC_ERROR){
         CmdResponse<> resp{itm.cmd, 0xFF};
-        set.put(resp);
+        ctrlSr.notify(resp);
       }
       else {
         CmdResponse<const CtrlQueueItem &> resp{itm.cmd, 0, itm};
-        set.put(resp);
+        ctrlSr.notify(resp);
       }
 
     }  

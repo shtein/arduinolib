@@ -20,6 +20,10 @@ public:
   //Actions
   virtual void reset() = 0;
   virtual void send() = 0; 
+
+  //Root call to put data
+  template <class T>
+  void notify(const T &t);
   
   //Block management
   virtual void begin(const char *key = NULL) = 0;
@@ -73,6 +77,13 @@ private:
 inline NtfBase::NtfBase(){
   _context.flags      = NTF_CTX_NONE;
   _context.arrayIndex = 0;
+}
+
+template <class T>
+inline void NtfBase::notify(const T &t){
+  reset();
+  put(NULL, t);
+  send();
 }
 
 template< class T>
@@ -161,72 +172,6 @@ inline void NtfBase::setContext(const NtfBase::CONTEXT &context){
 //   ...
 // }
 
-
-////////////////////////////////////////
-// Set of notifiers to call all at the same time
-template <size_t N>
-class NtfBaseSet{
-public:
-  NtfBaseSet();
-
-  void addNtf(NtfBase *p);
-
-  template <class T>
-  void put(const T& t);
-
-  template <class T>
-  void put(const T* t, size_t size);
-
-private:
-  NtfBase *_ntf[N]; 
-}; 
-
-template <size_t N>
-NtfBaseSet<N>::NtfBaseSet(){
-  memset(&_ntf, 0, sizeof(_ntf)); 
-}
-
-template <size_t N>
-void NtfBaseSet<N>::addNtf(NtfBase *p){
-  for(size_t i = 0; i < N; i++){
-    //Find first available slot
-    if(!_ntf[i]){
-      _ntf[i] = p;
-      return;
-    }      
-  }    
-}
-
-
-template<size_t N>
-template<class T>
-void NtfBaseSet<N>::put(const T& t){
-
-  for(size_t i = 0; i < N  && _ntf[i] != NULL; i++){
-    _ntf[i]->reset();
-    _ntf[i]->put(NULL, t);
-    _ntf[i]->send();
-  }  
-}
-
-
-
-template<size_t N>
-template<class T>
-void NtfBaseSet<N>::put(const T *t, size_t size){
-
-  for(size_t i = 0; i < N  && _ntf[i] != NULL; i++){
-    _ntf[i]->reset();
-    _ntf[i]->put(NULL, t, size);
-    _ntf[i]->send();
-  }  
-}
-
-#ifndef MAX_NTF
-  #define MAX_NTF 2
-#endif //MAX_NTF
-
-typedef NtfBaseSet<MAX_NTF> NtfSet;
 
 //////////////////////////////////
 // Structure for command response
