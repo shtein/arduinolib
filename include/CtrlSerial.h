@@ -70,11 +70,22 @@ private:
 };
 
 
+template<class T>
+bool ntfSerial(const T &t){
+  NtfSerial ntf;
+
+  ntf.reset();
+  ntf.NtfBase::put(NULL, t);
+  ntf.send();
+  
+  return true;
+}
+
 /////////////////////////////////////////
 // Control from serial buffer
 // Multi-command interface
 template <uint8_t (*PARSER) (const char *tokens[], CtrlQueueData &data)>
-using CtrlItemSerial = CtrlItemMultiCommand<SerialInput, NtfSerial, PARSER>;
+using CtrlItemSerial = CtrlItemMultiCommand<SerialInput, PARSER>;
 
 ////////////////////////////////////////
 // Input from serial port - binary protocol

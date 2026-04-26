@@ -381,8 +381,8 @@ class CtrlItemRotEnc: public CtrlItem{
 #endif
 
 
-template<class INP, class NTF, uint8_t (*PARSER) (const char * tokens[], CtrlQueueData &data)>
-class CtrlItemMultiCommand: public CtrlItem, public NTF{
+template<class INP, uint8_t (*PARSER) (const char * tokens[], CtrlQueueData &data)>
+class CtrlItemMultiCommand: public CtrlItem{
   public:
     CtrlItemMultiCommand(INP *input):
       CtrlItem(EEMC_NONE, input){   

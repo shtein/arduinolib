@@ -92,6 +92,7 @@ void SerialInput::reset(){
 
 ///////////////////
 // NtfSerial
+
 NtfSerial::NtfSerial(){
   reset();
 }

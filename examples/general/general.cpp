@@ -92,28 +92,6 @@ void setup() {
   delay(500);
   DBG_OUTLN("Started");
 
-/******************/
-  
-  CHSV hsvBase(random8(), 0xFF, 0xFF);
-  
-  
-  while(hsvBase.value != 0){    
-
-    CHSV hsv = hsvBase;
-    hsv.value = triwave8(hsvBase.value);
-    CRGB rgb1 = hsv;
-
-    CRGB rgb2;    
-
-    rgb2.setHSV(hsv.h, hsv.s, hsv.v);
-
-
-    DBG_OUTLN("c1:%d %d %d  c2:%d %d %d", rgb1.red, rgb1.blue, rgb1.green, rgb2.red, rgb2.blue, rgb2.green);
-
-    hsvBase.value -= 5;
-  }
-  
-/******************/
 
 
   CtrlPanel panel;
@@ -122,17 +100,15 @@ void setup() {
   CtrlItemSerial<TestParse> ctrlSr(&serial);  
   panel.addControl(&ctrlSr);
 
-
-
   
   auto PBMAP = 
   [](uint8_t ctrl, CtrlQueueData &data) -> uint8_t {     
     DBG_OUTLN("Ctrl %X", ctrl);
 
     switch(ctrl){
-      //case PB_CONTROL_CLICK_SHORT:                                    
-      //return 1;
-      case PB_CONTROL_CLICK:
+      case PB_CONTROL_CLICK_SHORT:                                    
+      return 1;
+      case PB_CONTROL_CLICK_LONG:
         data.flag = CTF_VAL_ABS;
         data.value = 22;
       return 2;    
@@ -146,7 +122,7 @@ void setup() {
   CtrlItemPb ctrlPb(PBMAP, &btn);
   panel.addControl(&ctrlPb);
 
-
+  /*
   auto IRCmdMap = 
   [](unsigned long btn, CtrlQueueData &data) -> uint8_t { 
     memset(&data, 0, sizeof(data));
@@ -178,7 +154,7 @@ void setup() {
   IRRemoteRecv ir(7);
   CtrlItemIR  ctrlIrB1(IRCmdMap, &ir);
   panel.addControl(&ctrlIrB1);
-
+*/
 
   CRGB leds[30];
   FastLED.addLeds<NEOPIXEL, 2>(leds, 30).setCorrection( TypicalLEDStrip );
@@ -211,11 +187,11 @@ void setup() {
 
       if(itm.cmd == EEMC_ERROR){
         CmdResponse<> resp{itm.cmd, 0xFF};
-        ctrlSr.notify(resp);
+        ntfSerial(resp);
       }
       else {
         CmdResponse<const CtrlQueueItem &> resp{itm.cmd, 0, itm};
-        ctrlSr.notify(resp);
+        ntfSerial(resp);
       }
 
     }  

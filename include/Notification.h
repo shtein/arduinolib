@@ -21,9 +21,6 @@ public:
   virtual void reset() = 0;
   virtual void send() = 0; 
 
-  //Root call to put data
-  template <class T>
-  void notify(const T &t);
   
   //Block management
   virtual void begin(const char *key = NULL) = 0;
@@ -79,13 +76,6 @@ inline NtfBase::NtfBase(){
   _context.arrayIndex = 0;
 }
 
-template <class T>
-inline void NtfBase::notify(const T &t){
-  reset();
-  put(NULL, t);
-  send();
-}
-
 template< class T>
 inline void NtfBase::put_F(const char *key, const T &t){
   put((const char *)Progmem2Str24(key), t);
@@ -109,7 +99,7 @@ inline void NtfBase::beginArray_F(const char *key){
 }
 
 template <class T>
-void NtfBase::put(const char *key, const T &t){
+inline void NtfBase::put(const char *key, const T &t){
   begin(key);
   
   putNtfObject(*this, t);
