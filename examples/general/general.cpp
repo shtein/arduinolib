@@ -89,9 +89,10 @@ void setup() {
 
   DBG_INIT();
 
-  delay(500);
+
   DBG_OUTLN("Started");
 
+  //delay(200);
 
 
   CtrlPanel panel;

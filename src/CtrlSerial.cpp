@@ -7,6 +7,9 @@
 // Serial input
 
 SerialInput::SerialInput(){  
+  //Prevent from garabage
+  delay(100);
+
   //Init serial
   Serial.begin(57600);
 
@@ -263,6 +266,11 @@ void SerialInputBinary::reset(){
 
 //Waits for start bytes
 bool waitStartInputBinary(HardwareSerial &srl){
+  //First check if there is at least 2 bytes in buffer
+  if(srl.available() < 2){
+    return false;
+  }
+
   uint8_t state = SI_STATE_WAIT;
 
   //First - recive control header 55 AA
@@ -284,7 +292,6 @@ bool waitStartInputBinary(HardwareSerial &srl){
   //Exit if not in data state
   return state == SI_STATE_LEN;
 }
-
 
 bool getDataInputBinary(HardwareSerial &srl, uint8_t *bufRead, uint8_t &lenRead, uint16_t maxWait){
   //Third - recive data, within timeout
