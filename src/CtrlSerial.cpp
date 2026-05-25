@@ -386,6 +386,9 @@ bool ntfSerialBin(const uint8_t *p, uint8_t size){
   //End bytes
   SerialBin.write(SI_END_1);
   SerialBin.write(SI_END_2);
+
+  //Wait for data to be sent
+  delay(5); 
   
   return true;
 }
