@@ -9,10 +9,26 @@
 bool getTokens(char *str, const char *tokens[], size_t maxTokens, char separator, char escape);
 bool checkTokenMatch(const char *token, const char *match);
 const char *getValueAfterToken(const char * tokens[], const char *match);
-bool strTo(const char *str, int &n);
-bool strTo(const char *str, uint16_t &n);
+
+//String to number conversion, support for different types
+template <typename T>
+bool strTo(const char *str, T &n){
+  if(!str)
+    return false;  
+
+  n = (T)strtoul(str, NULL, 0);
+  
+  return true;
+}
+
+//String to String conversion
 bool strTo(const char *str, char *dest); 
 
+//Strings to array of bytes
+size_t strToBytes(const char *tokens[], uint8_t *dest, size_t maxLen);
+
+
+//Value assignment to data members of CtrlQueueData, support for different types
 inline void setValue(const char *src, char *dst){
   strcpy(dst, src);
 }
@@ -21,6 +37,7 @@ template <typename T1, typename T2 >
 inline void setValue(const T1 &src, T2 &dst){
   dst = src;
 }
+
 
 
 //Helper macros
@@ -102,6 +119,19 @@ uint8_t FunctionName(const char *src[], CtrlQueueData &data){ \
     _CQD_SET_DATA(data, cmd, *tokens, CTF_VAL_STRING) \
   } \
   tokens --;
+
+#define VALUE_IS_BYTES(token, cmd, len) \
+  _BEGIN_TOKEN(token) \
+  tokens ++; \
+  uint8_t bytes[len]; \
+  size_t count = strToBytes(tokens, bytes, len); \
+  DBG_OUTLN("Count: %d", count); \
+  if(count == len){ \
+    _CQD_SET_DATA(data, cmd, bytes) \
+  } \
+  tokens --; \
+  _END_TOKEN()
+
 
 
 //Final, nothing after it, there are token and value

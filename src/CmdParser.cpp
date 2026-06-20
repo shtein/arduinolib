@@ -86,23 +86,7 @@ const char *getValueAfterToken(const char *tokens[], const char *match){
   return NULL;
 }
 
-bool strTo(const char *str, int &n){
-  if(!str)
-    return false;  
 
-  n = atoi(str);
-
-  return true;
-}
-
-bool strTo(const char *str, uint16_t &n){
-  if(!str)
-    return false;  
-
-  n = (uint16_t)strtoul(str, NULL, 10);
-  
-  return true;
-}
 
 bool strTo(const char *str, char *dest){
   if(!str)
@@ -116,4 +100,19 @@ bool strTo(const char *str, char *dest){
   return true;
 }
 
+
+size_t strToBytes(const char *tokens[], uint8_t *dest, size_t maxLen){
+  size_t count = 0;
+
+  for(size_t i = 0; tokens[i] != NULL && count < maxLen; i++){
+    if(strTo(tokens[i], dest[count])){
+      count ++;
+    }
+    else {
+      break;
+    }
+  }
+
+  return count;
+}
 

@@ -21,6 +21,7 @@ BEGIN_PARSE_ROUTINE(TestParse)
   BEGIN_GROUP_TOKEN(PSTR("set|s"))  
     VALUE_IS_TOKEN(PSTR("off"), 1, 0)
     VALUE_IS_TOKEN(PSTR("on"), 1, 1)
+    VALUE_IS_BYTES(PSTR("color"), 7, 3)
   END_GROUP_TOKEN()
   
   BEGIN_GROUP_TOKEN(PSTR("test|t"))
@@ -184,6 +185,10 @@ void setup() {
         else if(itm.data.value == 1){
           fill_solid(leds, 30, CRGB::Red);
         }
+      }
+      else if(itm.cmd == 7){
+        uint8_t *d = (uint8_t *)itm.data.str;        
+        fill_solid(leds, 30, CRGB(d[0], d[1], d[2]));
       }
 
       if(itm.cmd == EEMC_ERROR){
