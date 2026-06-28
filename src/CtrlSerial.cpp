@@ -416,7 +416,7 @@ CtrlQueueSerialBinary::CtrlQueueSerialBinary() {
 }
 
 #define READY_TIMEOUT 500 
-#define NEXT_TIMEOUT  50
+#define NEXT_TIMEOUT  100
 
 
 void CtrlQueueSerialBinary::processCtrlQueue(){
@@ -492,9 +492,7 @@ void CtrlQueueSerialBinary::onIdle(){
   uint8_t size = 0;
 
   //Get data if received
-  if(receiveCtrlNtf(data, size, MAX_WAIT_TIMEOUT) ){            
-    //Set ready 
-    _ready = true;    
+  if(receiveCtrlNtf(data, size, MAX_WAIT_TIMEOUT) ){                
 
     //Header with command and error
     uint8_t sizeHeader = sizeof(CmdResponse<>);
@@ -505,7 +503,12 @@ void CtrlQueueSerialBinary::onIdle(){
       CmdResponse<> *resp = (CmdResponse<> *)data;
       size = size - sizeHeader;
 
-      onNtf(resp->cmd, resp->error, (data + sizeHeader), size);
+      if(_ready)
+        onNtf(resp->cmd, resp->error, (data + sizeHeader), size);
+      else
+        _ready = true;
+
+      _timeR = millis();
     }
   }
   else{
