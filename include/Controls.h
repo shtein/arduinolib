@@ -10,6 +10,7 @@
 
 //Change commands
 #define EEMC_NONE        0x00   //Nothing changed
+#define EEMC_READY       0xFE   //Ready to receive commands
 #define EEMC_ERROR       0xFF   //Input error
 
 //Errors

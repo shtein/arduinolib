@@ -168,10 +168,13 @@ private:
   uint8_t       _state;
   unsigned long _time;
   uint8_t       _retries;
+  
+  //Readiness
+  bool     _ready;
+  uint32_t _time;
 
   //Queue
   CtrlCmdQueue _queue;
-
 };
 #endif //ESPHOME_CTRL
 

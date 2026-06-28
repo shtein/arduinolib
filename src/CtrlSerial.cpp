@@ -411,10 +411,30 @@ CtrlQueueSerialBinary::CtrlQueueSerialBinary() {
   _state   = CS_STATE_IDLE;
   _time    = 0;
   _retries = 0;
+  _ready   = false;
+  _time    = 0;
 }
 
+#define READY_TIMEOUT 500 
 
 void CtrlQueueSerialBinary::processCtrlQueue(){
+
+  if(_!ready && _time + READY_TIMEOUT < millis()){
+    //Prepare item to send
+    _itm.cmd = cmd;
+    _itm.data.flag = 0;
+    _itm.data.value = 0;
+    _itm.data.min = 0;
+    _itm.data.max = 0;
+
+    _state   = CS_STATE_HEADER;  
+    _retries = 0;
+    _time    = millis();
+
+    return;
+  }
+  
+
 
   //Check if there is anything in queue
   if(_queue.size() == 0)
@@ -462,11 +482,13 @@ void CtrlQueueSerialBinary::onIdle(){
 
   //Get data if received
   if(receiveCtrlNtf(data, size, MAX_WAIT_TIMEOUT) ){            
-    
+    //Set ready 
+    _ready = true;
+
     //Header with command and error
     uint8_t sizeHeader = sizeof(CmdResponse<>);
 
-      //Check integrity 
+    //Check integrity 
     if(size >= sizeHeader){
 
       CmdResponse<> *resp = (CmdResponse<> *)data;
