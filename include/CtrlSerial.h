@@ -171,7 +171,7 @@ private:
   
   //Readiness
   bool     _ready;
-  uint32_t _time;
+  uint32_t _timeR;
 
   //Queue
   CtrlCmdQueue _queue;

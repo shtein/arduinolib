@@ -412,29 +412,28 @@ CtrlQueueSerialBinary::CtrlQueueSerialBinary() {
   _time    = 0;
   _retries = 0;
   _ready   = false;
-  _time    = 0;
+  _timeR   = 0;
 }
 
 #define READY_TIMEOUT 500 
 
 void CtrlQueueSerialBinary::processCtrlQueue(){
 
-  if(_!ready && _time + READY_TIMEOUT < millis()){
+  if(!_ready && _time + READY_TIMEOUT < millis()){
     //Prepare item to send
-    _itm.cmd = cmd;
-    _itm.data.flag = 0;
+    _itm.cmd        = EEMC_READY;
+    _itm.data.flag  = 0;
     _itm.data.value = 0;
-    _itm.data.min = 0;
-    _itm.data.max = 0;
+    _itm.data.min   = 0;
+    _itm.data.max   = 0;
 
     _state   = CS_STATE_HEADER;  
     _retries = 0;
-    _time    = millis();
+    _timeR   = millis();
 
     return;
   }
   
-
 
   //Check if there is anything in queue
   if(_queue.size() == 0)
