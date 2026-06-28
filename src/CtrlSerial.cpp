@@ -412,14 +412,21 @@ CtrlQueueSerialBinary::CtrlQueueSerialBinary() {
   _time    = 0;
   _retries = 0;
   _ready   = false;
-  _timeR   = 0;
+  _timeR   = millis();
 }
 
 #define READY_TIMEOUT 500 
+#define NEXT_TIMEOUT  10
 
 void CtrlQueueSerialBinary::processCtrlQueue(){
 
-  if(!_ready && _time + READY_TIMEOUT < millis()){
+  //Check if we are ready to send
+  if(!_ready){
+
+    //Check if time
+    if(_timeR + READY_TIMEOUT < millis())
+      return;
+
     //Prepare item to send
     _itm.cmd        = EEMC_READY;
     _itm.data.flag  = 0;
@@ -438,10 +445,11 @@ void CtrlQueueSerialBinary::processCtrlQueue(){
   //Check if there is anything in queue
   if(_queue.size() == 0)
     return;
-
+  
   _state   = CS_STATE_HEADER;
   _queue.pop(_itm);
   _retries = 0;
+  _timeR   = millis();
 }
 
 void CtrlQueueSerialBinary::sendCtrlCommand(uint8_t cmd, uint8_t flag, int value, int min, int max){
@@ -482,7 +490,7 @@ void CtrlQueueSerialBinary::onIdle(){
   //Get data if received
   if(receiveCtrlNtf(data, size, MAX_WAIT_TIMEOUT) ){            
     //Set ready 
-    _ready = true;
+    _ready = true;    
 
     //Header with command and error
     uint8_t sizeHeader = sizeof(CmdResponse<>);
