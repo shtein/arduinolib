@@ -119,7 +119,9 @@ struct __attribute__((packed))CtrlQueueItem {
 
 //////////////////////////////////////////
 // CtrlCmdQueue 
-#define MAX_CTRL_QUEUE_SIZE 5
+#ifndef MAX_CTRL_QUEUE_SIZE
+  #define MAX_CTRL_QUEUE_SIZE 10 
+#endif 
 
 class CtrlCmdQueue {
 public:
