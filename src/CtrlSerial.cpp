@@ -465,7 +465,21 @@ void CtrlQueueSerialBinary::sendCtrlCommand(uint8_t cmd, uint8_t flag, int value
   item.data.min = min;
   item.data.max = max;
 
-  //sendCtrlCommand(item);
+  //Queue command
+  sendCtrlCommand(item);
+}
+
+void CtrlQueueSerialBinary::sendCtrlCommand(uint8_t cmd, const char *str){
+  CtrlQueueItem item;
+
+  item.cmd = cmd;
+  item.data.setValue(str);
+
+  //Queue command
+  sendCtrlCommand(item);
+}
+
+void CtrlQueueSerialBinary::sendCtrlCommand(const CtrlQueueItem &item){
   //Queue command
   _queue.add(item);
 }

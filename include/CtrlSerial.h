@@ -149,9 +149,21 @@ public:
   CtrlQueueSerialBinary();
 
   void sendCtrlCommand(uint8_t cmd, uint8_t flag = 0, int value = 0, int min = 0, int max = 0);
+  void sendCtrlCommand(uint8_t cmd, const char *str);
+
+  template<class T>
+  void sendCtrlCommand(uint8_t cmd, const T &t){
+    CtrlQueueItem item;
+    item.cmd = cmd;
+    item.data.setValue(t);
+    sendCtrlCommand(item);
+  }
+  
   void loop();
 
 protected:
+  void sendCtrlCommand(const CtrlQueueItem &item);
+
   void processCtrlQueue();
   bool receiveCtrlNtf(uint8_t *data, uint8_t &size, uint16_t maxWait);
 
