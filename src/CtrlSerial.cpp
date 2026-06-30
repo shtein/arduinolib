@@ -412,7 +412,6 @@ CtrlQueueSerialBinary::CtrlQueueSerialBinary() {
   _time    = 0;
   _retries = 0;
   _ready   = false;
-  _timeR   = 0;
 }
 
 #define READY_TIMEOUT 500 
@@ -425,7 +424,7 @@ void CtrlQueueSerialBinary::processCtrlQueue(){
   if(!_ready){
 
     //Check if time
-    if(millis() - _timeR < READY_TIMEOUT)
+    if(millis() - _time < READY_TIMEOUT)
       return;
 
     //Prepare item to send
@@ -437,13 +436,13 @@ void CtrlQueueSerialBinary::processCtrlQueue(){
 
     _state   = CS_STATE_HEADER;  
     _retries = 0;
-    _timeR   = millis();
+    _time    = millis();
 
     return;
   }
   
   //Check timeout for next command
-  if(millis() - _timeR < NEXT_TIMEOUT)
+  if(millis() - _time < NEXT_TIMEOUT)
     return;
 
   //Check if there is anything in queue
@@ -453,7 +452,7 @@ void CtrlQueueSerialBinary::processCtrlQueue(){
   _state   = CS_STATE_HEADER;
   _queue.pop(_itm);
   _retries = 0;
-  _timeR   = millis();
+  _time    = millis();
 }
 
 void CtrlQueueSerialBinary::sendCtrlCommand(uint8_t cmd, uint8_t flag, int value, int min, int max){
@@ -522,14 +521,12 @@ void CtrlQueueSerialBinary::onIdle(){
       else
         _ready = true;
 
-      _timeR = millis();
+      _time = millis();
     }
   }
   else{
     processCtrlQueue();
   }
-
-
 }
 
 // Called when state is CS_STATE_HEADER
