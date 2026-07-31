@@ -742,5 +742,4 @@ bool onWiFiCmd(struct CtrlQueueItem &itm, NtfSet &ntf){
   return true;
 }
 
-
 #endif

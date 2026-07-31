@@ -7,8 +7,6 @@
 //////////////////////////////////////
 // AdaLight - base class for Adalight protocol
 
-
-
 class AdaLight{
 public:
   AdaLight();

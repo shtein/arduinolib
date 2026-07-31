@@ -24,20 +24,25 @@
 #endif
 
 
-//LEDs count
-#ifndef ADA_LEDS_COUNT
-  #error "ADA_LEDS_COUNT is not defined."
-#endif
 
-//PIN
-#ifndef ADA_LEDS_PIN
-  #error "ADA_LEDS_PIN is not defined."
-#endif
+#if defined(ADA_FASTLED) || defined(ADA_NEOPIXEL_BUS)
+    
+  //LEDs count`
+  #ifndef ADA_LEDS_COUNT
+    #error "ADA_LEDS_COUNT is not defined."
+  #endif
 
-//LED TYPE
-#ifndef ADA_LEDS_TYPE
-  #error "ADA_LEDS_TYPE is not defined."
-#endif
+  //PIN
+  #ifndef ADA_LEDS_PIN
+    #error "ADA_LEDS_PIN is not defined."
+  #endif
+
+  //LED TYPE
+  #ifndef ADA_LEDS_TYPE
+    #error "ADA_LEDS_TYPE is not defined."
+  #endif
+
+#endif // defined(ADA_FASTLED) || defined(ADA_NEOPIXEL_BUS)
 
 //Library selection
 #if defined(ADA_FASTLED)
@@ -61,7 +66,7 @@ CRGB leds[ADA_LEDS_COUNT];
   
   #define ADA_LEDS_SET_COLOR_BY_INDEX(ledIndex, colorIndex, x)  \
     if(ledIndex < ADA_LEDS_COUNT) \
-      leds[ledIndex].raw[colorIndex] = x
+      leds[ledIndex].raw[colorIndex] = x;
 
     
 
@@ -94,7 +99,17 @@ CRGB leds[ADA_LEDS_COUNT];
       
 
 #else
-  #error "LED library is not defined."
+  #pragma message "LED library is not defined."
+  #define ADA_LEDS_INIT()
+  #define ADA_LEDS_SHOW()
+  #define ADA_LEDS_OFF()
+  #define ADA_LEDS_SET_COLOR_BY_INDEX(ledIndex, colorIndex, x)
+
+  #ifdef ADA_LEDS_COUNT
+    #undef ADA_LEDS_COUNT
+  #endif
+  
+  #define ADA_LEDS_COUNT 0
 #endif
 
 
