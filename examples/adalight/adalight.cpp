@@ -2,7 +2,7 @@
 #include <adalight.h>
 
 
-
+AdaLight theAdaLight;
 
 void setup(){
   theAdaLight.init(true, 115200);

@@ -44,7 +44,5 @@ protected:
   bool _ledsOn;
 };
 
-extern AdaLight theAdaLight;
-
 
 #endif // __ADALIGHT_H
