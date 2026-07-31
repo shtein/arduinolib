@@ -2,12 +2,12 @@
 #include <adalight.h>
 
 
-AdaLight adalight;
+
 
 void setup(){
-  adalight.init(115200);
+  theAdaLight.init(true, 115200);
 }
 
 void loop(){
-  adalight.loop();
+  theAdaLight.loop();
 }

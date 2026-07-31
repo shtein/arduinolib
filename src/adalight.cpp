@@ -1,5 +1,7 @@
 #include "adalight.h"
 
+AdaLight theAdaLight;
+
 //Mode
 #define ADA_MODE_HEADER 0
 #define ADA_MODE_DATA   1
