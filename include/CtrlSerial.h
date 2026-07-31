@@ -182,8 +182,8 @@ private:
   uint8_t       _retries;
   
   //Readiness
-  bool     _ready;
-  
+  bool         _ready;
+
   //Queue
   CtrlCmdQueue _queue;
 };
