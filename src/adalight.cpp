@@ -7,9 +7,9 @@
 
 //Debug LED
 #ifdef ADA_DEBUG_LED
-  #define ADA_DEBUG_LED_INIT()  \
-    pinMode(LED_BUILTIN, OUTPUT); \
-    digitalWrite(LED_BUILTIN, LOW);
+  #define ADA_DEBUG_LED_INIT() \
+      pinMode(LED_BUILTIN, OUTPUT); \
+      digitalWrite(LED_BUILTIN, LOW);
 
   #define ADA_DEBUG_LED_ON()  \
     digitalWrite(LED_BUILTIN, HIGH);
@@ -60,42 +60,48 @@ CRGB leds[ADA_LEDS_COUNT];
   #define ADA_LEDS_SHOW()  \
     FastLED.show();
 
+  #define ADA_LEDS_CLEAR()  \
+    fill_solid(leds, ADA_LEDS_COUNT, CRGB::Black);
+
   #define ADA_LEDS_OFF()  \
-    fill_solid(leds, ADA_LEDS_COUNT, CRGB::Black); \
-    FastLED.show();
+    ADA_LEDS_CLEAR(); \
+    ADA_LEDS_SHOW();
   
   #define ADA_LEDS_SET_COLOR_BY_INDEX(ledIndex, colorIndex, x)  \
-    if(ledIndex < ADA_LEDS_COUNT) \
-      leds[ledIndex].raw[colorIndex] = x;
+      if(ledIndex < ADA_LEDS_COUNT) \
+        leds[ledIndex].raw[colorIndex] = x;
 
-    
 
 #elif defined(ADA_NEOPIXEL_BUS)
   #include <NeoPixelBus.h>
   
   #ifndef ADA_COLOR_ORDER
-    #define ADA_COLOR_ORDER NeoGbrFeature
+    #define ADA_COLOR_ORDER NeoRgbFeature
   #endif
 
-  NeoPixelBus<ADA_COLOR_ORDER, NeoWs2812xMethod> leds(ADA_LEDS_COUNT, ADA_LEDS_PIN);
+  NeoPixelBus<ADA_COLOR_ORDER, ADA_LEDS_TYPE> leds(ADA_LEDS_COUNT, ADA_LEDS_PIN);
 
-  #define ADA_LEDS_INIT()     
+  #define ADA_LEDS_INIT() \
+    leds.Begin();
 
   #define ADA_LEDS_SHOW()  \
     leds.Show();
 
+  #define ADA_LEDS_CLEAR()  \
+    leds.ClearTo(RgbColor(0, 0, 0));
+
   #define ADA_LEDS_OFF()  \
-    leds.ClearTo(RgbColor(0, 0, 0)); \
-    leds.Show();
+    ADA_LEDS_CLEAR(); \
+    ADA_LEDS_SHOW();
   
   #define ADA_LEDS_SET_COLOR_BY_INDEX(ledIndex, colorIndex, x)  \
-    if(ledIndex < ADA_LEDS_COUNT) {\
-      RgbColor clr = leds.GetPixelColor(ledIndex); \
-      if(colorIndex == 0) clr.R = x; \
-      else if(colorIndex == 1) clr.G = x; \
-      else if(colorIndex == 2) clr.B = x; \
-      leds.SetPixelColor(ledIndex, clr); \
-    }
+      if(ledIndex < ADA_LEDS_COUNT) {\
+        RgbColor clr = leds.GetPixelColor(ledIndex); \
+        if(colorIndex == 0) clr.R = (x); \
+        else if(colorIndex == 1) clr.G = (x); \
+        else if(colorIndex == 2) clr.B = (x); \
+        leds.SetPixelColor(ledIndex, clr); \
+      } 
       
 
 #else
@@ -104,11 +110,11 @@ CRGB leds[ADA_LEDS_COUNT];
   #define ADA_LEDS_SHOW()
   #define ADA_LEDS_OFF()
   #define ADA_LEDS_SET_COLOR_BY_INDEX(ledIndex, colorIndex, x)
+  #define ADA_LEDS_CLEAR()
 
   #ifdef ADA_LEDS_COUNT
     #undef ADA_LEDS_COUNT
   #endif
-  
   #define ADA_LEDS_COUNT 0
 #endif
 
@@ -158,25 +164,28 @@ void AdaLight::init(bool ledsOn, uint32_t serialBaudrate){
 
 
 void AdaLight::loop(){
-  //Read byte
-  int c = Serial.read();    
 
-  if(c >= 0){
+  bool receivedData = false;
+
+  while (Serial.available() > 0){    
     //Reset timers
     _lastByteTime = millis();
     _timeoutCounter = 0;
 
+    //Read byte
+    int c = Serial.read();
+    receivedData = true;
+
     //Process
-    switch(_mode){
-    case ADA_MODE_HEADER:
+    if(_mode == ADA_MODE_HEADER){
       onHeader(c);
-    break;
-    case ADA_MODE_DATA:
+    }
+    else {
       onData(c);
-    break;
-    }        
+    }
   }
-  else{
+
+  if(!receivedData){
     //No data - check timeout
     onTimeout();
   }
@@ -210,18 +219,18 @@ void AdaLight::onHeader(uint8_t c){
 
       case CHECKSUM:
         //Check checksum
-        if((_high ^ _low ^ 0x55) == c){        
-
-          //Debug led
-          ADA_DEBUG_LED_ON();
-
+        if((_high ^ _low ^ 0x55) == c){                  
           //Remainign leds
           _ledIndex      = 0;
           _ledsRemaining = 256UL * (uint32_t)_high + (uint32_t)_low + 1UL;
-          _mode          = ADA_MODE_DATA;      
+          _mode          = ADA_MODE_DATA;    
+
+          //Clear leds
+          ADA_LEDS_CLEAR();
+
+          //Debug led
+          ADA_DEBUG_LED_ON();
         }
-        _dataIndex = 0;      
-      break;
         _dataIndex = 0;      
       break;
     }
@@ -241,7 +250,6 @@ void AdaLight::onData(uint8_t c){
   if(_dataIndex >= 3){
     _dataIndex = 0;
     
-
     //Increment led index
     if(_ledIndex < ADA_LEDS_COUNT){
       _ledIndex++;
@@ -252,11 +260,14 @@ void AdaLight::onData(uint8_t c){
   }
 
   if(_ledsRemaining == 0){
-    //Debug led    
-    ADA_DEBUG_LED_OFF();
     
     //Turn on leds
-    ADA_LEDS_SHOW();
+    if(_ledsOn){
+      ADA_LEDS_SHOW();
+    }
+
+    //Debug led    
+    ADA_DEBUG_LED_OFF();
 
     //Reset data index
     _dataIndex = 0;
@@ -273,21 +284,28 @@ void AdaLight::onTimeout(){
   //Get current time
   unsigned long now = millis();
 
-  if(_lastByteTime + TIMEOUT_SERIAL <= now){
+  if((uint32_t)(now - _lastByteTime) >= TIMEOUT_SERIAL){
     //If no data received for a while, send ping-acknowledge
     Serial.print("Ada\n");
 
     //Reset timer
     _lastByteTime = now;
-    //Increment timeout counter
-    _timeoutCounter ++;
 
-    //If no data for longer time turn off leds, turn on header mode
+    //Increment timeout counter
+    if (_timeoutCounter < TIMEOUT_RESET_COUNTER) {
+      _timeoutCounter++;
+    }
+
+    //If no data for longer time turn off leds, turn on header mode - do it once
     if(_timeoutCounter == TIMEOUT_RESET_COUNTER){
-      _mode = ADA_MODE_HEADER;
+      _mode          = ADA_MODE_HEADER;
+      _dataIndex     = 0;
+      _ledsRemaining = 0;
+      _ledIndex      = 0;
 
       //Turn off leds
       ADA_LEDS_OFF();
+      ADA_DEBUG_LED_OFF();
     }
   }
 }
