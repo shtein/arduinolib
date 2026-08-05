@@ -1,13 +1,17 @@
 #include <arduinolib.h>
-#include <adalight.h>
+#include <ambientlight.h>
+#include <DbgTool.h>
 
 
-AdaLight theAdaLight;
+AmbientLight theLight;
+AdaLightReceiver theReceiver;
 
 void setup(){
-  theAdaLight.init(true, 115200);
+  
+  theReceiver.init(115200);
+  theLight.init(&theReceiver, true);
 }
 
 void loop(){
-  theAdaLight.loop();
+  theLight.loop();
 }
