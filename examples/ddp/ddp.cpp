@@ -21,7 +21,7 @@
   #include <WiFi.h>
 #endif
 
-#define WIFI_SSID "zoo"
+#define WIFI_SSID "Alex"
 #define WIFI_PWD  "$htein12"
 
 AmbientLight theLight;

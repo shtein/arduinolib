@@ -30,7 +30,12 @@ void _dbgInit(){
   WAIT_FOR_DBGSERIAL();
 }
 
-#define BUF_SIZE 64
+
+#if (defined(ESP8266) || defined(ESP32) )
+  #define BUF_SIZE 256
+#else
+  #define BUF_SIZE 64
+#endif  
 
 void _dbgOut(const __FlashStringHelper *fmt, ...){
   char buf[BUF_SIZE];

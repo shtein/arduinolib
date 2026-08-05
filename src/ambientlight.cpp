@@ -88,7 +88,7 @@ bool AmbientLight::processData(){
   }
 
   //Retrieve data from receiver
-  uint16_t result    = AMBL_DATA_NONE;
+  uint16_t result   = AMBL_DATA_NONE;
   bool dataReceived = false;
   
   while((result = _receiver->getData())){
@@ -98,6 +98,13 @@ bool AmbientLight::processData(){
     //Skip data
     if(result & AMBL_DATA_SKIP){      
       continue;
+    }
+
+    if(result & AMBL_DATA_SEEK){     
+      _indexColor   = _receiver->getOffset() / 3; //3 channels per led
+      _indexChannel = 0;
+
+       DBG_OUTLN("Seek to offset %lu", _indexColor);
     }
 
     //Process color data
@@ -121,7 +128,7 @@ bool AmbientLight::processData(){
     if(result & AMBL_DATA_END){      
       if(_ledsOn){
         showLeds();        
-        //DBG_OUTLN("Show leds %d", _indexColor);
+        DBG_OUTLN("Show last led %d", _indexColor);
       }
                     
       //Reset 
@@ -173,6 +180,7 @@ void AmbientLight::loop(){
           if(_receiver){
             _receiver->reset();
           }
+
         }      
       }
     }
@@ -306,11 +314,11 @@ uint16_t AdaLightReceiver::getData(){
 // DDPLightReceiver - DDP protocol receiver
 
 DDPLightReceiver::DDPLightReceiver(){
-  _processing = false;
-  _dataIndex  = 0;
-  _dataLength = 0;
+  _processing  = false;
+  _dataIndex   = 0;
+  _dataLength  = 0;
   _frameLength = 0;
-  _stripEnd   = false;
+  _stripEnd    = false;
 }
 
 void DDPLightReceiver::init(uint16_t port){
@@ -322,11 +330,11 @@ void DDPLightReceiver::init(uint16_t port){
 }
 
 void DDPLightReceiver::reset(){
-  _processing = false;
-  _dataIndex  = 0;
-  _dataLength = 0;
+  _processing  = false;
+  _dataIndex   = 0;
+  _dataLength  = 0;
   _frameLength = 0;
-  _stripEnd   = false;
+  _stripEnd    = false;
 }
 
 void DDPLightReceiver::onTimeout(){
@@ -355,7 +363,6 @@ void DDPLightReceiver::onTimeout(){
 #define DDP_HEADER_LEN_TC  14
 
 uint16_t DDPLightReceiver::getData(){
-
   //If currently processeing a packet return next byte from the payload
   if(_processing){
 
@@ -370,6 +377,8 @@ uint16_t DDPLightReceiver::getData(){
       if(_dataLength == 0){
         _processing = false;
 
+        DBG_OUTLN("DDP packet finished, remaining = %u", _frameLength);
+
         //If previsous packet had the end of strip marker then return end of strip
         if(_stripEnd){
           _stripEnd = false;
@@ -383,8 +392,12 @@ uint16_t DDPLightReceiver::getData(){
     
     //Return next byte from payload
     uint16_t result = _data[_dataIndex] | AMBL_DATA_COLOR;
+    
     //Increment data index
     _dataIndex++;
+
+    //Decrement frame length, kind of remaining bytes in the current frame. This is used to detect end of frame.
+    _frameLength--;
 
     return result;
   }
@@ -419,20 +432,28 @@ uint16_t DDPLightReceiver::getData(){
   //Remenber if the end of strip marker
   _stripEnd   = (flags & DDP_FLAG_PUSH) ? true : false;
 
-  //Data lenght of strip in bytes
+  //Data lenght of this frame in bytes
   _frameLength = (uint16_t)header[8] << 8 | (uint16_t)header[9];
 
+  //Sequence number of the current frame
   uint8_t seqNum = header[1];
+
+  // Data type of the current frame
+  uint8_t type = header[2];
+
+  //Destination / output id
+  uint8_t dest = header[3]; 
 
   //Offest of the current frame in the stream
   _offset = (uint32_t)header[4] << 24 | (uint32_t)header[5] << 16 | (uint32_t)header[6] << 8 | (uint32_t)header[7];
 
-  //DBG_OUTLN("DDP packet: flags=%02X seqnum = 0x%02X offset=%lu length=%u", flags, seqNum, _offset, _frameLength);
+  DBG_OUTLN("DDP packet: flags=%02X seqnum = 0x%02X type = 0x%02X dest = 0x%02X offset=%lu length=%u", flags, seqNum, type, dest, _offset, _frameLength);
 
   //Start processing
   _processing = true;            
 
-  return AMBL_DATA_SKIP;
+  //New frame - notify about the offset of the current frame in the stream
+  return AMBL_DATA_SEEK;
 }
 
 

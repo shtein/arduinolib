@@ -77,7 +77,8 @@
 #define AMBL_DATA_NONE  0x0000
 #define AMBL_DATA_COLOR 0x0100
 #define AMBL_DATA_SKIP  0x0200
-#define AMBL_DATA_END   0x0400
+#define AMBL_DATA_SEEK  0x0400
+#define AMBL_DATA_END   0x0800
 
 class AmbientLightReceiver{
 public:
@@ -87,6 +88,8 @@ public:
   virtual void onTimeout() = 0;                              
   // Get next data byte. Low byte is color 0-255, high byte is a bitmask of AMBL_DATA_* flags.
   virtual uint16_t getData() = 0; 
+
+  virtual uint16_t getOffset() { return 0; } // Get the offset of the current frame in the stream
 };
 
 
@@ -177,6 +180,7 @@ public:
   virtual void reset() override;
   virtual void onTimeout() override;
   virtual uint16_t getData() override;
+  virtual uint16_t getOffset() override { return (uint16_t)_offset; }
 
 private:
   void processPacket();
@@ -189,9 +193,11 @@ private:
   uint8_t  _data[DDP_BUFFER_SIZE]; //Receive buffer
   uint16_t _dataIndex;             //Index of the current byte in the buffer
   uint16_t _dataLength;            //Length of the current buffer
-  uint16_t _frameLength;           //Length of the current frame 
+
+  //Frame data - only the one that is needed
+  bool     _stripEnd;              //Flags of the current frame
+  uint16_t _frameLength;           //Length of the current frame, used to count down remaining bytes in the frame 
   uint32_t _offset;                //Offset of the current frame in the stream
-  bool     _stripEnd;              //End of strip marker received
 };
 
 #endif // ESP8266 || ESP32
