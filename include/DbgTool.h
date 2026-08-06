@@ -12,8 +12,8 @@
   
   #define DBG_OUT(FORMAT, ...)  _dbgOut(F(FORMAT), ##  __VA_ARGS__);     
   #define DBG_OUTLN(FORMAT, ...)  DBG_OUT(FORMAT "\n", ##  __VA_ARGS__); 
-  
-#elif defined(ESPHOME_LOG_LEVEL)
+
+#elif defined(DBG_TO_ESPHOME)
 //For this we use ESPHome logging macros for debug output
 //Make sure your yaml has the following line to enable debug output:
 // esphome  
