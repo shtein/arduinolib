@@ -4,7 +4,7 @@
 
 
 ////////////////////////////////////////
-// AmbientLight - base class for ambient light protocols
+// AmbientLight -  ambient light protocols
 AmbientLight::AmbientLight()
 #ifdef AMBL_NEOPIXEL_BUS
   : _leds(AMBL_LEDS_COUNT, AMBL_LEDS_PIN)
@@ -201,10 +201,7 @@ const uint8_t magic[] = {'A','d','a'};
 
 
 AdaLightReceiver::AdaLightReceiver(){
-  _mode       = ADA_MODE_HEADER;  
-  _remaining  = 0;
-  _low        = 0;
-  _high       = 0;
+  reset();
 }
 
 
@@ -314,11 +311,7 @@ uint16_t AdaLightReceiver::getData(){
 // DDPLightReceiver - DDP protocol receiver
 
 DDPLightReceiver::DDPLightReceiver(){
-  _processing  = false;
-  _dataIndex   = 0;
-  _dataLength  = 0;
-  _frameLength = 0;
-  _stripEnd    = false;
+  reset();
 }
 
 void DDPLightReceiver::init(uint16_t port){

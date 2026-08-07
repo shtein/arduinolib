@@ -88,8 +88,8 @@ public:
   virtual void onTimeout() = 0;                              
   // Get next data byte. Low byte is color 0-255, high byte is a bitmask of AMBL_DATA_* flags.
   virtual uint16_t getData() = 0; 
-
-  virtual uint16_t getOffset() { return 0; } // Get the offset of the current frame in the stream
+  // Get the offset of the current frame in the stream
+  virtual uint16_t getOffset() { return 0; } 
 };
 
 
@@ -167,10 +167,11 @@ protected:
 
 #include <WiFiUdp.h>
 
-#define DDP_BUFFER_SIZE 256
-
 /////////////////////////////////////////
 // DPPReceiver - DDP protocol receiver
+
+#define DDP_BUFFER_SIZE 256
+
 class DDPLightReceiver : public AmbientLightReceiver{
 public:
   DDPLightReceiver();
@@ -185,14 +186,14 @@ public:
 private:
   void processPacket();
   
-
 private:
   WiFiUDP _udp;                    //UDP socket
   bool    _processing;             //True if a packet is being processed
 
+  //Receive data
   uint8_t  _data[DDP_BUFFER_SIZE]; //Receive buffer
   uint16_t _dataIndex;             //Index of the current byte in the buffer
-  uint16_t _dataLength;            //Length of the current buffer
+  uint16_t _dataLength;            //Length of the current buffer read from socket
 
   //Frame data - only the one that is needed
   bool     _stripEnd;              //Flags of the current frame
