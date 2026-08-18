@@ -31,7 +31,7 @@
 #define CTF_VAL_STRING  0x06  //Value is string
 #define CTF_VAL_OBJECT  0x07  //Value is object
 
-#if (defined(ESP8266) || defined(ESP32) || defined (ESPHOME_CTRL))
+#if ( (defined(ESP8266) || defined(ESP32)) && !defined (ESPHOME_CTRL))
   #define MAX_STR_VALUE 256
 #else
   #define MAX_STR_VALUE 16
